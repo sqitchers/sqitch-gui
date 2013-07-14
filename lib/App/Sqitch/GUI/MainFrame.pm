@@ -6,11 +6,12 @@ use warnings;
 use Moose;
 use Wx qw<:everything>;
 use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU>;
-use Wx::XRC;
+
 with 'App::Sqitch::GUI::Roles::Element';
 
 use App::Sqitch::GUI::MainFrame::MenuBar;
 use App::Sqitch::GUI::MainFrame::StatusBar;
+use App::Sqitch::GUI::MainFrame::MainPanel;
 
 has 'position' => (
     is            => 'rw',
@@ -34,23 +35,35 @@ has 'status_bar' => (
     lazy_build => 1,
 );
 
+has 'main_panel' => (
+    is          => 'rw',
+    isa         => 'App::Sqitch::GUI::MainFrame::MainPanel',
+    lazy_build  => 1,
+    clearer     => 'clear_main_panel',
+    predicate   => 'has_main_panel',
+);
+
+has 'main_panel_sizer' => (is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+
 sub BUILD {
     my($self, @params) = @_;
 
     $self->frame->Show(0);
+
     $self->frame->SetMenuBar($self->menu_bar);
     $self->_build_status_bar;
 
-    # Load from XRC
-    my $res = Wx::XmlResource->new;
-    $res->InitAllHandlers();
-    my $res_file = 'Sqitch.xrc';
-    die "XRC file not found: $res_file" unless $res_file;
-    $res->Load($res_file);
-    $res->LoadPanel($self->frame, 'Sqitch');
+    $self->main_panel_sizer->Add( $self->main_panel->main_panel, 1, wxEXPAND );
+    $self->frame->SetSizer($self->main_panel_sizer);
+
+    # my $log = Wx::LogTextCtrl->new($comment);
+    # $self->{old_log} = Wx::Log::SetActiveTarget( $log );
 
     $self->_set_events;
+
     $self->frame->Show(1);
+
+    # Wx::LogMessage('Welcomme to Sqitch-GUI');
 
     return $self;
 }
@@ -60,7 +73,7 @@ sub _build_frame {
     my $y = Wx::Frame->new(
         undef, -1,
         $self->title,
-        $self->position || wxDefaultPosition,
+        $self->position || [-1, -1],
         $self->size,
         $self->style,
     );
@@ -138,6 +151,21 @@ sub _build_style {
 sub _build_title {
     my $self = shift;
     return 'Sqitch Title';
+}
+
+sub _build_main_panel_sizer {
+    my $self = shift;
+    my $ips = Wx::BoxSizer->new(wxHORIZONTAL);
+    return $ips;
+}
+
+sub _build_main_panel {
+    my $self = shift;
+    return App::Sqitch::GUI::MainFrame::MainPanel->new(
+        app         => $self->app,
+        ancestor    => $self,
+        parent      => $self->frame,
+    );
 }
 
 sub _set_events {

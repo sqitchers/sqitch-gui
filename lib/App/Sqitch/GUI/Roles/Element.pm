@@ -12,18 +12,17 @@ has 'app' => (
         get_main_frame => 'main_frame',
         has_main_frame => 'has_main_frame',
         menu           => 'menu_bar',
+        get_left_pane  => 'left_pane',
+        get_right_pane => 'right_pane',
     }
 );
-
 has 'ancestor'  => (is => 'rw', isa => 'Object', weak_ref => 1 );
 has 'parent'    => (is => 'rw', isa => 'Maybe[Wx::Window]' );
-
 has 'sizer_debug' => (is => 'rw', isa => 'Int',  lazy => 1, default => 0,
         documentation => q{
             draws boxes with titles around all sizers if true.
         }
     );
-
 has 'sizers' => (is => 'rw', isa => 'HashRef', lazy => 1, default => sub{ {} });
 
 requires '_set_events';
@@ -38,7 +37,7 @@ sub build_sizer {
     my $self        = shift;
     my $parent      = shift;
     my $direction   = shift;
-    my $name        = shift or die "iSizer name is required.";
+    my $name        = shift or die "the Sizer name is required!";
     my $force_box   = shift || 0;
     my $pos         = shift || wxDefaultPosition;
     my $size        = shift || wxDefaultSize;
@@ -46,7 +45,6 @@ sub build_sizer {
     my $hr = { };
     if( $self->sizer_debug or $force_box ) {
         $hr->{'box'} = Wx::StaticBox->new($parent, -1, $name, $pos, $size),
-            $hr->{'box'}->SetFont( $self->app->wxbb->resolve(service => '/Fonts/para_text_1') );
         $hr->{'sizer'} = Wx::StaticBoxSizer->new($hr->{'box'}, $direction);
     }
     else {

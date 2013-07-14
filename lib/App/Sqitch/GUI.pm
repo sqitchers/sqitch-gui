@@ -26,14 +26,14 @@ sub init_sqitch {
     say scalar $config->dump;
 
     my $project = dir $config->get( key => 'projects.path' );
-    p $project;
-    print "dir is $project\n";
+    # p $project;
+    # print "dir is $project\n";
 
     # 2. Instantiate Sqitch.
     $opts->{config} = $config;
     my $sqitch = App::Sqitch->new($opts);
 
-    print 'top dir is:', $sqitch->top_dir, ":\n";
+    print 'Top dir is:', $sqitch->top_dir, ":\n";
 }
 
 has 'main_frame' => (
