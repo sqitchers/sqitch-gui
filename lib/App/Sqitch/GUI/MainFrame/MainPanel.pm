@@ -7,6 +7,7 @@ use Wx::Event qw(EVT_CLOSE);
 with 'App::Sqitch::GUI::Roles::Element';
 
 use App::Sqitch::GUI::MainFrame::Notebook;
+use App::Sqitch::GUI::MainFrame::Editor;
 
 has 'main_panel'   => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 has 'main_sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
@@ -23,14 +24,32 @@ has 'notebook'     => (
     isa => 'App::Sqitch::GUI::MainFrame::Notebook',
     lazy_build => 1,
 );
-# has 'nb_deploy_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1);
+has 'edit_deploy' => (
+    is  => 'rw',
+    isa => 'App::Sqitch::GUI::MainFrame::Editor',
+    lazy_build => 1,
+);
+has 'edit_revert' => (
+    is  => 'rw',
+    isa => 'App::Sqitch::GUI::MainFrame::Editor',
+    lazy_build => 1,
+);
+has 'edit_verify' => (
+    is  => 'rw',
+    isa => 'App::Sqitch::GUI::MainFrame::Editor',
+    lazy_build => 1,
+);
+has 'ed_deploy_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1);
+has 'ed_revert_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1);
+has 'ed_verify_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1);
 has 'btn_deploy'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_revert'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_verify'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'test_panel'   => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 
 sub BUILD {
     my $self = shift;
+
+    #-   The main panel
 
     $self->main_panel->Show(0);
     $self->main_panel->SetSizer( $self->main_sizer );
@@ -39,17 +58,40 @@ sub BUILD {
     $self->main_sizer->Add( $self->right_sizer, 0, wxEXPAND, 5 );
 
     $self->left_sizer->Add( $self->main_sbs, 1, wxEXPAND, 5 );
+
+    #--  Notebook on the left-top side for SQL edit
+
     $self->main_sbs->Add( $self->top_sizer, 1, wxEXPAND, 5 );
     $self->top_sizer->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
 
-    my $para_sbs = Wx::BoxSizer->new(wxVERTICAL);
-    $self->notebook->page_deploy->SetSizer($para_sbs);
-    $para_sbs->Add($self->test_panel, 1, wxEXPAND, 5);
+    #--- Page Deploy
+
+    my $sql_deploy_sz = Wx::BoxSizer->new(wxVERTICAL);
+    $self->ed_deploy_sbs->Add($self->edit_deploy, 1, wxEXPAND | wxALL, 5 );
+    $sql_deploy_sz->Add( $self->ed_deploy_sbs, 1, wxEXPAND | wxALL, 5 );
+    $self->notebook->page_deploy->SetSizer( $sql_deploy_sz );
+
+    #--- Page Deploy
+
+    my $sql_revert_sz = Wx::BoxSizer->new(wxVERTICAL);
+    $self->ed_revert_sbs->Add($self->edit_revert, 1, wxEXPAND | wxALL, 5 );
+    $sql_revert_sz->Add( $self->ed_revert_sbs, 1, wxEXPAND | wxALL, 5 );
+    $self->notebook->page_revert->SetSizer( $sql_revert_sz );
+
+    #--- Page Verify
+
+    my $sql_verify_sz = Wx::BoxSizer->new(wxVERTICAL);
+    $self->ed_verify_sbs->Add( $self->edit_verify, 1, wxEXPAND | wxALL, 5 );
+    $sql_verify_sz->Add( $self->ed_verify_sbs, 1, wxEXPAND | wxALL, 5 );
+    $self->notebook->page_verify->SetSizer($sql_verify_sz);
+
+    #--  Log control on the left-bottom side
 
     $self->left_sizer->Add( $self->log_sbs, 1, wxEXPAND, 5 );
     $self->log_sbs->Add( $self->bottom_sizer, 1, wxEXPAND, 5 );
 
-    # Command buttons
+    #--  Command buttons on the right side
+
     $self->right_sizer->Add( $self->commands_sbs, 1, wxEXPAND, 0 );
     $self->commands_sbs->Add( $self->commands_fgs, 0, wxEXPAND | wxALL, 5 );
     $self->commands_fgs->AddSpacer(10);
@@ -64,6 +106,7 @@ sub BUILD {
 
 sub _build_main_panel {
     my $self = shift;
+
     my $panel = Wx::Panel->new(
         $self->parent,
         -1,
@@ -73,11 +116,13 @@ sub _build_main_panel {
         'mainPanel',
     );
     #$panel->SetBackgroundColour(Wx::Colour->new(150,150,150));
+
     return $panel;
 }
 
 sub _build_test_panel {
     my $self = shift;
+
     my $panel = Wx::Panel->new(
         $self->parent,
         -1,
@@ -87,6 +132,7 @@ sub _build_test_panel {
         'testPanel',
     );
     $panel->SetBackgroundColour(Wx::Colour->new(200,0,0));
+
     return $panel;
 }
 
@@ -100,6 +146,7 @@ sub _build_left_sizer {
 
 sub _build_main_sbs {
     my $self = shift;
+
     return Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $self->main_panel, -1, ' Main ', ), wxHORIZONTAL );
 }
@@ -110,6 +157,7 @@ sub _build_top_sizer {
 
 sub _build_log_sbs {
     my $self = shift;
+
     return Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $self->main_panel, -1, ' Log ', ), wxHORIZONTAL );
 }
@@ -124,6 +172,7 @@ sub _build_right_sizer {
 
 sub _build_commands_sbs {
     my $self = shift;
+
     return Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $self->main_panel, -1, ' Commands ', ),
         wxHORIZONTAL );
@@ -134,12 +183,78 @@ sub _build_commands_fgs {
 }
 
 sub _build_notebook {
-    print "_build_notebook\n";
     my $self = shift;
+
     return App::Sqitch::GUI::MainFrame::Notebook->new(
         app      => $self->app,
         parent   => $self->parent,
         ancestor => $self,
+    );
+}
+
+sub _build_edit_deploy {
+    my $self = shift;
+
+    return App::Sqitch::GUI::MainFrame::Editor->new(
+        app      => $self->app,
+        parent   => $self->notebook->page_deploy,
+        ancestor => $self,
+    );
+}
+
+sub _build_edit_revert {
+    my $self = shift;
+
+    return App::Sqitch::GUI::MainFrame::Editor->new(
+        app      => $self->app,
+        parent   => $self->notebook->page_revert,
+        ancestor => $self,
+    );
+}
+
+sub _build_edit_verify {
+    my $self = shift;
+
+    return App::Sqitch::GUI::MainFrame::Editor->new(
+        app      => $self->app,
+        parent   => $self->notebook->page_verify,
+        ancestor => $self,
+    );
+}
+
+sub _build_ed_deploy_sbs {
+    my $self = shift;
+
+    return Wx::StaticBoxSizer->new(
+        Wx::StaticBox->new(
+            $self->notebook->page_deploy,
+            -1, ' SQL View | Edit ',
+        ),
+        wxHORIZONTAL
+    );
+}
+
+sub _build_ed_revert_sbs {
+    my $self = shift;
+
+    return Wx::StaticBoxSizer->new(
+        Wx::StaticBox->new(
+            $self->notebook->page_revert,
+            -1, ' SQL View | Edit ',
+        ),
+        wxHORIZONTAL
+    );
+}
+
+sub _build_ed_verify_sbs {
+    my $self = shift;
+
+    return Wx::StaticBoxSizer->new(
+        Wx::StaticBox->new(
+            $self->notebook->page_verify,
+            -1, ' SQL View | Edit ',
+        ),
+        wxHORIZONTAL
     );
 }
 
@@ -149,6 +264,7 @@ sub _build_notebook {
 
 sub _build_btn_deploy {
     my $self = shift;
+
     return Wx::Button->new(
         $self->main_panel,
         -1,
@@ -160,6 +276,7 @@ sub _build_btn_deploy {
 
 sub _build_btn_revert {
     my $self = shift;
+
     return Wx::Button->new(
         $self->main_panel,
         -1,
@@ -171,6 +288,7 @@ sub _build_btn_revert {
 
 sub _build_btn_verify {
     my $self = shift;
+
     return Wx::Button->new(
         $self->main_panel,
         -1,

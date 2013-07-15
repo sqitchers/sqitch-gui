@@ -16,7 +16,9 @@ has 'page_verify' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 
 sub FOREIGNBUILDARGS {
     my $self = shift;
+
     my %args = @_;
+
     return (
         $args{parent},
         -1,
@@ -26,26 +28,36 @@ sub FOREIGNBUILDARGS {
     );
 }
 
-sub BUILD { shift };
+sub BUILD {
+    my $self = shift;
+
+    return $self;
+};
 
 sub _build_page_deploy {
     my $self = shift;
+
     my $page = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
     $self->AddPage( $page, 'Deploy' );
+
     return $page;
 }
 
 sub _build_page_revert {
     my $self = shift;
+
     my $page = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
     $self->AddPage( $page, 'Revert' );
+
     return $page;
 }
 
 sub _build_page_verify {
     my $self = shift;
+
     my $page = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
     $self->AddPage( $page, 'Verify' );
+
     return $page;
 }
 
