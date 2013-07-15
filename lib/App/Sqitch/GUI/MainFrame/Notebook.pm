@@ -2,61 +2,57 @@ package App::Sqitch::GUI::MainFrame::Notebook;
 
 use Moose;
 use Wx qw(:everything);
-use Wx::AUI;
 use Wx::Event qw();
+use Wx::AUI;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-has 'notebook' => (is => 'rw', isa => 'Wx::AuiNotebook', lazy_build => 1);
-has 'page_p1'  => (is => 'rw', isa => 'Wx::Panel', lazy_build => 1);
-has 'page_p2'  => (is => 'rw', isa => 'Wx::Panel', lazy_build => 1);
-has 'page_p3'  => (is => 'rw', isa => 'Wx::Panel', lazy_build => 1);
+use MooseX::NonMoose::InsideOut;
+extends 'Wx::AuiNotebook';
 
-sub BUILD {
+has 'page_deploy' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'page_revert' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'page_verify' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+
+sub FOREIGNBUILDARGS {
     my $self = shift;
-    $self->notebook;
-    return $self;
-};
-
-sub _build_notebook {
-    my $self = shift;
-
-    my $nb = Wx::AuiNotebook->new(
-        $self->parent,
+    my %args = @_;
+    return (
+        $args{parent},
         -1,
         [-1, -1],
         [-1, -1],
         wxAUI_NB_TAB_FIXED_WIDTH,
     );
-
-    return $nb;
 }
 
-sub _build_page_p1 {
+sub BUILD { shift };
+
+sub _build_page_deploy {
     my $self = shift;
-    my $p1 = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
-    $self->notebook->AddPage( $p1, 'Deploy' );
-    return $p1;
+    my $page = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
+    $self->AddPage( $page, 'Deploy' );
+    return $page;
 }
 
-sub _build_page_p2 {
+sub _build_page_revert {
     my $self = shift;
-    my $p2 = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
-    $self->notebook->AddPage( $p2, 'Revert' );
-    return $p2;
+    my $page = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
+    $self->AddPage( $page, 'Revert' );
+    return $page;
 }
 
-sub _build_page_p3 {
+sub _build_page_verify {
     my $self = shift;
-    my $p3 = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
-    $self->notebook->AddPage( $p3, 'Verify' );
-    return $p3;
+    my $page = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
+    $self->AddPage( $page, 'Verify' );
+    return $page;
 }
 
 sub _set_events { }
 
 no Moose;
-__PACKAGE__->meta->make_immutable; 
+__PACKAGE__->meta->make_immutable;
 
 
 1;
