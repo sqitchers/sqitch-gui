@@ -3,7 +3,6 @@ package App::Sqitch::GUI::MainFrame::MainPanel;
 use Moose;
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
-use Wx::AUI;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
