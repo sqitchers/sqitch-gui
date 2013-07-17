@@ -11,8 +11,10 @@ with 'App::Sqitch::GUI::Roles::Element';
 
 use App::Sqitch::GUI::MainFrame::MenuBar;
 use App::Sqitch::GUI::MainFrame::StatusBar;
-use App::Sqitch::GUI::MainFrame::MainPanel;
+#use App::Sqitch::GUI::MainFrame::MainPanel;
+#use App::Sqitch::GUI::MainFrame::BFGPane;
 
+# Main window
 has 'position' => (
     is            => 'rw',
     isa           => 'Maybe[Wx::Point]',
@@ -22,28 +24,27 @@ has 'style' => ( is => 'rw', isa => 'Int',       lazy_build => 1 );
 has 'frame' => ( is => 'rw', isa => 'Wx::Frame', lazy_build => 1 );
 has 'title' => ( is => 'rw', isa => 'Str',       lazy_build => 1 );
 has 'size'  => ( is => 'rw', isa => 'Wx::Size',  lazy_build => 1 );
-
 has 'menu_bar' => (
     is         => 'rw',
     isa        => 'App::Sqitch::GUI::MainFrame::MenuBar',
     lazy_build => 1,
 );
-
 has 'status_bar' => (
     is         => 'rw',
     isa        => 'App::Sqitch::GUI::MainFrame::StatusBar',
     lazy_build => 1,
 );
 
-has 'main_panel' => (
-    is          => 'rw',
-    isa         => 'App::Sqitch::GUI::MainFrame::MainPanel',
-    lazy_build  => 1,
-    clearer     => 'clear_main_panel',
-    predicate   => 'has_main_panel',
-);
+# Panels
+has 'left_panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'right_panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 
-has 'main_panel_sizer' => (is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+# Sizers
+has 'main_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+
+# Miscellaneous
+has 'min_pane_size' => ( is => 'rw', isa => 'Int', lazy => 1, default => 50 );
+has 'sash_pos' => ( is => 'rw', isa => 'Int', lazy => 1, default => 450 );
 
 sub BUILD {
     my($self, @params) = @_;
@@ -53,17 +54,38 @@ sub BUILD {
     $self->frame->SetMenuBar($self->menu_bar);
     $self->_build_status_bar;
 
-    $self->main_panel_sizer->Add( $self->main_panel->main_panel, 1, wxEXPAND );
-    $self->frame->SetSizer($self->main_panel_sizer);
+    my $panel1 = $self->left_panel;
+    my $panel2 = $self->right_panel;
 
-    # my $log = Wx::LogTextCtrl->new($comment);
-    # $self->{old_log} = Wx::Log::SetActiveTarget( $log );
+    $self->main_sizer->Add($self->left_panel,  1, wxEXPAND);
+    $self->main_sizer->Add($self->right_panel, 1, wxEXPAND);
+
+    my $panel1_bsz = Wx::BoxSizer->new(wxHORIZONTAL);
+    $self->left_panel->SetSizer($panel1_bsz);
+
+    my $panel2_bsz = Wx::BoxSizer->new(wxHORIZONTAL);
+    $panel2->SetSizer($panel2_bsz);
+
+    my $spw = Wx::SplitterWindow->new(
+        $panel1, -1, [-1, -1], [-1, -1],
+        wxNO_FULL_REPAINT_ON_RESIZE | wxCLIP_CHILDREN );
+
+    $panel1_bsz->Add($spw, 1, wxEXPAND);
+
+    my $sp1 = Wx::Panel->new($spw, -1);
+    my $sp2 = Wx::Panel->new($spw, -1);
+
+    $sp1->SetBackgroundColour( Wx::Colour->new("pink") );
+    $sp2->SetBackgroundColour( Wx::Colour->new("sky blue") );
+
+    $spw->SplitHorizontally($sp1, $sp2, $self->sash_pos);
+    #$spw->SetMinimumPaneSize( $self->min_pane_size );
+
+    $self->frame->SetSizer($self->main_sizer);
 
     $self->_set_events;
 
     $self->frame->Show(1);
-
-    # Wx::LogMessage('Welcomme to Sqitch-GUI');
 
     return $self;
 }
@@ -79,6 +101,38 @@ sub _build_frame {
     );
     $y->Centre() unless $self->position;
     return $y;
+}
+
+sub _build_left_panel {
+    my $self = shift;
+
+    my $panel = Wx::Panel->new(
+        $self->frame,
+        -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxFULL_REPAINT_ON_RESIZE,
+        'mainPanel',
+    );
+    $panel->SetBackgroundColour( Wx::Colour->new('tan') );
+
+    return $panel;
+}
+
+sub _build_right_panel {
+    my $self = shift;
+
+    my $panel = Wx::Panel->new(
+        $self->frame,
+        -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxFULL_REPAINT_ON_RESIZE,
+        'mainPanel',
+    );
+    $panel->SetBackgroundColour( Wx::Colour->new('red') );
+
+    return $panel;
 }
 
 sub _build_menu_bar {
@@ -122,18 +176,32 @@ sub _build_title {
     return 'Sqitch Title';
 }
 
-sub _build_main_panel_sizer {
+sub _build_main_sizer {
     return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
-sub _build_main_panel {
-    my $self = shift;
-    return App::Sqitch::GUI::MainFrame::MainPanel->new(
-        app         => $self->app,
-        parent      => $self->frame,
-        ancestor    => $self,
-    );
-}
+# sub _build_proj_panel {
+#     my $self = shift;
+
+#     return App::Sqitch::GUI::MainFrame::BFGPane->new(
+#         app      => $self->app,
+#         parent   => $self->frame,
+#         ancestor => $self,
+#     );
+# }
+
+# sub _build_main_panel_sizer {
+#     return Wx::BoxSizer->new(wxHORIZONTAL);
+# }
+
+# sub _build_main_panel {
+#     my $self = shift;
+#     return App::Sqitch::GUI::MainFrame::MainPanel->new(
+#         app         => $self->app,
+#         parent      => $self->frame,
+#         ancestor    => $self,
+#     );
+# }
 
 sub _set_events {
     my $self = shift;
