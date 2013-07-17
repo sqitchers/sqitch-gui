@@ -14,6 +14,7 @@ use App::Sqitch::GUI::MainFrame::StatusBar;
 use App::Sqitch::GUI::MainFrame::Panel::Left;
 use App::Sqitch::GUI::MainFrame::Panel::Right;
 use App::Sqitch::GUI::MainFrame::Panel::Bottom;
+use App::Sqitch::GUI::MainFrame::Panel::Project;
 
 # Main window
 has 'position' => (
@@ -48,8 +49,11 @@ has 'right_side' => (
     isa          => 'App::Sqitch::GUI::MainFrame::Panel::Right',
     lazy_build   => 1
 );
-has 'top_panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-#has 'bot_panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'top_side' => (
+    is           => 'rw',
+    isa          => 'App::Sqitch::GUI::MainFrame::Panel::Project',
+    lazy_build   => 1
+);
 has 'bot_side' => (
     is           => 'rw',
     isa          => 'App::Sqitch::GUI::MainFrame::Panel::Bottom',
@@ -81,14 +85,13 @@ sub BUILD {
     my $spw = $self->splitter_w;
     $self->left_side->sizer->Add($self->splitter_w, 1, wxEXPAND);
 
-    my $sp1 = $self->top_panel;
-    my $sp2 = $self->bot_side;
+    # $self->top_side->SetBackgroundColour( Wx::Colour->new("pink") );
+    # $self->bot_side->panel->SetBackgroundColour( Wx::Colour->new("blue") );
 
-    $self->top_panel->SetBackgroundColour( Wx::Colour->new("pink") );
-    $self->bot_side->panel->SetBackgroundColour( Wx::Colour->new("sky blue") );
-
-    $self->splitter_w->SplitHorizontally($self->top_panel, $self->bot_side->panel, $self->sash_pos);
-    #$self->splitter_w->SetMinimumPaneSize( $self->min_pane_size );
+    $self->splitter_w->SplitHorizontally( $self->top_side->panel,
+        $self->bot_side->panel,
+        $self->sash_pos );
+    #$self->splitter_w->SetMinimumPaneSize( $self->min_pane_size ); doesn't work
 
     $self->frame->SetSizer($self->main_sizer);
 
@@ -181,39 +184,24 @@ sub _build_right_side {
     return $panel;
 }
 
-sub _build_top_panel {
+sub _build_top_side {
     my $self = shift;
 
-    my $panel = Wx::Panel->new(
-        $self->splitter_w,
-        -1,
-        [ -1, -1 ],
-        [ -1, -1 ],
-        wxFULL_REPAINT_ON_RESIZE,
-        'mainPanel',
+    return App::Sqitch::GUI::MainFrame::Panel::Project->new(
+        app      => $self->app,
+        parent   => $self->splitter_w,
+        ancestor => $self,
     );
-
-    return $panel;
 }
 
 sub _build_bot_side {
     my $self = shift;
 
-    # my $panel = Wx::Panel->new(
-    #     $self->splitter_w,
-    #     -1,
-    #     [ -1, -1 ],
-    #     [ -1, -1 ],
-    #     wxFULL_REPAINT_ON_RESIZE,
-    #     'mainPanel',
-    # );
-    my $panel = App::Sqitch::GUI::MainFrame::Panel::Bottom->new(
+    return App::Sqitch::GUI::MainFrame::Panel::Bottom->new(
         app      => $self->app,
         parent   => $self->splitter_w,
         ancestor => $self,
     );
-
-    return $panel;
 }
 
 sub _build_splitter_w {
