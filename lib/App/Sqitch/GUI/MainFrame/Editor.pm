@@ -20,7 +20,7 @@ sub FOREIGNBUILDARGS {
         -1,
         [-1, -1],
         [-1, -1],
-        wxAUI_NB_TAB_FIXED_WIDTH,
+        wxBORDER_SUNKEN,
     );
 }
 
