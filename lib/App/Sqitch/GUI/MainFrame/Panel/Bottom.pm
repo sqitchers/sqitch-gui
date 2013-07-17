@@ -46,6 +46,7 @@ sub _build_panel {
         'mainPanel',
     );
     #$panel->SetBackgroundColour(Wx::Colour->new('blue'));
+    #$panel->SetBackgroundColour( $self->parent->GetBackgroundColour );
 
     return $panel;
 }
