@@ -1,4 +1,4 @@
-package App::Sqitch::GUI::MainFrame::MainPanel;
+package App::Sqitch::GUI::MainFrame::MainPanel::Project;
 
 use utf8;
 use Moose;
@@ -10,17 +10,11 @@ with 'App::Sqitch::GUI::Roles::Element';
 use App::Sqitch::GUI::MainFrame::Notebook;
 use App::Sqitch::GUI::MainFrame::Editor;
 
-has 'main_panel'   => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'main_sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'proj_panel'   => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'proj_sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'left_sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'sql_sbs'      => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'top_sizer'    => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'log_sbs'      => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'right_sizer'  => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'panels_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'panels_fgs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'commands_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'commands_fgs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'notebook'     => (
     is  => 'rw',
     isa => 'App::Sqitch::GUI::MainFrame::Notebook',
@@ -41,32 +35,19 @@ has 'edit_verify' => (
     isa => 'App::Sqitch::GUI::MainFrame::Editor',
     lazy_build => 1,
 );
-has 'log_ctrl' => ( is  => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'old_log'  => ( is => 'rw', isa => 'Maybe[Object]' );
 has 'ed_deploy_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1);
 has 'ed_revert_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1);
 has 'ed_verify_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1);
-has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_deploy'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_revert'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_verify'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_project' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_change'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_status'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_project_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1 );
-has 'btn_change_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1 );
-has 'btn_status_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1 );
 
 sub BUILD {
     my $self = shift;
 
     #-   The main panel
 
-    $self->main_panel->Show(0);
-    $self->main_panel->SetSizer( $self->main_sizer );
+    $self->proj_panel->Show(0);
+    $self->proj_panel->SetSizer( $self->proj_sizer );
 
-    $self->main_sizer->Add( $self->left_sizer,  1, wxEXPAND | wxALL, 5 );
-    $self->main_sizer->Add( $self->right_sizer, 0, wxEXPAND, 5 );
+    $self->proj_sizer->Add( $self->left_sizer,  1, wxEXPAND | wxALL, 5 );
 
     $self->left_sizer->Add( $self->sql_sbs, 1, wxEXPAND, 5 );
 
@@ -96,38 +77,12 @@ sub BUILD {
     $sql_verify_sz->Add( $self->ed_verify_sbs, 1, wxEXPAND | wxALL, 5 );
     $self->notebook->page_verify->SetSizer($sql_verify_sz);
 
-    #--  Log control on the left-bottom side
-
-    $self->left_sizer->Add( $self->log_sbs, 0, wxEXPAND, 0 );
-    $self->log_sbs->Add( $self->log_ctrl, 1, wxEXPAND | wxALL, 5 );
-
-    #--  Command buttons on the right side
-
-    #--- Panels
-
-    $self->right_sizer->Add( $self->panels_sbs, 0, wxEXPAND | wxALL, 5 );
-    $self->panels_sbs->Add( $self->panels_fgs,      0, wxEXPAND | wxALL, 5 );
-    $self->panels_fgs->Add( $self->btn_project_sel, 0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_project,     0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_change_sel,  0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_change,      0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_status_sel,  0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_status,      0, wxEXPAND,         5 );
-
-    #--- Commands
-    $self->right_sizer->Add( $self->commands_sbs, 1, wxEXPAND | wxALL, 5 );
-    $self->commands_sbs->Add( $self->commands_fgs, 1, wxEXPAND | wxALL, 5 );
-    $self->commands_fgs->Add( $self->btn_add,      1, wxEXPAND,         0 );
-    $self->commands_fgs->Add( $self->btn_deploy,   1, wxEXPAND,         0 );
-    $self->commands_fgs->Add( $self->btn_revert,   1, wxEXPAND,         0 );
-    $self->commands_fgs->Add( $self->btn_verify,   1, wxEXPAND,         0 );
-
-    $self->main_panel->Show(1);
+    $self->proj_panel->Show(1);
 
     return $self;
 }
 
-sub _build_main_panel {
+sub _build_proj_panel {
     my $self = shift;
 
     my $panel = Wx::Panel->new(
@@ -159,7 +114,7 @@ sub _build_main_panel {
 #     return $panel;
 # }
 
-sub _build_main_sizer {
+sub _build_proj_sizer {
     return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
@@ -171,7 +126,7 @@ sub _build_sql_sbs {
     my $self = shift;
 
     return Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->main_panel, -1, ' SQL ', ), wxHORIZONTAL );
+        Wx::StaticBox->new( $self->proj_panel, -1, ' SQL ', ), wxHORIZONTAL );
 }
 
 sub _build_top_sizer {
@@ -182,7 +137,7 @@ sub _build_log_sbs {
     my $self = shift;
 
     return Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->main_panel, -1, ' Log ', ), wxHORIZONTAL );
+        Wx::StaticBox->new( $self->proj_panel, -1, ' Log ', ), wxHORIZONTAL );
 }
 
 sub _build_right_sizer {
@@ -193,7 +148,7 @@ sub _build_commands_sbs {
     my $self = shift;
 
     return Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->main_panel, -1, ' Commands ', ),
+        Wx::StaticBox->new( $self->proj_panel, -1, ' Commands ', ),
         wxHORIZONTAL );
 }
 
@@ -201,7 +156,7 @@ sub _build_panels_sbs {
     my $self = shift;
 
     return Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->main_panel, -1, ' Select Panel ', ),
+        Wx::StaticBox->new( $self->proj_panel, -1, ' Select Panel ', ),
         wxVERTICAL );
 }
 
@@ -295,7 +250,7 @@ sub _build_log_ctrl {
     my $self = shift;
 
     my $log_ctrl = Wx::TextCtrl->new(
-        $self->main_panel,
+        $self->proj_panel,
         -1, "Welcome to Sqitch.\n",
         [-1, -1],
         [-1, -1],
@@ -306,125 +261,6 @@ sub _build_log_ctrl {
     $self->old_log($old_log);
 
     return $log_ctrl;
-}
-
-sub _build_btn_add {
-    my $self = shift;
-
-    return Wx::Button->new(
-        $self->main_panel,
-        -1,
-        q{Add},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-}
-
-sub _build_btn_deploy {
-    my $self = shift;
-
-    return Wx::Button->new(
-        $self->main_panel,
-        -1,
-        q{Deploy},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-}
-
-sub _build_btn_revert {
-    my $self = shift;
-
-    return Wx::Button->new(
-        $self->main_panel,
-        -1,
-        q{Revert},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-}
-
-sub _build_btn_verify {
-    my $self = shift;
-
-    return Wx::Button->new(
-        $self->main_panel,
-        -1,
-        q{Verify},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-}
-
-sub _build_btn_project_sel {
-    my $self = shift;
-
-    return Wx::RadioButton->new(
-        $self->main_panel,
-        -1,
-        q{ },
-        [-1, -1],
-        [-1, -1],
-        wxRB_GROUP,             # first button in group
-    );
-}
-
-sub _build_btn_project {
-    my $self = shift;
-
-    return Wx::Button->new(
-        $self->main_panel,
-        -1,
-        q{Project},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-}
-
-sub _build_btn_change_sel {
-    my $self = shift;
-
-    return Wx::RadioButton->new(
-        $self->main_panel,
-        -1,
-        q{ },
-        [-1, -1],
-        [-1, -1],
-    );
-}
-
-sub _build_btn_change {
-    my $self = shift;
-
-    return Wx::Button->new(
-        $self->main_panel,
-        -1,
-        q{Change},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-}
-
-sub _build_btn_status_sel {
-    my $self = shift;
-    return Wx::RadioButton->new(
-        $self->main_panel,
-        -1,
-        q{ },
-        [-1, -1],
-        [-1, -1],
-    );
-}
-
-sub _build_btn_status {
-    my $self = shift;
-    return Wx::Button->new(
-        $self->main_panel,
-        -1,
-        q{Status},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
 }
 
 sub _set_events { }

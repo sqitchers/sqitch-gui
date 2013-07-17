@@ -11,8 +11,9 @@ with 'App::Sqitch::GUI::Roles::Element';
 
 use App::Sqitch::GUI::MainFrame::MenuBar;
 use App::Sqitch::GUI::MainFrame::StatusBar;
-#use App::Sqitch::GUI::MainFrame::MainPanel;
-#use App::Sqitch::GUI::MainFrame::BFGPane;
+use App::Sqitch::GUI::MainFrame::Panel::Left;
+use App::Sqitch::GUI::MainFrame::Panel::Right;
+use App::Sqitch::GUI::MainFrame::Panel::Bottom;
 
 # Main window
 has 'position' => (
@@ -36,8 +37,24 @@ has 'status_bar' => (
 );
 
 # Panels
-has 'left_panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'right_panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+
+has 'left_side' => (
+    is           => 'rw',
+    isa          => 'App::Sqitch::GUI::MainFrame::Panel::Left',
+    lazy_build   => 1
+);
+has 'right_side' => (
+    is           => 'rw',
+    isa          => 'App::Sqitch::GUI::MainFrame::Panel::Right',
+    lazy_build   => 1
+);
+has 'top_panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+#has 'bot_panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'bot_side' => (
+    is           => 'rw',
+    isa          => 'App::Sqitch::GUI::MainFrame::Panel::Bottom',
+    lazy_build   => 1
+);
 
 # Sizers
 has 'main_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
@@ -45,6 +62,10 @@ has 'main_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 # Miscellaneous
 has 'min_pane_size' => ( is => 'rw', isa => 'Int', lazy => 1, default => 50 );
 has 'sash_pos' => ( is => 'rw', isa => 'Int', lazy => 1, default => 450 );
+
+# Splitter window
+has 'splitter_w' =>
+    ( is => 'rw', isa => 'Wx::SplitterWindow', lazy_build => 1 );
 
 sub BUILD {
     my($self, @params) = @_;
@@ -54,32 +75,20 @@ sub BUILD {
     $self->frame->SetMenuBar($self->menu_bar);
     $self->_build_status_bar;
 
-    my $panel1 = $self->left_panel;
-    my $panel2 = $self->right_panel;
+    $self->main_sizer->Add($self->left_side->panel,  1, wxEXPAND);
+    $self->main_sizer->Add($self->right_side->panel, 0, wxEXPAND);
 
-    $self->main_sizer->Add($self->left_panel,  1, wxEXPAND);
-    $self->main_sizer->Add($self->right_panel, 1, wxEXPAND);
+    my $spw = $self->splitter_w;
+    $self->left_side->sizer->Add($self->splitter_w, 1, wxEXPAND);
 
-    my $panel1_bsz = Wx::BoxSizer->new(wxHORIZONTAL);
-    $self->left_panel->SetSizer($panel1_bsz);
+    my $sp1 = $self->top_panel;
+    my $sp2 = $self->bot_side;
 
-    my $panel2_bsz = Wx::BoxSizer->new(wxHORIZONTAL);
-    $panel2->SetSizer($panel2_bsz);
+    $self->top_panel->SetBackgroundColour( Wx::Colour->new("pink") );
+    $self->bot_side->panel->SetBackgroundColour( Wx::Colour->new("sky blue") );
 
-    my $spw = Wx::SplitterWindow->new(
-        $panel1, -1, [-1, -1], [-1, -1],
-        wxNO_FULL_REPAINT_ON_RESIZE | wxCLIP_CHILDREN );
-
-    $panel1_bsz->Add($spw, 1, wxEXPAND);
-
-    my $sp1 = Wx::Panel->new($spw, -1);
-    my $sp2 = Wx::Panel->new($spw, -1);
-
-    $sp1->SetBackgroundColour( Wx::Colour->new("pink") );
-    $sp2->SetBackgroundColour( Wx::Colour->new("sky blue") );
-
-    $spw->SplitHorizontally($sp1, $sp2, $self->sash_pos);
-    #$spw->SetMinimumPaneSize( $self->min_pane_size );
+    $self->splitter_w->SplitHorizontally($self->top_panel, $self->bot_side->panel, $self->sash_pos);
+    #$self->splitter_w->SetMinimumPaneSize( $self->min_pane_size );
 
     $self->frame->SetSizer($self->main_sizer);
 
@@ -101,38 +110,6 @@ sub _build_frame {
     );
     $y->Centre() unless $self->position;
     return $y;
-}
-
-sub _build_left_panel {
-    my $self = shift;
-
-    my $panel = Wx::Panel->new(
-        $self->frame,
-        -1,
-        [ -1, -1 ],
-        [ -1, -1 ],
-        wxFULL_REPAINT_ON_RESIZE,
-        'mainPanel',
-    );
-    $panel->SetBackgroundColour( Wx::Colour->new('tan') );
-
-    return $panel;
-}
-
-sub _build_right_panel {
-    my $self = shift;
-
-    my $panel = Wx::Panel->new(
-        $self->frame,
-        -1,
-        [ -1, -1 ],
-        [ -1, -1 ],
-        wxFULL_REPAINT_ON_RESIZE,
-        'mainPanel',
-    );
-    $panel->SetBackgroundColour( Wx::Colour->new('red') );
-
-    return $panel;
 }
 
 sub _build_menu_bar {
@@ -180,28 +157,78 @@ sub _build_main_sizer {
     return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
-# sub _build_proj_panel {
-#     my $self = shift;
+sub _build_left_side {
+    my $self = shift;
 
-#     return App::Sqitch::GUI::MainFrame::BFGPane->new(
-#         app      => $self->app,
-#         parent   => $self->frame,
-#         ancestor => $self,
-#     );
-# }
+    my $panel = App::Sqitch::GUI::MainFrame::Panel::Left->new(
+        app      => $self->app,
+        parent   => $self->frame,
+        ancestor => $self,
+    );
 
-# sub _build_main_panel_sizer {
-#     return Wx::BoxSizer->new(wxHORIZONTAL);
-# }
+    return $panel;
+}
 
-# sub _build_main_panel {
-#     my $self = shift;
-#     return App::Sqitch::GUI::MainFrame::MainPanel->new(
-#         app         => $self->app,
-#         parent      => $self->frame,
-#         ancestor    => $self,
-#     );
-# }
+sub _build_right_side {
+    my $self = shift;
+
+    my $panel = App::Sqitch::GUI::MainFrame::Panel::Right->new(
+        app      => $self->app,
+        parent   => $self->frame,
+        ancestor => $self,
+    );
+
+    return $panel;
+}
+
+sub _build_top_panel {
+    my $self = shift;
+
+    my $panel = Wx::Panel->new(
+        $self->splitter_w,
+        -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxFULL_REPAINT_ON_RESIZE,
+        'mainPanel',
+    );
+
+    return $panel;
+}
+
+sub _build_bot_side {
+    my $self = shift;
+
+    # my $panel = Wx::Panel->new(
+    #     $self->splitter_w,
+    #     -1,
+    #     [ -1, -1 ],
+    #     [ -1, -1 ],
+    #     wxFULL_REPAINT_ON_RESIZE,
+    #     'mainPanel',
+    # );
+    my $panel = App::Sqitch::GUI::MainFrame::Panel::Bottom->new(
+        app      => $self->app,
+        parent   => $self->splitter_w,
+        ancestor => $self,
+    );
+
+    return $panel;
+}
+
+sub _build_splitter_w {
+    my $self = shift;
+
+    my $spw = Wx::SplitterWindow->new(
+        $self->left_side->panel,
+        -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxNO_FULL_REPAINT_ON_RESIZE | wxCLIP_CHILDREN
+    );
+
+    return $spw;
+}
 
 sub _set_events {
     my $self = shift;
