@@ -10,8 +10,8 @@ with 'App::Sqitch::GUI::Roles::Element';
 has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
-has 'log_sbs'      => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'log_ctrl' => ( is  => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'log_sbs'  => ( is => 'rw', isa => 'Wx::Sizer',    lazy_build => 1 );
+has 'log_ctrl' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'old_log'  => ( is => 'rw', isa => 'Maybe[Object]' );
 
 sub BUILD {
@@ -20,15 +20,16 @@ sub BUILD {
     #-   The main panel
 
     $self->panel->Show(0);
+    $self->panel->SetSizer( $self->sizer );
+
+    $self->sizer->Add( $self->log_sbs, 1, wxEXPAND | wxALL, 5 );
 
     #--  Log control on the left-bottom side
 
-    $self->sizer->Add( $self->log_sbs, 1, wxEXPAND, 0 );
     $self->log_sbs->Add( $self->log_ctrl, 1, wxEXPAND | wxALL, 5 );
 
     #--
 
-    $self->panel->SetSizer( $self->sizer );
     $self->panel->Show(1);
 
     return $self;

@@ -14,7 +14,9 @@ use App::Sqitch::GUI::MainFrame::StatusBar;
 use App::Sqitch::GUI::MainFrame::Panel::Left;
 use App::Sqitch::GUI::MainFrame::Panel::Right;
 use App::Sqitch::GUI::MainFrame::Panel::Bottom;
+
 use App::Sqitch::GUI::MainFrame::Panel::Project;
+use App::Sqitch::GUI::MainFrame::Panel::Change;
 
 # Main window
 has 'position' => (
