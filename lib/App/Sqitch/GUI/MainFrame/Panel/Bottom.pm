@@ -10,7 +10,6 @@ with 'App::Sqitch::GUI::Roles::Element';
 has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
-has 'log_sbs'  => ( is => 'rw', isa => 'Wx::Sizer',    lazy_build => 1 );
 has 'log_ctrl' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'old_log'  => ( is => 'rw', isa => 'Maybe[Object]' );
 
@@ -22,11 +21,9 @@ sub BUILD {
     $self->panel->Show(0);
     $self->panel->SetSizer( $self->sizer );
 
-    $self->sizer->Add( $self->log_sbs, 1, wxEXPAND | wxALL, 5 );
-
     #--  Log control on the left-bottom side
 
-    $self->log_sbs->Add( $self->log_ctrl, 1, wxEXPAND | wxALL, 5 );
+    $self->sizer->Add( $self->log_ctrl, 1, wxEXPAND | wxALL, 5 );
 
     #--
 
@@ -54,13 +51,6 @@ sub _build_panel {
 
 sub _build_sizer {
     return Wx::BoxSizer->new(wxVERTICAL);
-}
-
-sub _build_log_sbs {
-    my $self = shift;
-
-    return Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->panel, -1, ' Log ', ), wxHORIZONTAL );
 }
 
 sub _build_log_ctrl {
