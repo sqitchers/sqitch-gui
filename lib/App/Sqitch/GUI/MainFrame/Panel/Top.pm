@@ -1,4 +1,4 @@
-package App::Sqitch::GUI::MainFrame::Panel::Project;
+package App::Sqitch::GUI::MainFrame::Panel::Top;
 
 use utf8;
 use Moose;
@@ -7,20 +7,16 @@ use Wx::Event qw(EVT_CLOSE);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-
-has 'sb_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'panel'   => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 sub BUILD {
     my $self = shift;
 
+    #-   The main panel
+
     $self->panel->Show(0);
     $self->panel->SetSizer( $self->sizer );
-
-    $self->sizer->Add( $self->sb_sizer, 1, wxEXPAND | wxALL, 5 );
-
-    $self->panel->Show(1);
 
     return $self;
 }
@@ -34,22 +30,15 @@ sub _build_panel {
         [ -1, -1 ],
         [ -1, -1 ],
         wxFULL_REPAINT_ON_RESIZE,
-        'projectPanel',
+        'mainPanel',
     );
-    $panel->SetBackgroundColour( Wx::Colour->new('green') );
+    $panel->SetBackgroundColour(Wx::Colour->new('yellow'));
 
     return $panel;
 }
 
 sub _build_sizer {
     return Wx::BoxSizer->new(wxHORIZONTAL);
-}
-
-sub _build_sb_sizer {
-    my $self = shift;
-
-    return Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->panel, -1, ' SQL ', ), wxHORIZONTAL );
 }
 
 sub _set_events { }
@@ -92,4 +81,4 @@ by the Free Software Foundation.
 
 =cut
 
-1;    # End of App::Sqitch::GUI::Panel::Project
+1;    # End of App::Sqitch::GUI::Panel::Top

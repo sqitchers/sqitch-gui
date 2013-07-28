@@ -13,6 +13,7 @@ use App::Sqitch::GUI::MainFrame::MenuBar;
 use App::Sqitch::GUI::MainFrame::StatusBar;
 use App::Sqitch::GUI::MainFrame::Panel::Left;
 use App::Sqitch::GUI::MainFrame::Panel::Right;
+use App::Sqitch::GUI::MainFrame::Panel::Top;
 use App::Sqitch::GUI::MainFrame::Panel::Bottom;
 
 use App::Sqitch::GUI::MainFrame::Panel::Project;
@@ -53,10 +54,20 @@ has 'right_side' => (
 );
 has 'top_side' => (
     is           => 'rw',
+    isa          => 'App::Sqitch::GUI::MainFrame::Panel::Top',
+    lazy_build   => 1
+);
+has 'project' => (
+    is           => 'rw',
     isa          => 'App::Sqitch::GUI::MainFrame::Panel::Project',
     lazy_build   => 1
 );
-has 'bot_side' => (
+has 'change' => (
+    is           => 'rw',
+    isa          => 'App::Sqitch::GUI::MainFrame::Panel::Change',
+    lazy_build   => 1
+);
+has 'bottom_side' => (
     is           => 'rw',
     isa          => 'App::Sqitch::GUI::MainFrame::Panel::Bottom',
     lazy_build   => 1
@@ -87,11 +98,11 @@ sub BUILD {
     my $spw = $self->splitter_w;
     $self->left_side->sizer->Add($self->splitter_w, 1, wxEXPAND);
 
-    # $self->top_side->SetBackgroundColour( Wx::Colour->new("pink") );
-    # $self->bot_side->panel->SetBackgroundColour( Wx::Colour->new("blue") );
-
+    #$self->project->panel->Hide;
+    $self->project->panel;
+    #$self->change->panel;
     $self->splitter_w->SplitHorizontally( $self->top_side->panel,
-        $self->bot_side->panel,
+        $self->bottom_side->panel,
         $self->sash_pos );
     #$self->splitter_w->SetMinimumPaneSize( $self->min_pane_size ); doesn't work
 
@@ -189,14 +200,34 @@ sub _build_right_side {
 sub _build_top_side {
     my $self = shift;
 
-    return App::Sqitch::GUI::MainFrame::Panel::Project->new(
+    return App::Sqitch::GUI::MainFrame::Panel::Top->new(
         app      => $self->app,
         parent   => $self->splitter_w,
         ancestor => $self,
     );
 }
 
-sub _build_bot_side {
+sub _build_project {
+    my $self = shift;
+
+    return App::Sqitch::GUI::MainFrame::Panel::Project->new(
+        app      => $self->app,
+        parent   => $self->top_side->panel,
+        ancestor => $self,
+    );
+}
+
+sub _build_change {
+    my $self = shift;
+
+    return App::Sqitch::GUI::MainFrame::Panel::Change->new(
+        app      => $self->app,
+        parent   => $self->top_side->panel,
+        ancestor => $self,
+    );
+}
+
+sub _build_bottom_side {
     my $self = shift;
 
     return App::Sqitch::GUI::MainFrame::Panel::Bottom->new(
@@ -222,8 +253,24 @@ sub _build_splitter_w {
 
 sub _set_events {
     my $self = shift;
+
     EVT_CLOSE( $self->frame, sub { $self->OnClose(@_) } );
-    return;
+
+    EVT_BUTTON $self->frame, $self->right_side->btn_change->GetId,
+        sub {
+            print "Click on change!\n";
+            $self->project->panel->Hide;
+            $self->change->panel->Show;
+        };
+
+    EVT_BUTTON $self->frame, $self->right_side->btn_project->GetId,
+        sub {
+            print "Click on project!\n";
+            $self->change->panel->Hide;
+            $self->project->panel->Show;
+        };
+
+    return 1;
 }
 
 sub OnClose {

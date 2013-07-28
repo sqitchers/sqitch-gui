@@ -3,14 +3,14 @@ package App::Sqitch::GUI::MainFrame::Panel::Right;
 use utf8;
 use Moose;
 use Wx qw(:allclasses :everything);
-use Wx::Event qw(EVT_CLOSE);
+use Wx::Event qw<EVT_CLOSE>;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
 has 'panel'   => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 has 'sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'panels_sbs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'panels_fgs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'panel_sbs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'panel_fgs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'commands_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'commands_fgs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
@@ -34,14 +34,14 @@ sub BUILD {
 
     #--- Panels
 
-    $self->sizer->Add( $self->panels_sbs,           0, wxEXPAND | wxALL, 5 );
-    $self->panels_sbs->Add( $self->panels_fgs,      0, wxEXPAND | wxALL, 5 );
-    $self->panels_fgs->Add( $self->btn_project_sel, 0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_project,     0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_change_sel,  0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_change,      0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_status_sel,  0, wxEXPAND,         5 );
-    $self->panels_fgs->Add( $self->btn_status,      0, wxEXPAND,         5 );
+    $self->sizer->Add( $self->panel_sbs,           0, wxEXPAND | wxALL, 5 );
+    $self->panel_sbs->Add( $self->panel_fgs,      0, wxEXPAND | wxALL, 5 );
+    $self->panel_fgs->Add( $self->btn_project_sel, 0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_project,     0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_change_sel,  0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_change,      0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_status_sel,  0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_status,      0, wxEXPAND,         5 );
 
     #--- Commands
     $self->sizer->Add( $self->commands_sbs,   1, wxEXPAND | wxALL, 5 );
@@ -84,7 +84,7 @@ sub _build_commands_sbs {
         wxHORIZONTAL );
 }
 
-sub _build_panels_sbs {
+sub _build_panel_sbs {
     my $self = shift;
 
     return Wx::StaticBoxSizer->new(
@@ -98,7 +98,7 @@ sub _build_commands_fgs {
     return $fgsz;
 }
 
-sub _build_panels_fgs {
+sub _build_panel_fgs {
     return Wx::FlexGridSizer->new( 3, 2, 5, 0 ); # 3 rows for buttons
 }
 
@@ -201,6 +201,7 @@ sub _build_btn_change {
 
 sub _build_btn_status_sel {
     my $self = shift;
+
     return Wx::RadioButton->new(
         $self->panel,
         -1,
@@ -212,6 +213,7 @@ sub _build_btn_status_sel {
 
 sub _build_btn_status {
     my $self = shift;
+
     return Wx::Button->new(
         $self->panel,
         -1,
@@ -223,18 +225,6 @@ sub _build_btn_status {
 
 sub _set_events { }
 
-#     sub finish_pane {#{{{
-#         my $self  = shift;
-
-# =head2 finish_pane
-
-# Should be called after modifying anything in the right pane.
-
-# =cut
-
-#         $self->panel->FitInside(); # Force the scrollbars to reset
-#         return 1;
-#     }#}}}
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
