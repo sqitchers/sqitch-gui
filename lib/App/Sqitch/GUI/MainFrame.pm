@@ -98,13 +98,15 @@ sub BUILD {
     my $spw = $self->splitter_w;
     $self->left_side->sizer->Add($self->splitter_w, 1, wxEXPAND);
 
-    #$self->project->panel->Hide;
-    $self->project->panel;
-    #$self->change->panel;
+    $self->top_side->sizer->Add($self->change->panel,  1, wxEXPAND);
+    $self->top_side->sizer->Add($self->project->panel, 1, wxEXPAND);
+    $self->change->panel->Hide;
+    $self->project->panel->Hide;
+
     $self->splitter_w->SplitHorizontally( $self->top_side->panel,
         $self->bottom_side->panel,
         $self->sash_pos );
-    #$self->splitter_w->SetMinimumPaneSize( $self->min_pane_size ); doesn't work
+    $self->splitter_w->SetMinimumPaneSize( $self->min_pane_size );
 
     $self->frame->SetSizer($self->main_sizer);
 
@@ -170,6 +172,10 @@ sub _build_title {
 }
 
 sub _build_main_sizer {
+    return Wx::BoxSizer->new(wxHORIZONTAL);
+}
+
+sub _build_top_sizer {
     return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
@@ -261,6 +267,7 @@ sub _set_events {
             print "Click on change!\n";
             $self->project->panel->Hide;
             $self->change->panel->Show;
+            $self->frame->Layout();
         };
 
     EVT_BUTTON $self->frame, $self->right_side->btn_project->GetId,
@@ -268,6 +275,7 @@ sub _set_events {
             print "Click on project!\n";
             $self->change->panel->Hide;
             $self->project->panel->Show;
+            $self->frame->Layout();
         };
 
     return 1;
@@ -285,26 +293,31 @@ __PACKAGE__->meta->make_immutable;
 
 =head1 PANELS
 
-,-----------------------------------------------------------------------------.
-| ,--Left-------------------------------------------------------.  ,-Right--. |
-| | ,--------------------------------------------------Top----. |  |        | |
-| | | ,--Project/Change/Status------------------------------. | |  |        | |
-| | | |                                                     | | |  |        | |
-| | | |                                                     | | |  |        | |
-| | | |                                                     | | |  |        | |
-| | | |                                                     | | |  |        | |
-| | | |                                                     | | |  |        | |
-| | | |                                                     | | |  |        | |
-| | | |                                                     | | |  |        | |
-| | | `-----------------------------------------------------' | |  |        | |
-| | `---------------------------------------------------------' |  |        | |
-| | ,--------------------------------------------------Bottom-. |  |        | |
-| | |                                                         | |  |        | |
-| | |                                                         | |  |        | |
-| | |                                                         | |  |        | |
-| | `---------------------------------------------------------´ |  |        | |
-| `-------------------------------------------------------------´  `--------´ |
-`-----------------------------------------------------------------------------´
+ +-------------------------------------------------------------------+
+ | +--Left---------------------------------------------+  +-Right--+ |
+ | | +----------------------------------------Top----+ |  |        | |
+ | | | +--Project/Change/Status--------------------+ | |  |        | |
+ | | | |                                           | | |  |        | |
+ | | | |                                           | | |  |        | |
+ | | | |                                           | | |  |        | |
+ | | | |                                           | | |  |        | |
+ | | | |                                           | | |  |        | |
+ | | | |                                           | | |  |        | |
+ | | | |                                           | | |  |        | |
+ | | | +-------------------------------------------' | |  |        | |
+ | | +-----------------------------------------------' |  |        | |
+ | | +----------------------------------------Bottom-+ |  |        | |
+ | | |                                               | |  |        | |
+ | | |                                               | |  |        | |
+ | | |                                               | |  |        | |
+ | | +-----------------------------------------------+ |  |        | |
+ | +---------------------------------------------------+  +--------+ |
+ +-------------------------------------------------------------------+
+
+The sizer on C<< MainFrame::Panel::Top >> holds the
+Project/Change/Status panels. This panels are initially hidden and are
+showed one by one using the buttons on the right panel, like a
+notebook, but with independent buttons.
 
 =head1 AUTHOR
 

@@ -49,11 +49,11 @@ sub BUILD {
 
     $self->sizer->Add( $self->sb_sizer, 1, wxEXPAND | wxALL, 5 );
 
-    # #--  Notebook on the top-left side for SQL edit
+    #--  Notebook on the top-left side for SQL edit
 
-    # $self->sb_sizer->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
+    $self->sb_sizer->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
 
-    # #--- Page Deploy
+    #--- Page Deploy
 
     # my $sql_deploy_sz = Wx::BoxSizer->new(wxVERTICAL);
     # $self->ed_deploy_sbs->Add($self->edit_deploy, 1, wxEXPAND | wxALL, 5 );
@@ -74,7 +74,6 @@ sub BUILD {
     # $sql_verify_sz->Add( $self->ed_verify_sbs, 1, wxEXPAND | wxALL, 5 );
     # $self->notebook->page_verify->SetSizer($sql_verify_sz);
 
-    #$self->panel->SetSizer( $self->sizer );
     $self->panel->Show(1);
 
     return $self;

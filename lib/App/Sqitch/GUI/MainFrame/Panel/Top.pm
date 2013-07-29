@@ -7,16 +7,15 @@ use Wx::Event qw(EVT_CLOSE);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-has 'panel'   => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 sub BUILD {
     my $self = shift;
 
-    #-   The main panel
-
     $self->panel->Show(0);
     $self->panel->SetSizer( $self->sizer );
+    $self->panel->Show(1);
 
     return $self;
 }
