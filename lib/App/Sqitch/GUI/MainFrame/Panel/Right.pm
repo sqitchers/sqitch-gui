@@ -13,16 +13,15 @@ has 'panel_sbs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'panel_fgs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'commands_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'commands_fgs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'btn_status'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_deploy'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_revert'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_verify'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_project' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_change'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_status'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_project_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1 );
+has 'btn_change'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_change_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1);
-has 'btn_status_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1 );
 
 sub BUILD {
     my $self = shift;
@@ -36,16 +35,15 @@ sub BUILD {
 
     $self->sizer->Add( $self->panel_sbs,           0, wxEXPAND | wxALL, 5 );
     $self->panel_sbs->Add( $self->panel_fgs,      0, wxEXPAND | wxALL, 5 );
-    $self->panel_fgs->Add( $self->btn_project_sel, 0, wxEXPAND,         5 );
-    $self->panel_fgs->Add( $self->btn_project,     0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_change_sel,  0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_change,      0, wxEXPAND,         5 );
-    $self->panel_fgs->Add( $self->btn_status_sel,  0, wxEXPAND,         5 );
-    $self->panel_fgs->Add( $self->btn_status,      0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_project_sel, 0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_project,     0, wxEXPAND,         5 );
 
     #--- Commands
     $self->sizer->Add( $self->commands_sbs,   1, wxEXPAND | wxALL, 5 );
     $self->commands_sbs->Add( $self->commands_fgs, 1, wxEXPAND | wxALL, 5 );
+    $self->commands_fgs->Add( $self->btn_status,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_add,      1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_deploy,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_revert,   1, wxEXPAND,         0 );
@@ -102,6 +100,18 @@ sub _build_panel_fgs {
     return Wx::FlexGridSizer->new( 3, 2, 5, 0 ); # 3 rows for buttons
 }
 
+sub _build_btn_status {
+    my $self = shift;
+
+    return Wx::Button->new(
+        $self->panel,
+        -1,
+        q{Status},
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
+}
+
 sub _build_btn_add {
     my $self = shift;
 
@@ -150,31 +160,6 @@ sub _build_btn_verify {
     );
 }
 
-sub _build_btn_project_sel {
-    my $self = shift;
-
-    return Wx::RadioButton->new(
-        $self->panel,
-        -1,
-        q{ },
-        [-1, -1],
-        [-1, -1],
-        wxRB_GROUP,             # first button in group
-    );
-}
-
-sub _build_btn_project {
-    my $self = shift;
-
-    return Wx::Button->new(
-        $self->panel,
-        -1,
-        q{Project},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-}
-
 sub _build_btn_change_sel {
     my $self = shift;
 
@@ -184,6 +169,7 @@ sub _build_btn_change_sel {
         q{ },
         [-1, -1],
         [-1, -1],
+        wxRB_GROUP,             # first button in group
     );
 }
 
@@ -199,7 +185,7 @@ sub _build_btn_change {
     );
 }
 
-sub _build_btn_status_sel {
+sub _build_btn_project_sel {
     my $self = shift;
 
     return Wx::RadioButton->new(
@@ -211,13 +197,13 @@ sub _build_btn_status_sel {
     );
 }
 
-sub _build_btn_status {
+sub _build_btn_project {
     my $self = shift;
 
     return Wx::Button->new(
         $self->panel,
         -1,
-        q{Status},
+        q{Project},
         [ -1, -1 ],
         [ -1, -1 ],
     );

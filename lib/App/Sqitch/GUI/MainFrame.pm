@@ -16,8 +16,8 @@ use App::Sqitch::GUI::MainFrame::Panel::Right;
 use App::Sqitch::GUI::MainFrame::Panel::Top;
 use App::Sqitch::GUI::MainFrame::Panel::Bottom;
 
-use App::Sqitch::GUI::MainFrame::Panel::Project;
 use App::Sqitch::GUI::MainFrame::Panel::Change;
+use App::Sqitch::GUI::MainFrame::Panel::Project;
 
 # Main window
 has 'position' => (
@@ -98,12 +98,10 @@ sub BUILD {
     my $spw = $self->splitter_w;
     $self->left_side->sizer->Add($self->splitter_w, 1, wxEXPAND);
 
-    $self->top_side->sizer->Add($self->project->panel, 1, wxEXPAND);
     $self->top_side->sizer->Add($self->change->panel,  1, wxEXPAND);
+    $self->top_side->sizer->Add($self->project->panel, 1, wxEXPAND);
 
-    # The default panel is ?
-    #$self->project->panel->Show;
-    $self->change->panel->Show;
+    $self->change->panel->Show;          # the default panel is Change
 
     $self->splitter_w->SplitHorizontally( $self->top_side->panel,
         $self->bottom_side->panel,
