@@ -3,38 +3,55 @@ package App::Sqitch::GUI::MainFrame::Panel::Change;
 use utf8;
 use Moose;
 use Wx qw(:allclasses :everything);
-use Wx::Event qw(EVT_CLOSE);
+use Wx::Event qw(EVT_CLOSE EVT_COLLAPSIBLEPANE_CHANGED);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
 use App::Sqitch::GUI::MainFrame::Notebook;
 use App::Sqitch::GUI::MainFrame::Editor;
 
-has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'panel'     => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'sizer'     => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'top_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+
+has 'collpane' => ( is => 'rw', isa => 'Wx::CollapsiblePane', lazy_build => 1 );
 
 has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'form_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
-has 'lbl_change_id' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_note'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_committed_at'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_committer_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_committer_email'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_planned_at'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_planner_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_planner_email'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_change_id' =>
+    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_name' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_note' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_committed_at' =>
+    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_committer_name' =>
+    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_committer_email' =>
+    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_planned_at' =>
+    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_planner_name' =>
+    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_planner_email' =>
+    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 
 has 'txt_change_id' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_note' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_committed_at' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_committer_name' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_committer_email' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_planned_at' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_planner_name' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_planner_email' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_name'      => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_note'      => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_committed_at' =>
+    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_committer_name' =>
+    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_committer_email' =>
+    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_planned_at' =>
+    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_planner_name' =>
+    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_planner_email' =>
+    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+
 has 'sb_sizer'  => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'deploy_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'verify_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
@@ -71,11 +88,15 @@ sub BUILD {
     $self->panel->SetSizer( $self->sizer );
 
     $self->sizer->Add( $self->sb_sizer, 1, wxEXPAND | wxALL, 5 );
-
     $self->sb_sizer->Add( $self->main_fg_sz, 1, wxEXPAND | wxALL, 5 );
 
-    $self->main_fg_sz->Add( $self->form_fg_sz, 1, wxEXPAND | wxALL, 5 );
+    $self->main_fg_sz->Add( $self->top_sizer, 0 );
     $self->main_fg_sz->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
+
+    $self->top_sizer->Add($self->collpane, 0, wxGROW | wxALL, 5); # 0 prop
+    $self->collpane->GetPane->SetSizer($self->form_fg_sz);
+
+    $self->collpane->GetPane->SetBackgroundColour( Wx::Colour->new('red') );
 
     #-- Top form
 
@@ -146,7 +167,26 @@ sub _build_panel {
     return $panel;
 }
 
+sub _build_collpane {
+    my $self = shift;
+
+    my $pane = Wx::CollapsiblePane->new(
+        $self->panel,
+        -1,
+        'Details',
+        [-1,-1],
+        [-1,-1],
+        wxCP_NO_TLW_RESIZE,
+    );
+
+    return $pane;
+}
+
 sub _build_sizer {
+    return Wx::BoxSizer->new(wxHORIZONTAL);
+}
+
+sub _build_top_sizer {
     return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
@@ -166,92 +206,92 @@ sub _build_form_fg_sz {
 
 sub _build_lbl_change_id {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Change Id} );
+    return Wx::StaticText->new( $self->collpane->GetPane, -1, q{Change Id} );
 }
 
 sub _build_lbl_name {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Name} );
+    return Wx::StaticText->new( $self->collpane->GetPane, -1, q{Name} );
 }
 
 sub _build_lbl_note {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Note} );
+    return Wx::StaticText->new( $self->collpane->GetPane, -1, q{Note} );
 }
 
 sub _build_lbl_committed_at {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Commited at} );
+    return Wx::StaticText->new( $self->collpane->GetPane, -1, q{Commited at} );
 }
 
 sub _build_lbl_committer_name {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Commiter name} );
+    return Wx::StaticText->new( $self->collpane->GetPane, -1, q{Commiter name} );
 }
 
 sub _build_lbl_committer_email {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Commiter email} );
+    return Wx::StaticText->new( $self->collpane->GetPane, -1, q{Commiter email} );
 }
 
 sub _build_lbl_planned_at {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Planned at} );
+    return Wx::StaticText->new( $self->collpane->GetPane, -1, q{Planned at} );
 }
 
 sub _build_lbl_planner_name {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Planner name} );
+    return Wx::StaticText->new( $self->collpane->GetPane, -1, q{Planner name} );
 }
 
 sub _build_lbl_planner_email {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Planner email} );
+    return Wx::StaticText->new( $self->collpane->GetPane, -1, q{Planner email} );
 }
 
 sub _build_txt_change_id {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->collpane->GetPane, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 sub _build_txt_name {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->collpane->GetPane, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 sub _build_txt_note{
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->collpane->GetPane, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 sub _build_txt_committed_at {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->collpane->GetPane, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 sub _build_txt_committer_name {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->collpane->GetPane, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 sub _build_txt_committer_email {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->collpane->GetPane, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 sub _build_txt_planned_at {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->collpane->GetPane, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 sub _build_txt_planner_name {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->collpane->GetPane, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 sub _build_txt_planner_email {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->collpane->GetPane, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 #--
@@ -351,7 +391,19 @@ sub _build_ed_verify_sbs {
     );
 }
 
-sub _set_events { }
+sub _set_events {
+    my ($self, $event) = @_;
+
+    EVT_COLLAPSIBLEPANE_CHANGED $self->parent, $self->collpane,
+        sub { $self->OnPaneChanged(@_); };
+
+    return;
+}
+
+sub OnPaneChanged {
+    my ($self, $frame, $event) = @_;
+    $frame->Layout();
+}
 
 sub OnClose {
     my ($self, $event) = @_;
