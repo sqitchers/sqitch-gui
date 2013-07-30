@@ -18,6 +18,7 @@ use App::Sqitch::GUI::MainFrame::Panel::Bottom;
 
 use App::Sqitch::GUI::MainFrame::Panel::Change;
 use App::Sqitch::GUI::MainFrame::Panel::Project;
+use App::Sqitch::GUI::MainFrame::Panel::Plan;
 
 # Main window
 has 'position' => (
@@ -62,6 +63,11 @@ has 'project' => (
     isa          => 'App::Sqitch::GUI::MainFrame::Panel::Project',
     lazy_build   => 1
 );
+has 'plan' => (
+    is           => 'rw',
+    isa          => 'App::Sqitch::GUI::MainFrame::Panel::Plan',
+    lazy_build   => 1
+);
 has 'change' => (
     is           => 'rw',
     isa          => 'App::Sqitch::GUI::MainFrame::Panel::Change',
@@ -100,6 +106,7 @@ sub BUILD {
 
     $self->top_side->sizer->Add($self->change->panel,  1, wxEXPAND);
     $self->top_side->sizer->Add($self->project->panel, 1, wxEXPAND);
+    $self->top_side->sizer->Add($self->plan->panel, 1, wxEXPAND);
 
     $self->change->panel->Show;          # the default panel is Change
 
@@ -223,6 +230,16 @@ sub _build_project {
     );
 }
 
+sub _build_plan {
+    my $self = shift;
+
+    return App::Sqitch::GUI::MainFrame::Panel::Plan->new(
+        app      => $self->app,
+        parent   => $self->top_side->panel,
+        ancestor => $self,
+    );
+}
+
 sub _build_change {
     my $self = shift;
 
@@ -262,10 +279,13 @@ sub _set_events {
 
     EVT_CLOSE( $self->frame, sub { $self->OnClose(@_) } );
 
+    # Ugly!!!
+
     EVT_BUTTON $self->frame, $self->right_side->btn_change->GetId,
         sub {
             print "Click on change!\n";
             $self->project->panel->Hide;
+            $self->plan->panel->Hide;
             $self->change->panel->Show;
             $self->frame->Layout();
         };
@@ -274,7 +294,17 @@ sub _set_events {
         sub {
             print "Click on project!\n";
             $self->change->panel->Hide;
+            $self->plan->panel->Hide;
             $self->project->panel->Show;
+            $self->frame->Layout();
+        };
+
+    EVT_BUTTON $self->frame, $self->right_side->btn_plan->GetId,
+        sub {
+            print "Click on plan!\n";
+            $self->change->panel->Hide;
+            $self->project->panel->Hide;
+            $self->plan->panel->Show;
             $self->frame->Layout();
         };
 

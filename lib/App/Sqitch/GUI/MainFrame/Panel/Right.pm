@@ -22,6 +22,8 @@ has 'btn_project' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_project_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1 );
 has 'btn_change'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_change_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1);
+has 'btn_plan'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+has 'btn_plan_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1);
 
 sub BUILD {
     my $self = shift;
@@ -39,6 +41,8 @@ sub BUILD {
     $self->panel_fgs->Add( $self->btn_change,      0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_project_sel, 0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_project,     0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_plan_sel, 0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_plan,     0, wxEXPAND,         5 );
 
     #--- Commands
     $self->sizer->Add( $self->commands_sbs,   1, wxEXPAND | wxALL, 5 );
@@ -204,6 +208,30 @@ sub _build_btn_project {
         $self->panel,
         -1,
         q{Project},
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
+}
+
+sub _build_btn_plan_sel {
+    my $self = shift;
+
+    return Wx::RadioButton->new(
+        $self->panel,
+        -1,
+        q{ },
+        [-1, -1],
+        [-1, -1],
+    );
+}
+
+sub _build_btn_plan {
+    my $self = shift;
+
+    return Wx::Button->new(
+        $self->panel,
+        -1,
+        q{Plan},
         [ -1, -1 ],
         [ -1, -1 ],
     );

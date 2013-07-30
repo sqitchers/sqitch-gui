@@ -13,6 +13,19 @@ use App::Sqitch::GUI::MainFrame::Editor;
 has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
+has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'form_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+
+has 'lbl_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_path'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_db'    => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_descr' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+
+has 'txt_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'dpc_path'  => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
+has 'cho_db'    => ( is => 'rw', isa => 'Wx::Choice',   lazy_build => 1 );
+has 'txt_descr' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+
 has 'sb_sizer'  => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'deploy_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'verify_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
@@ -50,10 +63,26 @@ sub BUILD {
 
     $self->sizer->Add( $self->sb_sizer, 1, wxEXPAND | wxALL, 5 );
 
-    #--  Notebook on the top-left side for SQL edit
+    $self->sb_sizer->Add( $self->main_fg_sz, 1, wxEXPAND | wxALL, 5 );
 
-    $self->sb_sizer->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
+    $self->main_fg_sz->Add( $self->form_fg_sz, 1, wxEXPAND | wxALL, 5 );
+    $self->main_fg_sz->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
 
+    #-- Top form
+
+    $self->form_fg_sz->Add( $self->lbl_name, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->txt_name, 0, wxLEFT, 2 );
+
+    $self->form_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->cho_db, 0, wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_path, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->dpc_path, 0, wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_descr, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->txt_descr, 1, wxEXPAND | wxLEFT, 2);
+
+    #--  Notebook on the bottom side for SQL edit
     #--- Page Deploy
 
     $self->notebook->page_deploy->SetSizer( $self->deploy_sz );
@@ -95,6 +124,78 @@ sub _build_panel {
 
 sub _build_sizer {
     return Wx::BoxSizer->new(wxHORIZONTAL);
+}
+
+sub _build_main_fg_sz {
+    my $fgs = Wx::FlexGridSizer->new( 2, 0, 1, 5 );
+    $fgs->AddGrowableRow(1);
+    $fgs->AddGrowableCol(0);
+    $fgs->AddGrowableCol(1);
+    return $fgs;
+}
+
+sub _build_form_fg_sz {
+    my $fgs = Wx::FlexGridSizer->new( 4, 0, 5, 10 );
+    $fgs->AddGrowableCol(1);
+    return $fgs;
+}
+
+sub _build_lbl_name {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Name} );
+}
+
+sub _build_txt_name {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
+sub _build_lbl_path {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Path} );
+}
+
+sub _build_dpc_path {
+    my $self = shift;
+
+    my $dp = Wx::DirPickerCtrl->new(
+        $self->panel, -1, q{},
+        q{Choose a directory},
+        [ -1, -1 ],
+        [ -1, -1 ],
+        # style
+    );
+    #EVT_DIRPICKER_CHANGED( $self, $dp, \&on_change );
+
+    return $dp;
+}
+
+sub _build_lbl_db {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Database} );
+}
+
+sub _build_cho_db {
+    my $self = shift;
+
+    return Wx::Choice->new(
+        $self->panel,
+        -1,
+        [ -1,  -1 ],
+        [ 130, -1 ],
+        [ 'PostgreSQL', 'MySQL', 'SQLite', 'CUBRID', 'Oracle' ],
+        wxCB_SORT,
+    );
+}
+
+sub _build_lbl_descr {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Description} );
+}
+
+sub _build_txt_descr {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 }
 
 sub _build_deploy_sz {
