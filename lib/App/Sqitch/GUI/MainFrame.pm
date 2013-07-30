@@ -77,7 +77,7 @@ has 'bottom_side' => (
 has 'main_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 # Miscellaneous
-has 'min_pane_size' => ( is => 'rw', isa => 'Int', lazy => 1, default => 50 );
+has 'min_pane_size' => ( is => 'rw', isa => 'Int', lazy => 1, default => 290 );
 has 'sash_pos' => ( is => 'rw', isa => 'Int', lazy => 1, default => 450 );
 
 # Splitter window
