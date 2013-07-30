@@ -35,4 +35,8 @@ requires (
 
 #install_as_cpan;
 #auto_install;
+
+#install_share 'share';
+install_script 'bin/sqitch-gui';
+
 WriteAll;

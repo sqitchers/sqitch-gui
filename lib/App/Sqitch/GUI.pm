@@ -22,18 +22,41 @@ sub init_sqitch {
     my $opts = {};
 
     # 1. Load config.
-    my $config = App::Sqitch::GUI::Config->new( confname => 'sqitch-gui.conf' );
-    say scalar $config->dump;
+    # my $config = App::Sqitch::GUI::Config->new( confname => 'sqitch-gui.conf' );
+    # say scalar $config->dump;
 
-    my $project = dir $config->get( key => 'projects.path' );
+    # my $project = dir $config->get( key => 'projects.path' );
     # p $project;
     # print "dir is $project\n";
 
     # 2. Instantiate Sqitch.
-    $opts->{config} = $config;
+
+    # my $sqitch = App::Sqitch->new($opts);
+
+    # print 'Top dir is:', $sqitch->top_dir, ":\n";
+
+    my $cmd = 'status';
+    my $cmd_args;
+
+    # 4. Load config.
+    my $config = App::Sqitch::Config->new;
+    #p $config;
+
+    # 5. Instantiate Sqitch.
+    $opts->{_engine} = delete $opts->{engine} if $opts->{engine};
+    $opts->{config}  = $config;
     my $sqitch = App::Sqitch->new($opts);
 
-    print 'Top dir is:', $sqitch->top_dir, ":\n";
+    # 6. Instantiate the command object.
+    my $command = App::Sqitch::Command->load({
+        sqitch  => $sqitch,
+        command => $cmd,
+        config  => $config,
+        args    => $cmd_args,
+    });
+
+    # 7. Execute command.
+    $command->execute( @{$cmd_args} ) ? 0 : 2;
 }
 
 has 'main_frame' => (

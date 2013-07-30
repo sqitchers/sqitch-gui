@@ -90,13 +90,13 @@ sub BUILD {
     $self->sizer->Add( $self->sb_sizer, 1, wxEXPAND | wxALL, 5 );
     $self->sb_sizer->Add( $self->main_fg_sz, 1, wxEXPAND | wxALL, 5 );
 
-    $self->main_fg_sz->Add( $self->top_sizer, 0 );
+    $self->main_fg_sz->Add( $self->top_sizer, 1, wxEXPAND | wxALL, 5 );
     $self->main_fg_sz->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
 
-    $self->top_sizer->Add($self->collpane, 0, wxGROW | wxALL, 5); # 0 prop
+    $self->top_sizer->Add($self->collpane, 0, wxEXPAND | wxALL, 10); # 0 prop!
     $self->collpane->GetPane->SetSizer($self->form_fg_sz);
 
-    $self->collpane->GetPane->SetBackgroundColour( Wx::Colour->new('red') );
+    #$self->collpane->GetPane->SetBackgroundColour( Wx::Colour->new('red') );
 
     #-- Top form
 
