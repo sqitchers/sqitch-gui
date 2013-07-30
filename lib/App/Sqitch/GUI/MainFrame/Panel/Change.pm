@@ -13,7 +13,10 @@ use App::Sqitch::GUI::MainFrame::Editor;
 has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
-has 'sb_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'sb_sizer'  => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'deploy_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'verify_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'revert_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 has 'notebook' => (
     is         => 'rw',
@@ -42,8 +45,6 @@ has 'ed_verify_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 sub BUILD {
     my $self = shift;
 
-    #-   The main panel
-
     $self->panel->Show(0);
     $self->panel->SetSizer( $self->sizer );
 
@@ -55,26 +56,23 @@ sub BUILD {
 
     #--- Page Deploy
 
-    # my $sql_deploy_sz = Wx::BoxSizer->new(wxVERTICAL);
-    # $self->ed_deploy_sbs->Add($self->edit_deploy, 1, wxEXPAND | wxALL, 5 );
-    # $sql_deploy_sz->Add( $self->ed_deploy_sbs, 1, wxEXPAND | wxALL, 5 );
-    # $self->notebook->page_deploy->SetSizer( $sql_deploy_sz );
+    $self->notebook->page_deploy->SetSizer( $self->deploy_sz );
+    $self->ed_deploy_sbs->Add($self->edit_deploy, 1, wxEXPAND | wxALL, 5 );
+    $self->deploy_sz->Add( $self->ed_deploy_sbs, 1, wxEXPAND | wxALL, 5 );
 
-    # #--- Page Revert
+    #--- Page Revert
 
-    # my $sql_revert_sz = Wx::BoxSizer->new(wxVERTICAL);
-    # $self->ed_revert_sbs->Add($self->edit_revert, 1, wxEXPAND | wxALL, 5 );
-    # $sql_revert_sz->Add( $self->ed_revert_sbs, 1, wxEXPAND | wxALL, 5 );
-    # $self->notebook->page_revert->SetSizer( $sql_revert_sz );
+    $self->notebook->page_revert->SetSizer( $self->revert_sz );
+    $self->ed_revert_sbs->Add($self->edit_revert, 1, wxEXPAND | wxALL, 5 );
+    $self->revert_sz->Add( $self->ed_revert_sbs, 1, wxEXPAND | wxALL, 5 );
 
-    # #--- Page Verify
+    #--- Page Verify
 
-    # my $sql_verify_sz = Wx::BoxSizer->new(wxVERTICAL);
-    # $self->ed_verify_sbs->Add( $self->edit_verify, 1, wxEXPAND | wxALL, 5 );
-    # $sql_verify_sz->Add( $self->ed_verify_sbs, 1, wxEXPAND | wxALL, 5 );
-    # $self->notebook->page_verify->SetSizer($sql_verify_sz);
+    $self->notebook->page_verify->SetSizer($self->verify_sz);
+    $self->ed_verify_sbs->Add( $self->edit_verify, 1, wxEXPAND | wxALL, 5 );
+    $self->verify_sz->Add( $self->ed_verify_sbs, 1, wxEXPAND | wxALL, 5 );
 
-    $self->panel->Show(1);
+    $self->parent->Layout();
 
     return $self;
 }
@@ -90,12 +88,24 @@ sub _build_panel {
         wxFULL_REPAINT_ON_RESIZE,
         'changePanel',
     );
-    $panel->SetBackgroundColour(Wx::Colour->new('red'));
+    #$panel->SetBackgroundColour(Wx::Colour->new('red'));
 
     return $panel;
 }
 
 sub _build_sizer {
+    return Wx::BoxSizer->new(wxHORIZONTAL);
+}
+
+sub _build_deploy_sz {
+    return Wx::BoxSizer->new(wxHORIZONTAL);
+}
+
+sub _build_verify_sz {
+    return Wx::BoxSizer->new(wxHORIZONTAL);
+}
+
+sub _build_revert_sz {
     return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
@@ -111,7 +121,7 @@ sub _build_notebook {
 
     return App::Sqitch::GUI::MainFrame::Notebook->new(
         app      => $self->app,
-        parent   => $self->parent,
+        parent   => $self->panel,
         ancestor => $self,
     );
 }

@@ -98,10 +98,12 @@ sub BUILD {
     my $spw = $self->splitter_w;
     $self->left_side->sizer->Add($self->splitter_w, 1, wxEXPAND);
 
-    $self->top_side->sizer->Add($self->change->panel,  1, wxEXPAND);
     $self->top_side->sizer->Add($self->project->panel, 1, wxEXPAND);
-    $self->change->panel->Hide;
-    $self->project->panel->Hide;
+    $self->top_side->sizer->Add($self->change->panel,  1, wxEXPAND);
+
+    # The default panel is ?
+    #$self->project->panel->Show;
+    $self->change->panel->Show;
 
     $self->splitter_w->SplitHorizontally( $self->top_side->panel,
         $self->bottom_side->panel,
