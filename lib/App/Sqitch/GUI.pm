@@ -104,7 +104,7 @@ sub OnInit {
     return 1;
 }
 
-sub OnClose {#{{{
+sub OnClose {
     my($self, $frame, $event) = @_;
     $event->Skip();
     return;
