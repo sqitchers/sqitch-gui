@@ -25,15 +25,21 @@ has 'btn_load'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_default' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 
-has 'lbl_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_path'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_db'    => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_descr' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_project'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_uri'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_created_at'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_creator_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_creator_email' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_path' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_db'   => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 
-has 'txt_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_project'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_uri'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_created_at'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_creator_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_creator_email'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'dpc_path'  => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
 has 'cho_db'    => ( is => 'rw', isa => 'Wx::Choice',   lazy_build => 1 );
-has 'txt_descr' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 
 sub BUILD {
     my $self = shift;
@@ -50,17 +56,26 @@ sub BUILD {
 
     #-- Top form
 
-    $self->form_fg_sz->Add( $self->lbl_name, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->txt_name, 0, wxLEFT, 2 );
+    $self->form_fg_sz->Add( $self->lbl_project, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->txt_project, 0, wxLEFT, 2 );
+
+    $self->form_fg_sz->Add( $self->lbl_uri, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->txt_uri, 1, wxEXPAND | wxLEFT, 2 );
+
+    $self->form_fg_sz->Add( $self->lbl_created_at, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->txt_created_at, 1, wxEXPAND | wxLEFT, 2 );
+
+    $self->form_fg_sz->Add( $self->lbl_creator_name, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->txt_creator_name, 1, wxEXPAND | wxLEFT, 2 );
+
+    $self->form_fg_sz->Add( $self->lbl_creator_email, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->txt_creator_email, 1, wxEXPAND | wxLEFT, 2 );
 
     $self->form_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 5 );
     $self->form_fg_sz->Add( $self->cho_db, 0, wxLEFT, 0);
 
     $self->form_fg_sz->Add( $self->lbl_path, 0, wxLEFT, 5 );
     $self->form_fg_sz->Add( $self->dpc_path, 0, wxLEFT, 0);
-
-    $self->form_fg_sz->Add( $self->lbl_descr, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->txt_descr, 1, wxEXPAND | wxLEFT, 2);
 
     #-- List and buttons
 
@@ -114,25 +129,75 @@ sub _build_main_fg_sz {
     return $fgs;
 }
 
+#-  Form
 sub _build_form_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 4, 0, 5, 10 );
+    my $fgs = Wx::FlexGridSizer->new( 7, 2, 5, 10 );
     $fgs->AddGrowableCol(1);
     return $fgs;
 }
 
-sub _build_lbl_name {
+#-- Labels
+
+sub _build_lbl_project {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Name} );
+    return Wx::StaticText->new( $self->panel, -1, q{Project} );
 }
 
-sub _build_txt_name {
+sub _build_lbl_uri {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::StaticText->new( $self->panel, -1, q{URI} );
+}
+
+sub _build_lbl_created_at {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Created at} );
+}
+
+sub _build_lbl_creator_name {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Creator name} );
+}
+
+sub _build_lbl_creator_email {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Creator email} );
+}
+
+sub _build_lbl_db {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Database} );
 }
 
 sub _build_lbl_path {
     my $self = shift;
     return Wx::StaticText->new( $self->panel, -1, q{Path} );
+}
+
+#-- Entry
+
+sub _build_txt_project {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
+sub _build_txt_uri {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
+sub _build_txt_created_at {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
+sub _build_txt_creator_name {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
+sub _build_txt_creator_email {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 sub _build_dpc_path {
@@ -142,17 +207,12 @@ sub _build_dpc_path {
         $self->panel, -1, q{},
         q{Choose a directory},
         [ -1, -1 ],
-        [ -1, -1 ],
+        [ 170, -1 ],                         # ???
         # style
     );
     #EVT_DIRPICKER_CHANGED( $self, $dp, \&on_change );
 
     return $dp;
-}
-
-sub _build_lbl_db {
-    my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Database} );
 }
 
 sub _build_cho_db {
@@ -162,21 +222,13 @@ sub _build_cho_db {
         $self->panel,
         -1,
         [ -1,  -1 ],
-        [ 130, -1 ],
+        [ 165, -1 ],
         [ 'PostgreSQL', 'MySQL', 'SQLite', 'CUBRID', 'Oracle' ],
         wxCB_SORT,
     );
 }
 
-sub _build_lbl_descr {
-    my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Description} );
-}
-
-sub _build_txt_descr {
-    my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
-}
+#-  List and buttons
 
 sub _build_list_fg_sz {
     my $fgs = Wx::FlexGridSizer->new( 2, 0, 1, 5 );

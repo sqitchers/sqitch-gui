@@ -16,16 +16,25 @@ has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'form_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
+has 'lbl_change_id' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'lbl_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_path'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_db'    => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_descr' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_note'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_committed_at'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_committer_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_committer_email'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_planned_at'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_planner_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_planner_email'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 
+has 'txt_change_id' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'dpc_path'  => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
-has 'cho_db'    => ( is => 'rw', isa => 'Wx::Choice',   lazy_build => 1 );
-has 'txt_descr' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-
+has 'txt_note' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_committed_at' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_committer_name' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_committer_email' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_planned_at' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_planner_name' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_planner_email' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'sb_sizer'  => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'deploy_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'verify_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
@@ -70,17 +79,32 @@ sub BUILD {
 
     #-- Top form
 
-    $self->form_fg_sz->Add( $self->lbl_name, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->txt_name, 0, wxLEFT, 2 );
+    $self->form_fg_sz->Add( $self->lbl_change_id, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_change_id, 1, wxEXPAND | wxLEFT, 0);
 
-    $self->form_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->cho_db, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->lbl_name, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_name, 1, wxEXPAND | wxLEFT, 0);
 
-    $self->form_fg_sz->Add( $self->lbl_path, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->dpc_path, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->lbl_note, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_note, 1, wxEXPAND | wxLEFT, 0);
 
-    $self->form_fg_sz->Add( $self->lbl_descr, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->txt_descr, 1, wxEXPAND | wxLEFT, 2);
+    $self->form_fg_sz->Add( $self->lbl_committed_at, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_committed_at, 1, wxEXPAND | wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_committer_name, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_committer_name, 1, wxEXPAND | wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_committer_email, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_committer_email, 1, wxEXPAND | wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_planned_at, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_planned_at, 1, wxEXPAND | wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_planner_name, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_planner_name, 1, wxEXPAND | wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_planner_email, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_planner_email, 1, wxEXPAND | wxLEFT, 0);
 
     #--  Notebook on the bottom side for SQL edit
     #--- Page Deploy
@@ -135,9 +159,14 @@ sub _build_main_fg_sz {
 }
 
 sub _build_form_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 4, 0, 5, 10 );
+    my $fgs = Wx::FlexGridSizer->new( 9, 2, 5, 10 );
     $fgs->AddGrowableCol(1);
     return $fgs;
+}
+
+sub _build_lbl_change_id {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Change Id} );
 }
 
 sub _build_lbl_name {
@@ -145,58 +174,87 @@ sub _build_lbl_name {
     return Wx::StaticText->new( $self->panel, -1, q{Name} );
 }
 
+sub _build_lbl_note {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Note} );
+}
+
+sub _build_lbl_committed_at {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Commited at} );
+}
+
+sub _build_lbl_committer_name {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Commiter name} );
+}
+
+sub _build_lbl_committer_email {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Commiter email} );
+}
+
+sub _build_lbl_planned_at {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Planned at} );
+}
+
+sub _build_lbl_planner_name {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Planner name} );
+}
+
+sub _build_lbl_planner_email {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Planner email} );
+}
+
+sub _build_txt_change_id {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
 sub _build_txt_name {
     my $self = shift;
     return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
-sub _build_lbl_path {
+sub _build_txt_note{
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Path} );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
-sub _build_dpc_path {
+sub _build_txt_committed_at {
     my $self = shift;
-
-    my $dp = Wx::DirPickerCtrl->new(
-        $self->panel, -1, q{},
-        q{Choose a directory},
-        [ -1, -1 ],
-        [ -1, -1 ],
-        # style
-    );
-    #EVT_DIRPICKER_CHANGED( $self, $dp, \&on_change );
-
-    return $dp;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
-sub _build_lbl_db {
+sub _build_txt_committer_name {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Database} );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
-sub _build_cho_db {
+sub _build_txt_committer_email {
     my $self = shift;
-
-    return Wx::Choice->new(
-        $self->panel,
-        -1,
-        [ -1,  -1 ],
-        [ 130, -1 ],
-        [ 'PostgreSQL', 'MySQL', 'SQLite', 'CUBRID', 'Oracle' ],
-        wxCB_SORT,
-    );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
-sub _build_lbl_descr {
+sub _build_txt_planned_at {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Description} );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
-sub _build_txt_descr {
+sub _build_txt_planner_name {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
+
+sub _build_txt_planner_email {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
+#--
 
 sub _build_deploy_sz {
     return Wx::BoxSizer->new(wxHORIZONTAL);
