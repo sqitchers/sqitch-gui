@@ -35,28 +35,28 @@ sub init_sqitch {
 
     # print 'Top dir is:', $sqitch->top_dir, ":\n";
 
-    my $cmd = 'status';
-    my $cmd_args;
+    # my $cmd = 'status';
+    # my $cmd_args;
 
-    # 4. Load config.
-    my $config = App::Sqitch::Config->new;
-    #p $config;
+    # # 4. Load config.
+    # my $config = App::Sqitch::Config->new;
+    # #p $config;
 
-    # 5. Instantiate Sqitch.
-    $opts->{_engine} = delete $opts->{engine} if $opts->{engine};
-    $opts->{config}  = $config;
-    my $sqitch = App::Sqitch->new($opts);
+    # # 5. Instantiate Sqitch.
+    # $opts->{_engine} = delete $opts->{engine} if $opts->{engine};
+    # $opts->{config}  = $config;
+    # my $sqitch = App::Sqitch->new($opts);
 
-    # 6. Instantiate the command object.
-    my $command = App::Sqitch::Command->load({
-        sqitch  => $sqitch,
-        command => $cmd,
-        config  => $config,
-        args    => $cmd_args,
-    });
+    # # 6. Instantiate the command object.
+    # my $command = App::Sqitch::Command->load({
+    #     sqitch  => $sqitch,
+    #     command => $cmd,
+    #     config  => $config,
+    #     args    => $cmd_args,
+    # });
 
-    # 7. Execute command.
-    $command->execute( @{$cmd_args} ) ? 0 : 2;
+    # # 7. Execute command.
+    # $command->execute( @{$cmd_args} ) ? 0 : 2;
 }
 
 has 'main_frame' => (
