@@ -23,8 +23,7 @@ has 'list' => ( is => 'rw', isa => 'Wx::Perl::ListCtrl', lazy_build => 1 );
 sub BUILD {
     my $self = shift;
 
-    $self->panel->Show(0);
-    $self->panel->SetSizer( $self->sizer );
+    $self->panel->Hide;
 
     $self->sizer->Add( $self->sb_sizer, 1, wxEXPAND | wxALL, 5 );
 
@@ -37,8 +36,9 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->list, 1, wxEXPAND, 3 );
 
     $self->panel->SetSizer($self->sizer);
-
     $self->parent->Layout();
+
+    #$self->panel->Show;
 
     return $self;
 }

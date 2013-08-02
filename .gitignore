@@ -22,3 +22,8 @@ blib/
 cover_db/
 nytprof.out
 pm_to_blib
+# Cava
+cava20-logs/
+cava20-temp/
+installer/
+release/

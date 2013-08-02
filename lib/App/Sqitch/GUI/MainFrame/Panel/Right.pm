@@ -35,17 +35,18 @@ sub BUILD {
 
     #--- Panels
 
-    $self->sizer->Add( $self->panel_sbs,           0, wxEXPAND | wxALL, 5 );
-    $self->panel_sbs->Add( $self->panel_fgs,      0, wxEXPAND | wxALL, 5 );
+    $self->sizer->Add( $self->panel_sbs, 0, wxEXPAND | wxALL, 5 );
+    $self->panel_sbs->Add( $self->panel_fgs,       0, wxEXPAND | wxALL, 5 );
     $self->panel_fgs->Add( $self->btn_change_sel,  0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_change,      0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_project_sel, 0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_project,     0, wxEXPAND,         5 );
-    $self->panel_fgs->Add( $self->btn_plan_sel, 0, wxEXPAND,         5 );
-    $self->panel_fgs->Add( $self->btn_plan,     0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_plan_sel,    0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_plan,        0, wxEXPAND,         5 );
 
     #--- Commands
-    $self->sizer->Add( $self->commands_sbs,   1, wxEXPAND | wxALL, 5 );
+
+    $self->sizer->Add( $self->commands_sbs, 1, wxEXPAND | wxALL, 5 );
     $self->commands_sbs->Add( $self->commands_fgs, 1, wxEXPAND | wxALL, 5 );
     $self->commands_fgs->Add( $self->btn_status,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_add,      1, wxEXPAND,         0 );

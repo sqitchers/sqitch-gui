@@ -98,17 +98,17 @@ sub BUILD {
     $self->frame->SetMenuBar($self->menu_bar);
     $self->_build_status_bar;
 
-    $self->main_sizer->Add($self->left_side->panel,  1, wxEXPAND);
-    $self->main_sizer->Add($self->right_side->panel, 0, wxEXPAND);
+    $self->main_sizer->Add( $self->left_side->panel,  1, wxEXPAND, 0 );
+    $self->main_sizer->Add( $self->right_side->panel, 0, wxEXPAND, 0 );
 
     my $spw = $self->splitter_w;
-    $self->left_side->sizer->Add($self->splitter_w, 1, wxEXPAND);
+    $self->left_side->sizer->Add( $self->splitter_w, 1, wxEXPAND, 0 );
 
-    $self->top_side->sizer->Add($self->change->panel,  1, wxEXPAND);
-    $self->top_side->sizer->Add($self->project->panel, 1, wxEXPAND);
-    $self->top_side->sizer->Add($self->plan->panel, 1, wxEXPAND);
+    $self->top_side->sizer->Add( $self->plan->panel,    1, wxEXPAND, 0 );
+    $self->top_side->sizer->Add( $self->project->panel, 1, wxEXPAND, 0 );
+    $self->top_side->sizer->Add( $self->change->panel,  1, wxEXPAND, 0 );
 
-    $self->change->panel->Show;          # the default panel is Change
+    $self->change->panel->Show; # default
 
     $self->splitter_w->SplitHorizontally( $self->top_side->panel,
         $self->bottom_side->panel,

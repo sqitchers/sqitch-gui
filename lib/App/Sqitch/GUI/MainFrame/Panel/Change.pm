@@ -84,8 +84,7 @@ has 'ed_verify_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 sub BUILD {
     my $self = shift;
 
-    $self->panel->Show(0);
-    $self->panel->SetSizer( $self->sizer );
+    $self->panel->Hide;
 
     $self->sizer->Add( $self->sb_sizer, 1, wxEXPAND | wxALL, 5 );
     $self->sb_sizer->Add( $self->main_fg_sz, 1, wxEXPAND | wxALL, 5 );
@@ -93,8 +92,11 @@ sub BUILD {
     $self->main_fg_sz->Add( $self->top_sizer, 1, wxEXPAND | wxALL, 5 );
     $self->main_fg_sz->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
 
-    $self->top_sizer->Add($self->collpane, 0, wxEXPAND | wxALL, 10); # 0 prop!
-    $self->collpane->GetPane->SetSizer($self->form_fg_sz);
+    # wxWidgets 2.9.4
+    #Gtk-CRITICAL **: IA__gtk_widget_set_size_request: assertion
+    #`height >= -1' failed:
+    $self->top_sizer->Add($self->collpane, 0, wxEXPAND | wxALL, 5); # 0 prop!
+    # ???
 
     #$self->collpane->GetPane->SetBackgroundColour( Wx::Colour->new('red') );
 
@@ -127,6 +129,8 @@ sub BUILD {
     $self->form_fg_sz->Add( $self->lbl_planner_email, 0, wxLEFT, 0);
     $self->form_fg_sz->Add( $self->txt_planner_email, 1, wxEXPAND | wxLEFT, 0);
 
+    $self->collpane->GetPane->SetSizer($self->form_fg_sz);
+
     #--  Notebook on the bottom side for SQL edit
     #--- Page Deploy
 
@@ -146,7 +150,10 @@ sub BUILD {
     $self->ed_verify_sbs->Add( $self->edit_verify, 1, wxEXPAND | wxALL, 5 );
     $self->verify_sz->Add( $self->ed_verify_sbs, 1, wxEXPAND | wxALL, 5 );
 
+    $self->panel->SetSizer( $self->sizer );
     $self->parent->Layout();
+
+    #$self->panel->Show;
 
     return $self;
 }
@@ -176,7 +183,7 @@ sub _build_collpane {
         'Details',
         [-1,-1],
         [-1,-1],
-        wxCP_NO_TLW_RESIZE,
+        wxCP_DEFAULT_STYLE | wxCP_NO_TLW_RESIZE,
     );
 
     return $pane;
@@ -187,7 +194,7 @@ sub _build_sizer {
 }
 
 sub _build_top_sizer {
-    return Wx::BoxSizer->new(wxHORIZONTAL);
+    return Wx::BoxSizer->new(wxVERTICAL);
 }
 
 sub _build_main_fg_sz {

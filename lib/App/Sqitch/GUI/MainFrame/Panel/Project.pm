@@ -44,8 +44,7 @@ has 'cho_db'    => ( is => 'rw', isa => 'Wx::Choice',   lazy_build => 1 );
 sub BUILD {
     my $self = shift;
 
-    $self->panel->Show(0);
-    $self->panel->SetSizer( $self->sizer );
+    $self->panel->Hide;
 
     $self->sizer->Add( $self->sb_sizer, 1, wxEXPAND | wxALL, 5 );
 
@@ -91,8 +90,9 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->btn_sizer, 1, wxALIGN_CENTRE);
 
     $self->panel->SetSizer($self->sizer);
-
     $self->parent->Layout();
+
+    #$self->panel->Show;
 
     return $self;
 }

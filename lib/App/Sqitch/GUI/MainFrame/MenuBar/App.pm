@@ -36,7 +36,6 @@ sub _build_itm_quit {
 
 sub _set_events {
     my $self = shift;
-    print "Set menu event\n";
     EVT_MENU(
         $self->parent,
         $self->itm_quit->GetId,
