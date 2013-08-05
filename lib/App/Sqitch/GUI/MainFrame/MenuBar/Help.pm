@@ -1,6 +1,7 @@
 package App::Sqitch::GUI::MainFrame::MenuBar::Help;
 
 use Moose;
+use namespace::autoclean;
 use Wx qw(:everything);
 use Wx::Event qw(EVT_MENU);
 
@@ -84,7 +85,6 @@ sub OnHelp {
     return 1;
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR

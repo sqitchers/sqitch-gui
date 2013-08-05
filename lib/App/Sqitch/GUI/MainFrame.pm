@@ -1,9 +1,7 @@
 package App::Sqitch::GUI::MainFrame;
 
-use strict;
-use warnings;
-
 use Moose;
+use namespace::autoclean;
 use Wx qw<:everything>;
 use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU>;
 
@@ -317,7 +315,6 @@ sub OnClose {
     return;
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 

@@ -1,6 +1,7 @@
 package App::Sqitch::GUI::MainFrame::MenuBar::App;
 
 use Moose;
+use namespace::autoclean;
 use Wx qw(:everything);
 use Wx::Event qw(EVT_MENU);
 with 'App::Sqitch::GUI::Roles::Element';
@@ -51,7 +52,6 @@ sub OnQuit {
     return 1;
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR

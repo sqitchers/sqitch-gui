@@ -1,6 +1,7 @@
 package App::Sqitch::GUI::MainFrame::Editor;
 
 use Moose;
+use namespace::autoclean;
 use Wx qw(:everything);
 use Wx::STC;
 use Wx::Event qw();
@@ -82,7 +83,6 @@ sub _set_events {
     return 1;
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 

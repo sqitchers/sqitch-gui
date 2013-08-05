@@ -1,6 +1,7 @@
 package App::Sqitch::GUI::MainFrame::Dialog::About;
 
 use Moose;
+use namespace::autoclean;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
@@ -36,7 +37,6 @@ sub show {
     return;
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR

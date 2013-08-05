@@ -2,6 +2,7 @@ package App::Sqitch::GUI::MainFrame::Panel::Bottom;
 
 use utf8;
 use Moose;
+use namespace::autoclean;
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 
@@ -72,7 +73,6 @@ sub _build_log_ctrl {
 
 sub _set_events { }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR

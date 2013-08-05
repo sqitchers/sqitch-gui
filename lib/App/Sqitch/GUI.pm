@@ -1,11 +1,10 @@
 package App::Sqitch::GUI;
 
 use 5.010001;
-use strict;
-use warnings;
 use Moose;
+use namespace::autoclean;
 use Path::Class;
-use Data::Printer;
+#use Data::Printer;
 use Wx;
 use Wx::Event qw(EVT_CLOSE);
 use App::Sqitch;
@@ -110,7 +109,6 @@ sub OnClose {
     return;
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR

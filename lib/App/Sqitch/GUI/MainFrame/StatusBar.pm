@@ -1,6 +1,7 @@
 package App::Sqitch::GUI::MainFrame::StatusBar;
 
 use Moose;
+use namespace::autoclean;
 use Wx qw(:everything);
 use Wx::Event qw(EVT_SIZE);
 with 'App::Sqitch::GUI::Roles::Element';
@@ -82,7 +83,6 @@ sub OnResize {
     return 1;
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR

@@ -1,5 +1,19 @@
 package App::Sqitch::GUI::MainFrame::Dialog::Help;
 
+use Moose;
+use namespace::autoclean;
+
+with 'App::Sqitch::GUI::Roles::Element';
+
+sub BUILD {
+    my $self = shift;
+    return $self;
+}
+
+sub _set_events { }
+
+__PACKAGE__->meta->make_immutable;
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>

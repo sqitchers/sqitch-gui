@@ -1,6 +1,7 @@
 package App::Sqitch::GUI::MainFrame::MenuBar;
 
 use Moose;
+use namespace::autoclean;
 use Wx qw(:everything);
 with 'App::Sqitch::GUI::Roles::Element';
 
@@ -73,7 +74,6 @@ sub _build_menu_help {
 
 sub _set_events { }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR

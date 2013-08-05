@@ -2,6 +2,7 @@ package App::Sqitch::GUI::MainFrame::Panel::Top;
 
 use utf8;
 use Moose;
+use namespace::autoclean;
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 
@@ -46,7 +47,6 @@ sub OnClose {
     my ($self, $event) = @_;
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR

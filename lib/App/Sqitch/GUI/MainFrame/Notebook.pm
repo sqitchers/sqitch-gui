@@ -1,6 +1,7 @@
 package App::Sqitch::GUI::MainFrame::Notebook;
 
 use Moose;
+use namespace::autoclean;
 use Wx qw(:everything);
 use Wx::Event qw();
 use Wx::AUI;
@@ -63,7 +64,6 @@ sub _build_page_verify {
 
 sub _set_events { }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 

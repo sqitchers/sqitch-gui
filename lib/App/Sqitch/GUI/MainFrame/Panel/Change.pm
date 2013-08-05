@@ -2,6 +2,7 @@ package App::Sqitch::GUI::MainFrame::Panel::Change;
 
 use utf8;
 use Moose;
+use namespace::autoclean;
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE EVT_COLLAPSIBLEPANE_CHANGED);
 
@@ -416,7 +417,6 @@ sub OnClose {
     my ($self, $event) = @_;
 }
 
-no Moose;
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
