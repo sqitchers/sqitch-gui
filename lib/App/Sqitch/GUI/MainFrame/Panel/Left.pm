@@ -64,12 +64,12 @@ project:
 
 https://github.com/tmtowtdi/LacunaWaX
 
+Copyright: Jonathan D. Barton 2012-2013
+
 Thank you!
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright:
-  Jonathan D. Barton 2012-2013
   Stefan Suciu       2013
 
 This program is free software; you can redistribute it and/or modify it
