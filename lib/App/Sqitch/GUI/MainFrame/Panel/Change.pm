@@ -94,7 +94,7 @@ sub BUILD {
     $self->main_fg_sz->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
 
     $self->top_sizer->Add($self->collpane, 1, wxEXPAND | wxALL, 5); # 0 prop!
-    $self->collpane->GetPane->SetBackgroundColour( Wx::Colour->new('red') );
+    #$self->collpane->GetPane->SetBackgroundColour( Wx::Colour->new('red') );
 
     #-- Top form
 
@@ -192,7 +192,6 @@ sub _build_top_sizer {
 
 sub _build_main_fg_sz {
     my $fgs = Wx::FlexGridSizer->new( 2, 1, 1, 5 );
-    $fgs->AddGrowableRow(0);
     $fgs->AddGrowableRow(1);
     $fgs->AddGrowableCol(0);
     return $fgs;
@@ -395,8 +394,8 @@ sub _build_ed_verify_sbs {
 sub _set_events {
     my ($self, $event) = @_;
 
-    # EVT_COLLAPSIBLEPANE_CHANGED $self->parent, $self->collpane,
-    #     sub { $self->OnPaneChanged(@_); };
+    EVT_COLLAPSIBLEPANE_CHANGED $self->parent, $self->collpane,
+        sub { $self->OnPaneChanged(@_); };
 
     return;
 }

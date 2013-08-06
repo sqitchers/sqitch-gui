@@ -32,7 +32,7 @@ sub _build_panel {
         wxFULL_REPAINT_ON_RESIZE,
         'mainPanel',
     );
-    $panel->SetBackgroundColour(Wx::Colour->new('yellow'));
+    #$panel->SetBackgroundColour(Wx::Colour->new('yellow'));
 
     return $panel;
 }
