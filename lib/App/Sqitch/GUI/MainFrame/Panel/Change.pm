@@ -93,13 +93,8 @@ sub BUILD {
     $self->main_fg_sz->Add( $self->top_sizer, 1, wxEXPAND | wxALL, 5 );
     $self->main_fg_sz->Add( $self->notebook, 1, wxEXPAND | wxALL, 5 );
 
-    # wxWidgets 2.9.4
-    #Gtk-CRITICAL **: IA__gtk_widget_set_size_request: assertion
-    #`height >= -1' failed:
-    $self->top_sizer->Add($self->collpane, 0, wxEXPAND | wxALL, 5); # 0 prop!
-    # ???
-
-    #$self->collpane->GetPane->SetBackgroundColour( Wx::Colour->new('red') );
+    $self->top_sizer->Add($self->collpane, 1, wxEXPAND | wxALL, 5); # 0 prop!
+    $self->collpane->GetPane->SetBackgroundColour( Wx::Colour->new('red') );
 
     #-- Top form
 
@@ -152,9 +147,6 @@ sub BUILD {
     $self->verify_sz->Add( $self->ed_verify_sbs, 1, wxEXPAND | wxALL, 5 );
 
     $self->panel->SetSizer( $self->sizer );
-    $self->parent->Layout();
-
-    #$self->panel->Show;
 
     return $self;
 }
@@ -199,15 +191,16 @@ sub _build_top_sizer {
 }
 
 sub _build_main_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 2, 0, 1, 5 );
+    my $fgs = Wx::FlexGridSizer->new( 2, 1, 1, 5 );
+    $fgs->AddGrowableRow(0);
     $fgs->AddGrowableRow(1);
     $fgs->AddGrowableCol(0);
-    $fgs->AddGrowableCol(1);
     return $fgs;
 }
 
 sub _build_form_fg_sz {
     my $fgs = Wx::FlexGridSizer->new( 9, 2, 5, 10 );
+    $fgs->AddGrowableRow(1);
     $fgs->AddGrowableCol(1);
     return $fgs;
 }
@@ -402,8 +395,8 @@ sub _build_ed_verify_sbs {
 sub _set_events {
     my ($self, $event) = @_;
 
-    EVT_COLLAPSIBLEPANE_CHANGED $self->parent, $self->collpane,
-        sub { $self->OnPaneChanged(@_); };
+    # EVT_COLLAPSIBLEPANE_CHANGED $self->parent, $self->collpane,
+    #     sub { $self->OnPaneChanged(@_); };
 
     return;
 }

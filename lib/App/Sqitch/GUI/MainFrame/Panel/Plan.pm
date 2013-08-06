@@ -37,9 +37,9 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->list, 1, wxEXPAND, 3 );
 
     $self->panel->SetSizer($self->sizer);
-    $self->parent->Layout();
+    # $self->parent->Layout();
 
-    #$self->panel->Show;
+    # $self->panel->Show;
 
     return $self;
 }
@@ -55,7 +55,7 @@ sub _build_panel {
         wxFULL_REPAINT_ON_RESIZE,
         'projectPanel',
     );
-    #$panel->SetBackgroundColour( Wx::Colour->new('green') );
+    #$panel->SetBackgroundColour( Wx::Colour->new('blue') );
 
     return $panel;
 }
@@ -65,14 +65,14 @@ sub _build_sizer {
 }
 
 sub _build_main_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 1, 0, 1, 5 );
+    my $fgs = Wx::FlexGridSizer->new( 1, 1, 1, 5 );
     $fgs->AddGrowableRow(0);
     $fgs->AddGrowableCol(0);
     return $fgs;
 }
 
 sub _build_list_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 2, 0, 1, 5 );
+    my $fgs = Wx::FlexGridSizer->new( 2, 1, 1, 5 );
     $fgs->AddGrowableRow(0);
     $fgs->AddGrowableCol(0);
     return $fgs;

@@ -109,6 +109,11 @@ sub OnClose {
     return;
 }
 
+sub OnAssertFailure {
+    my ( $self, $file, $line, $function, $condition, $msg ) = @_;
+    print "AssertFailure: $file, $line, $function, $condition, $msg\n";
+}
+
 __PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR

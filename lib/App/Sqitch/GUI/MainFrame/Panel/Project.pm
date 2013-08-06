@@ -91,9 +91,9 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->btn_sizer, 1, wxALIGN_CENTRE);
 
     $self->panel->SetSizer($self->sizer);
-    $self->parent->Layout();
+    # $self->parent->Layout();
 
-    #$self->panel->Show;
+    # $self->panel->Show;
 
     return $self;
 }
@@ -123,10 +123,9 @@ sub _build_btn_sizer {
 }
 
 sub _build_main_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 2, 0, 1, 5 );
+    my $fgs = Wx::FlexGridSizer->new( 2, 1, 1, 5 );
     $fgs->AddGrowableRow(1);
     $fgs->AddGrowableCol(0);
-    $fgs->AddGrowableCol(1);
     return $fgs;
 }
 

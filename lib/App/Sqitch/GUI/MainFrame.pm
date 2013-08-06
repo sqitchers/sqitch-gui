@@ -91,33 +91,35 @@ has 'splitter_w' =>
 sub BUILD {
     my($self, @params) = @_;
 
-    $self->frame->Show(0);
+    #Wx::EnableDefaultAssertHandler();        # Debug
+
+    $self->frame->Hide;
 
     $self->frame->SetMenuBar($self->menu_bar);
     $self->_build_status_bar;
 
-    $self->main_sizer->Add( $self->left_side->panel,  1, wxEXPAND, 0 );
-    $self->main_sizer->Add( $self->right_side->panel, 0, wxEXPAND, 0 );
+    $self->main_sizer->Add( $self->left_side->panel,  1, wxEXPAND | wxALL, 0 );
+    $self->main_sizer->Add( $self->right_side->panel, 0, wxEXPAND | wxALL, 0 );
 
-    my $spw = $self->splitter_w;
-    $self->left_side->sizer->Add( $self->splitter_w, 1, wxEXPAND, 0 );
-
-    $self->top_side->sizer->Add( $self->plan->panel,    1, wxEXPAND, 0 );
-    $self->top_side->sizer->Add( $self->project->panel, 1, wxEXPAND, 0 );
-    $self->top_side->sizer->Add( $self->change->panel,  1, wxEXPAND, 0 );
-
-    $self->change->panel->Show; # default
+    $self->left_side->sizer->Add( $self->splitter_w, 1, wxEXPAND | wxALL, 0 );
 
     $self->splitter_w->SplitHorizontally( $self->top_side->panel,
         $self->bottom_side->panel,
         $self->sash_pos );
     $self->splitter_w->SetMinimumPaneSize( $self->min_pane_size );
 
+    $self->top_side->sizer->Add( $self->change->panel,  1, wxEXPAND | wxALL, 0 );
+    $self->top_side->sizer->Add( $self->project->panel, 1, wxEXPAND | wxALL, 0 );
+    $self->top_side->sizer->Add( $self->plan->panel,    1, wxEXPAND | wxALL, 0 );
+
+    $self->top_side->panel->SetSizer($self->top_side->sizer);
+
     $self->frame->SetSizer($self->main_sizer);
 
-    $self->_set_events;
+    $self->change->panel->Show;              # default panel
 
-    $self->frame->Show(1);
+    $self->_set_events;
+    $self->frame->Show;
 
     return $self;
 }
@@ -285,7 +287,7 @@ sub _set_events {
             $self->project->panel->Hide;
             $self->plan->panel->Hide;
             $self->change->panel->Show;
-            $self->frame->Layout();
+            $self->top_side->panel->Layout();
         };
 
     EVT_BUTTON $self->frame, $self->right_side->btn_project->GetId,
@@ -294,7 +296,7 @@ sub _set_events {
             $self->change->panel->Hide;
             $self->plan->panel->Hide;
             $self->project->panel->Show;
-            $self->frame->Layout();
+            $self->top_side->panel->Layout();
         };
 
     EVT_BUTTON $self->frame, $self->right_side->btn_plan->GetId,
@@ -303,7 +305,7 @@ sub _set_events {
             $self->change->panel->Hide;
             $self->project->panel->Hide;
             $self->plan->panel->Show;
-            $self->frame->Layout();
+            $self->top_side->panel->Layout();
         };
 
     return 1;
