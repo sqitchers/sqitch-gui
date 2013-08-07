@@ -279,36 +279,38 @@ sub _set_events {
 
     EVT_CLOSE( $self->frame, sub { $self->OnClose(@_) } );
 
-    # Ugly!!!
+    EVT_BUTTON $self->frame, $self->right_side->btn_change->GetId, sub {
+        $self->show_panel('change');
+    };
 
-    EVT_BUTTON $self->frame, $self->right_side->btn_change->GetId,
-        sub {
-            $self->project->panel->Hide;
-            $self->plan->panel->Hide;
-            $self->change->panel->Show;
-            $self->right_side->btn_change_sel->SetValue(1),
-            $self->top_side->panel->Layout();
-        };
+    EVT_BUTTON $self->frame, $self->right_side->btn_project->GetId, sub {
+        $self->show_panel('project');
+    };
 
-    EVT_BUTTON $self->frame, $self->right_side->btn_project->GetId,
-        sub {
-            $self->change->panel->Hide;
-            $self->plan->panel->Hide;
-            $self->project->panel->Show;
-            $self->right_side->btn_project_sel->SetValue(1),
-            $self->top_side->panel->Layout();
-        };
-
-    EVT_BUTTON $self->frame, $self->right_side->btn_plan->GetId,
-        sub {
-            $self->change->panel->Hide;
-            $self->project->panel->Hide;
-            $self->plan->panel->Show;
-            $self->right_side->btn_plan_sel->SetValue(1),
-            $self->top_side->panel->Layout();
-        };
+    EVT_BUTTON $self->frame, $self->right_side->btn_plan->GetId, sub {
+        $self->show_panel('plan');
+    };
 
     return 1;
+}
+
+sub show_panel {
+    my ($self, $name) = @_;
+
+    foreach my $panel ( qw{change project plan} ) {
+        $self->$panel->panel->Show
+            unless $self->$panel->panel->IsShown and $panel eq $name;
+
+        $self->$panel->panel->Hide
+            if $self->$panel->panel->IsShown and $panel ne $name;
+    }
+
+    my $btn_sel = q{btn_} . $name . q{_sel};
+    $self->right_side->$btn_sel->SetValue(1);
+
+    $self->top_side->panel->Layout();
+
+    return;
 }
 
 sub OnClose {
