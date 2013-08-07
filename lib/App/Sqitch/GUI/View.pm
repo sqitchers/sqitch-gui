@@ -283,28 +283,28 @@ sub _set_events {
 
     EVT_BUTTON $self->frame, $self->right_side->btn_change->GetId,
         sub {
-            print "Click on change!\n";
             $self->project->panel->Hide;
             $self->plan->panel->Hide;
             $self->change->panel->Show;
+            $self->right_side->btn_change_sel->SetValue(1),
             $self->top_side->panel->Layout();
         };
 
     EVT_BUTTON $self->frame, $self->right_side->btn_project->GetId,
         sub {
-            print "Click on project!\n";
             $self->change->panel->Hide;
             $self->plan->panel->Hide;
             $self->project->panel->Show;
+            $self->right_side->btn_project_sel->SetValue(1),
             $self->top_side->panel->Layout();
         };
 
     EVT_BUTTON $self->frame, $self->right_side->btn_plan->GetId,
         sub {
-            print "Click on plan!\n";
             $self->change->panel->Hide;
             $self->project->panel->Hide;
             $self->plan->panel->Show;
+            $self->right_side->btn_plan_sel->SetValue(1),
             $self->top_side->panel->Layout();
         };
 

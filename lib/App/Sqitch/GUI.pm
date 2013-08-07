@@ -16,11 +16,7 @@ has 'controller' => (
 );
 
 sub _build_controller {
-    my $self = shift;
-
-    my $c = App::Sqitch::GUI::Controller->new();
-
-    return $c;
+    return App::Sqitch::GUI::Controller->new();
 }
 
 sub run {
