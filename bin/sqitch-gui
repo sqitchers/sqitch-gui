@@ -5,8 +5,6 @@ use warnings;
 
 use App::Sqitch::GUI;
 
-#exit App::Sqitch::GUI->go;
+my $app = App::Sqitch::GUI->new;
 
-my $app = App::Sqitch::GUI->new();
-$app->init_sqitch;
-$app->MainLoop();
+$app->run;

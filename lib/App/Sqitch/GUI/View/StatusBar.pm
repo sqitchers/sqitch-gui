@@ -69,8 +69,8 @@ sub change_caption {
 sub OnResize {
     my($self, $status_bar, $event) = @_;
 
-    if( $self->has_main_frame ) {
-        my $mf = $self->get_main_frame;
+    if( $self->has_view ) {
+        my $mf = $self->get_view;
         my $current_size = $mf->frame->GetSize;
         if (   $current_size->width != $self->old_w
             or $current_size->height != $self->old_h )

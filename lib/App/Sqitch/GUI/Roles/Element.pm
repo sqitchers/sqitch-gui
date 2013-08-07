@@ -5,16 +5,16 @@ use Wx qw(:everything);
 
 has 'app' => (
     is          => 'rw',
-    isa         => 'App::Sqitch::GUI',
+    isa         => 'App::Sqitch::GUI::WxApp',
     required    => 1,
     weak_ref    => 1,
     handles => {
-        get_main_frame => 'main_frame',
-        has_main_frame => 'has_main_frame',
+        get_view       => 'view',
+        has_view       => 'has_view',
         menu           => 'menu_bar',
         get_left_pane  => 'left_pane',
         get_right_pane => 'right_pane',
-    }
+        }
 );
 has 'ancestor'  => (is => 'rw', isa => 'Object', weak_ref => 1 );
 has 'parent'    => (is => 'rw', isa => 'Maybe[Wx::Window]' );
