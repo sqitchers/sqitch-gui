@@ -4,7 +4,6 @@ use 5.010001;
 use Moose;
 use namespace::autoclean;
 
-use Data::Printer;
 use App::Sqitch::GUI::Controller;
 
 our $VERSION = '0.002';

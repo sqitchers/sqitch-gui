@@ -59,7 +59,7 @@ sub _build_log_ctrl {
 
     my $log_ctrl = Wx::TextCtrl->new(
         $self->panel,
-        -1, "Welcome to Sqitch.\n",
+        -1, q{},
         [-1, -1],
         [-1, -1],
         wxTE_MULTILINE,
