@@ -12,7 +12,7 @@ use App::Sqitch::GUI::Sqitch;
 use App::Sqitch::GUI::WxApp;
 use App::Sqitch::GUI::Config;
 
-#use Data::Printer;
+use Data::Printer;
 
 has 'app' => (
     is         => 'rw',
@@ -63,7 +63,31 @@ sub BUILD {
 
     $self->log_message('Welcome to Sqitch!');
 
-    my $name = 'users';                      # current change?
+    my $sqitch = $self->sqitch;
+    my $plan   = $sqitch->plan;
+    my $change = $plan->last;
+    my $name   = $change->name;
+    #print "Plan:\n";
+    #p $plan;
+    # print "Change\n";
+    #p $change;
+    my $state = $sqitch->engine->current_state( $plan->project );
+    # p $state;
+    my %fields = (
+        change_id       => $change->id,
+        name            => $change->name,
+        note            => $change->note,
+        planned_at      => $state->{planned_at}->as_string,
+        planner_name    => $state->{planner_name},
+        planner_email   => $state->{planner_email},
+        committed_at    => $state->{committed_at}->as_string,
+        committer_name  => $state->{committer_name},
+        committer_email => $state->{committer_email},
+    );
+    while ( my ( $field, $value ) = each(%fields) ) {
+        $self->load_change_for( $field, $value );
+    }
+
     $self->load_sql_for($_, $name) for qw(deploy revert verify);
 
     EVT_BUTTON $self->view->frame,
@@ -99,6 +123,16 @@ sub status {
     $command->execute( @{$cmd_args} ) ? 0 : 2;
 }
 
+sub load_change_for {
+    my ($self, $field, $value) = @_;
+
+    my $ctrl_name = "txt_$field";
+    my $ctrl = $self->view->change->$ctrl_name;
+    $self->control_write_e($ctrl, $value);
+
+    return;
+}
+
 sub load_sql_for {
     my ($self, $command, $name) = @_;
 
@@ -121,6 +155,15 @@ sub control_write_s {
     $control->AppendText($value);
     $control->AppendText("\n");
     $control->Colourise( 0, $control->GetTextLength );
+
+    return;
+}
+
+sub control_write_e {
+    my ( $self, $control, $value ) = @_;
+
+    $control->Clear;
+    $control->SetValue($value) if defined $value;
 
     return;
 }
