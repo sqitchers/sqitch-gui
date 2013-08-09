@@ -14,6 +14,7 @@ use App::Sqitch::GUI::View::Editor;
 has 'panel'     => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
 has 'sizer'     => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'top_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'colpsizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 has 'collpane' => ( is => 'rw', isa => 'Wx::CollapsiblePane', lazy_build => 1 );
 
@@ -97,6 +98,8 @@ sub BUILD {
     #$self->collpane->GetPane->SetBackgroundColour( Wx::Colour->new('red') );
 
     #-- Top form
+    $self->colpsizer->Add(-1, 15);           # vspace
+    $self->colpsizer->Add($self->form_fg_sz, 1, wxEXPAND | wxLEFT, 0);
 
     $self->form_fg_sz->Add( $self->lbl_change_id, 0, wxLEFT, 0);
     $self->form_fg_sz->Add( $self->txt_change_id, 1, wxEXPAND | wxLEFT, 0);
@@ -124,8 +127,7 @@ sub BUILD {
 
     $self->form_fg_sz->Add( $self->lbl_committer_email, 0, wxLEFT, 0);
     $self->form_fg_sz->Add( $self->txt_committer_email, 1, wxEXPAND | wxLEFT, 0);
-
-    $self->collpane->GetPane->SetSizer($self->form_fg_sz);
+    $self->collpane->GetPane->SetSizer($self->colpsizer);
 
     #--  Notebook on the bottom side for SQL edit
     #--- Page Deploy
@@ -187,6 +189,10 @@ sub _build_sizer {
 }
 
 sub _build_top_sizer {
+    return Wx::BoxSizer->new(wxVERTICAL);
+}
+
+sub _build_colpsizer {
     return Wx::BoxSizer->new(wxVERTICAL);
 }
 
