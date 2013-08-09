@@ -107,15 +107,6 @@ sub BUILD {
     $self->form_fg_sz->Add( $self->lbl_note, 0, wxLEFT, 0);
     $self->form_fg_sz->Add( $self->txt_note, 1, wxEXPAND | wxLEFT, 0);
 
-    $self->form_fg_sz->Add( $self->lbl_committed_at, 0, wxLEFT, 0);
-    $self->form_fg_sz->Add( $self->txt_committed_at, 1, wxEXPAND | wxLEFT, 0);
-
-    $self->form_fg_sz->Add( $self->lbl_committer_name, 0, wxLEFT, 0);
-    $self->form_fg_sz->Add( $self->txt_committer_name, 1, wxEXPAND | wxLEFT, 0);
-
-    $self->form_fg_sz->Add( $self->lbl_committer_email, 0, wxLEFT, 0);
-    $self->form_fg_sz->Add( $self->txt_committer_email, 1, wxEXPAND | wxLEFT, 0);
-
     $self->form_fg_sz->Add( $self->lbl_planned_at, 0, wxLEFT, 0);
     $self->form_fg_sz->Add( $self->txt_planned_at, 1, wxEXPAND | wxLEFT, 0);
 
@@ -124,6 +115,15 @@ sub BUILD {
 
     $self->form_fg_sz->Add( $self->lbl_planner_email, 0, wxLEFT, 0);
     $self->form_fg_sz->Add( $self->txt_planner_email, 1, wxEXPAND | wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_committed_at, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_committed_at, 1, wxEXPAND | wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_committer_name, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_committer_name, 1, wxEXPAND | wxLEFT, 0);
+
+    $self->form_fg_sz->Add( $self->lbl_committer_email, 0, wxLEFT, 0);
+    $self->form_fg_sz->Add( $self->txt_committer_email, 1, wxEXPAND | wxLEFT, 0);
 
     $self->collpane->GetPane->SetSizer($self->form_fg_sz);
 
