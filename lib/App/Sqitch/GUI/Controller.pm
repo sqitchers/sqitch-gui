@@ -7,6 +7,7 @@ use Wx qw<:everything>;
 use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU>;
 use Path::Class;
 use File::Slurp;
+use Try::Tiny;
 
 use App::Sqitch::GUI::Sqitch;
 use App::Sqitch::GUI::WxApp;
@@ -61,6 +62,14 @@ sub _build_app {
 sub BUILD {
     my $self = shift;
 
+    print scalar $self->config->dump, "\n";
+    # my $local_file = $config->local_file;
+    # print "Local file is $local_file\n";
+    # my $user_file = $config->user_file;
+    # print "User file is $user_file\n";
+    print 'Top dir is:', $self->sqitch->top_dir, "\n";
+    p $self->config->config_files;
+
     $self->log_message('Welcome to Sqitch!');
 
     my $sqitch = $self->sqitch;
@@ -101,13 +110,6 @@ sub BUILD {
 sub status {
     my $self = shift;
 
-    print scalar $self->config->dump, "\n";
-    # my $local_file = $config->local_file;
-    # print "Local file is $local_file\n";
-    # my $user_file = $config->user_file;
-    # print "User file is $user_file\n";
-    #print 'Top dir is:', $self->sqitch->top_dir, "\n";
-
     my $cmd = 'status';
     my $cmd_args;
 
@@ -120,7 +122,14 @@ sub status {
     });
 
     # 7. Execute command.
-    $command->execute( @{$cmd_args} ) ? 0 : 2;
+    try {
+        $command->execute( @{$cmd_args} );
+    }
+    catch {
+        # local $@ = $_;
+        # $self->log_message($@); # HOWTO get rid of the stack trace?
+        #                         # or better to redirect it to another Logger?
+    }
 }
 
 sub load_change_for {
@@ -136,7 +145,7 @@ sub load_change_for {
 sub load_sql_for {
     my ($self, $command, $name) = @_;
 
-    my $proj_path = dir $self->config->get( key => 'projects.path' );
+    my $proj_path = $self->config->project_path;
     my $sql_file  = file($proj_path, $command, "$name.sql");
     my $text = read_file($sql_file);
     my $ctrl_name = "edit_$command";
