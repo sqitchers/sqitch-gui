@@ -38,18 +38,24 @@ has config => (
 
 has sqitch => (
     is      => 'ro',
-    isa     => 'App::Sqitch::GUI::Sqitch',
+    isa     => 'Maybe[App::Sqitch]',
     lazy    => 1,
     default => sub {
         my $self = shift;
         my $opts = {};
-        $opts->{config} = $self->config;
-        App::Sqitch::GUI::Sqitch->new($opts);
+        $opts->{config}    = $self->config;
+        #$opts->{plan_file} = 'fisier.plan';  # debug
+        my $sqitch;
+        try {
+            $sqitch = App::Sqitch::GUI::Sqitch->new($opts);
+        }
+        return $sqitch;
     }
 );
 
 sub log_message {
     my ($self, $msg) = @_;
+    #? This should clear the control first
     Wx::LogMessage($msg);
 }
 
@@ -62,36 +68,84 @@ sub _build_app {
 sub BUILD {
     my $self = shift;
 
-    print scalar $self->config->dump, "\n";
+    #print scalar $self->config->dump, "\n";
     # my $local_file = $config->local_file;
     # print "Local file is $local_file\n";
     # my $user_file = $config->user_file;
     # print "User file is $user_file\n";
-    print 'Top dir is:', $self->sqitch->top_dir, "\n";
-    p $self->config->config_files;
+    #print 'Top dir is:', $self->sqitch->top_dir, "\n";
+    #p $self->config->config_files;
 
     $self->log_message('Welcome to Sqitch!');
+
+    my $sqitch = $self->sqitch;
+
+    try {
+        App::Sqitch::Plan->new(sqitch => $sqitch)->load;
+    }
+    finally {
+        if (@_) {
+            $self->log_message('Sqitch is NOT initialized yet. Please set a valid project path!');
+        } else {
+            $self->log_message('Sqitch is initialized.');
+        }
+    };
+
+    $self->_setup_events();
+
+    return;
+}
+
+sub _setup_events {
+    my $self = shift;
+
+    # Set events for some of the commands
+    # Verifiy needs confirmation
+    foreach my $cmd ( qw(status deploy verify) ) {
+        my $btn = "btn_$cmd";
+        EVT_BUTTON $self->view->frame,
+            $self->view->right_side->$btn->GetId, sub {
+                $self->execute_command($cmd);
+            };
+    }
+
+    EVT_BUTTON $self->view->frame,
+        $self->view->right_side->btn_deploy->GetId, sub {
+            $self->execute_command('deploy');
+    };
+
+    return;
+}
+
+sub load_project {
+    my $self = shift;
 
     my $sqitch = $self->sqitch;
     my $plan   = $sqitch->plan;
     my $change = $plan->last;
     my $name   = $change->name;
-    #print "Plan:\n";
-    #p $plan;
+
+    # print "Plan:\n";
+    # p $plan;
     # print "Change\n";
-    #p $change;
-    my $state = $sqitch->engine->current_state( $plan->project );
+    # p $change;
+    # my $state = $sqitch->engine->current_state( $plan->project );
+    # print "State\n";
     # p $state;
+
     my %fields = (
         change_id       => $change->id,
         name            => $change->name,
         note            => $change->note,
-        planned_at      => $state->{planned_at}->as_string,
-        planner_name    => $state->{planner_name},
-        planner_email   => $state->{planner_email},
-        committed_at    => $state->{committed_at}->as_string,
-        committer_name  => $state->{committer_name},
-        committer_email => $state->{committer_email},
+        #planned_at      => $change->{planned_at}->as_string,
+        planner_name    => $change->{planner_name},
+        planner_email   => $change->{planner_email},
+        # planned_at      => $state->{planned_at}->as_string,
+        # planner_name    => $state->{planner_name},
+        # planner_email   => $state->{planner_email},
+        # committed_at    => $state->{committed_at}->as_string,
+        # committer_name  => $state->{committer_name},
+        # committer_email => $state->{committer_email},
     );
     while ( my ( $field, $value ) = each(%fields) ) {
         $self->load_change_for( $field, $value );
@@ -99,21 +153,16 @@ sub BUILD {
 
     $self->load_sql_for($_, $name) for qw(deploy revert verify);
 
-    EVT_BUTTON $self->view->frame,
-        $self->view->right_side->btn_status->GetId, sub {
-            $self->status;
-    };
-
-    return 1;
+    return;
 }
 
-sub status {
-    my $self = shift;
+sub execute_command {
+    my ($self, $cmd) = @_;
 
-    my $cmd = 'status';
+    print "Execute $cmd\n";
     my $cmd_args;
 
-    # 6. Instantiate the command object.
+    # Instantiate the command object.
     my $command = App::Sqitch::Command->load({
         sqitch  => $self->sqitch,
         command => $cmd,
@@ -121,15 +170,17 @@ sub status {
         args    => $cmd_args,
     });
 
-    # 7. Execute command.
+    # Execute command.
     try {
         $command->execute( @{$cmd_args} );
     }
     catch {
-        # local $@ = $_;
-        # $self->log_message($@); # HOWTO get rid of the stack trace?
-        #                         # or better to redirect it to another Logger?
-    }
+        local $@ = $_;
+        $self->log_message($@); # HOWTO get rid of the stack trace?
+                                # or better to redirect it to another Logger?
+    };
+
+    return;
 }
 
 sub load_change_for {
