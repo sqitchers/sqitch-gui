@@ -12,17 +12,19 @@ use Try::Tiny;
 use App::Sqitch::GUI::Sqitch;
 use App::Sqitch::GUI::WxApp;
 use App::Sqitch::GUI::Config;
+use App::Sqitch::GUI::Status;
+use App::Sqitch::GUI::Refresh;
 
 use Data::Printer;
 
 has 'app' => (
-    is         => 'rw',
+    is         => 'ro',
     isa        => 'App::Sqitch::GUI::WxApp',
     lazy_build => 1,
 );
 
 has 'view' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => 'App::Sqitch::GUI::View',
     default => sub { shift->app->view },
 );
@@ -40,16 +42,15 @@ has sqitch => (
     is      => 'ro',
     isa     => 'Maybe[App::Sqitch]',
     lazy    => 1,
-    default => sub {
-        my $self = shift;
-        my $opts = {};
-        $opts->{config}    = $self->config;
-        my $sqitch;
-        try {
-            $sqitch = App::Sqitch::GUI::Sqitch->new($opts);
-        };
+    builder => 'init_sqitch',
+);
 
-        return $sqitch;
+has status => (
+    is      => 'rw',
+    isa     => 'App::Sqitch::GUI::Status',
+    lazy    => 1,
+    default => sub {
+        App::Sqitch::GUI::Status->new;
     }
 );
 
@@ -63,6 +64,19 @@ sub _build_app {
     my $self = shift;
     my $app = App::Sqitch::GUI::WxApp->new();
     return $app;
+}
+
+sub init_sqitch {
+    my $self = shift;
+
+    my $opts = {};
+    $opts->{config} = $self->config;
+    my $sqitch;
+    try {
+        $sqitch = App::Sqitch::GUI::Sqitch->new($opts);
+    };
+
+    return $sqitch;
 }
 
 sub BUILD {
@@ -91,9 +105,10 @@ sub BUILD {
         }
     };
 
-    $self->_setup_events();
+    $self->_setup_events;
+    $self->_init_observers;
 
-    $self->load_project;
+    $self->load_project;# if $self->state_is('ready');
 
     return;
 }
@@ -116,6 +131,23 @@ sub _setup_events {
             $self->execute_command('deploy');
     };
 
+    return;
+}
+
+sub _init_observers {
+    my $self = shift;
+
+    my $status = $self->status;
+
+    $status->add_observer(
+        App::Sqitch::GUI::Refresh->new( view => $self->view ) );
+
+    # increments the counter to 1, afterwards its observers are notified
+    # of changes Refresh is notified of a change, its update-method is
+    # called
+    $status->set_state('idle');
+
+    #
     return;
 }
 
@@ -207,7 +239,6 @@ sub load_sql_for {
 
     return;
 }
-
 
 __PACKAGE__->meta->make_immutable;
 
