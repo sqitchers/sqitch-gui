@@ -44,11 +44,11 @@ has sqitch => (
         my $self = shift;
         my $opts = {};
         $opts->{config}    = $self->config;
-        #$opts->{plan_file} = 'fisier.plan';  # debug
         my $sqitch;
         try {
             $sqitch = App::Sqitch::GUI::Sqitch->new($opts);
-        }
+        };
+
         return $sqitch;
     }
 );
@@ -93,6 +93,8 @@ sub BUILD {
 
     $self->_setup_events();
 
+    $self->load_project;
+
     return;
 }
 
@@ -100,7 +102,7 @@ sub _setup_events {
     my $self = shift;
 
     # Set events for some of the commands
-    # Verifiy needs confirmation
+    # 'Revert' needs confirmation
     foreach my $cmd ( qw(status deploy verify) ) {
         my $btn = "btn_$cmd";
         EVT_BUTTON $self->view->frame,
@@ -159,7 +161,7 @@ sub load_project {
 sub execute_command {
     my ($self, $cmd) = @_;
 
-    print "Execute $cmd\n";
+    print "Execute '$cmd'\n";
     my $cmd_args;
 
     # Instantiate the command object.
@@ -188,7 +190,7 @@ sub load_change_for {
 
     my $ctrl_name = "txt_$field";
     my $ctrl = $self->view->change->$ctrl_name;
-    $self->control_write_e($ctrl, $value);
+    $self->view->control_write_e($ctrl, $value);
 
     return;
 }
@@ -201,32 +203,11 @@ sub load_sql_for {
     my $text = read_file($sql_file);
     my $ctrl_name = "edit_$command";
     my $ctrl = $self->view->change->$ctrl_name;
-    $self->control_write_s($ctrl, $text);
+    $self->view->control_write_s($ctrl, $text);
 
     return;
 }
 
-sub control_write_s {
-    my ( $self, $control, $value, $is_append ) = @_;
-
-    $value ||= q{};                 # empty
-
-    $control->ClearAll unless $is_append;
-    $control->AppendText($value);
-    $control->AppendText("\n");
-    $control->Colourise( 0, $control->GetTextLength );
-
-    return;
-}
-
-sub control_write_e {
-    my ( $self, $control, $value ) = @_;
-
-    $control->Clear;
-    $control->SetValue($value) if defined $value;
-
-    return;
-}
 
 __PACKAGE__->meta->make_immutable;
 

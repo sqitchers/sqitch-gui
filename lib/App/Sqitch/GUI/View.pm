@@ -116,7 +116,8 @@ sub BUILD {
 
     $self->frame->SetSizer($self->main_sizer);
 
-    $self->change->panel->Show;              # default panel
+    $self->change->panel->Show;              # OK, default panel is Change
+                                             # NOT Ok for others: Gtk-WARNINGs
 
     $self->_set_events;
     $self->frame->Show;
@@ -309,6 +310,28 @@ sub show_panel {
     $self->right_side->$btn_sel->SetValue(1);
 
     $self->top_side->panel->Layout();
+
+    return;
+}
+
+sub control_write_s {
+    my ( $self, $control, $value, $is_append ) = @_;
+
+    $value ||= q{};                 # empty
+
+    $control->ClearAll unless $is_append;
+    $control->AppendText($value);
+    $control->AppendText("\n");
+    $control->Colourise( 0, $control->GetTextLength );
+
+    return;
+}
+
+sub control_write_e {
+    my ( $self, $control, $value ) = @_;
+
+    $control->Clear;
+    $control->SetValue($value) if defined $value;
 
     return;
 }
