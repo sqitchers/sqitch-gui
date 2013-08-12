@@ -15,7 +15,7 @@ use App::Sqitch::GUI::Config;
 use App::Sqitch::GUI::Status;
 use App::Sqitch::GUI::Refresh;
 
-use Data::Printer;
+#use Data::Printer;
 
 has 'app' => (
     is         => 'ro',
@@ -90,25 +90,28 @@ sub BUILD {
     #print 'Top dir is:', $self->sqitch->top_dir, "\n";
     #p $self->config->config_files;
 
+    $self->_setup_events;
+    $self->_init_observers;
+
     $self->log_message('Welcome to Sqitch!');
 
     my $sqitch = $self->sqitch;
 
+    # Do we have a valid configuration - plan?
     try {
         App::Sqitch::Plan->new(sqitch => $sqitch)->load;
     }
     finally {
         if (@_) {
             $self->log_message('Sqitch is NOT initialized yet. Please set a valid project path!');
+            $self->status->set_state('init');
         } else {
             $self->log_message('Sqitch is initialized.');
+            $self->status->set_state('idle');
         }
     };
 
-    $self->_setup_events;
-    $self->_init_observers;
-
-    $self->load_project;# if $self->state_is('ready');
+    $self->load_project if $self->status->is_state('idle');
 
     return;
 }
@@ -117,7 +120,7 @@ sub _setup_events {
     my $self = shift;
 
     # Set events for some of the commands
-    # 'Revert' needs confirmation
+    # 'Revert' needs confirmation - can't use it
     foreach my $cmd ( qw(status deploy verify) ) {
         my $btn = "btn_$cmd";
         EVT_BUTTON $self->view->frame,
@@ -125,11 +128,6 @@ sub _setup_events {
                 $self->execute_command($cmd);
             };
     }
-
-    EVT_BUTTON $self->view->frame,
-        $self->view->right_side->btn_deploy->GetId, sub {
-            $self->execute_command('deploy');
-    };
 
     return;
 }
@@ -142,12 +140,6 @@ sub _init_observers {
     $status->add_observer(
         App::Sqitch::GUI::Refresh->new( view => $self->view ) );
 
-    # increments the counter to 1, afterwards its observers are notified
-    # of changes Refresh is notified of a change, its update-method is
-    # called
-    $status->set_state('idle');
-
-    #
     return;
 }
 

@@ -14,7 +14,7 @@ has 'app' => (
         menu           => 'menu_bar',
         get_left_pane  => 'left_pane',
         get_right_pane => 'right_pane',
-        }
+    }
 );
 has 'ancestor'  => (is => 'rw', isa => 'Object', weak_ref => 1 );
 has 'parent'    => (is => 'rw', isa => 'Maybe[Wx::Window]' );

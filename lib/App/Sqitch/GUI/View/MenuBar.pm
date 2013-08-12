@@ -3,9 +3,11 @@ package App::Sqitch::GUI::View::MenuBar;
 use Moose;
 use namespace::autoclean;
 use Wx qw(:everything);
+
 with 'App::Sqitch::GUI::Roles::Element';
 
 use MooseX::NonMoose::InsideOut;
+
 extends 'Wx::MenuBar';
 
 use App::Sqitch::GUI::View::MenuBar::App;

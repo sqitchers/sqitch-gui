@@ -4,23 +4,32 @@ use 5.010;
 use Moose;
 use namespace::autoclean;
 
-#use Data::Printer;
-
-# apply the oberserver-role, tagging the class as observer and ...
 with 'MooseX::Observer::Role::Observer';
+
+use App::Sqitch::GUI::Settings;
+
+#use Data::Printer;
 
 has 'view' => (
     is   => 'ro',
     isa  => 'App::Sqitch::GUI::View',
 );
 
-# ... require an update-method to be implemented
-# this is called after the observed subject calls an observed method
+has 'settings' => (
+    is         => 'ro',
+    isa        => 'App::Sqitch::GUI::Settings',
+    lazy_build => 1,
+);
+
+sub _build_settings {
+    return App::Sqitch::GUI::Settings->new;
+}
+
 sub update {
     my ( $self, $subject, $args, $eventname ) = @_;
     my $state = $subject->get_state;
     print "Current state is '$state'\n";
-    #$self->view->set_status($state);
+    $self->view->set_status($state, $self->settings);
 }
 
 __PACKAGE__->meta->make_immutable;

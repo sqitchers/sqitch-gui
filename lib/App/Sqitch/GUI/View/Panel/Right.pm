@@ -38,12 +38,12 @@ sub BUILD {
 
     $self->sizer->Add( $self->panel_sbs, 0, wxEXPAND | wxALL, 5 );
     $self->panel_sbs->Add( $self->panel_fgs,       0, wxEXPAND | wxALL, 5 );
-    $self->panel_fgs->Add( $self->btn_change_sel,  0, wxEXPAND,         5 );
-    $self->panel_fgs->Add( $self->btn_change,      0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_project_sel, 0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_project,     0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_plan_sel,    0, wxEXPAND,         5 );
     $self->panel_fgs->Add( $self->btn_plan,        0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_change_sel,  0, wxEXPAND,         5 );
+    $self->panel_fgs->Add( $self->btn_change,      0, wxEXPAND,         5 );
 
     #--- Commands
 
@@ -175,7 +175,6 @@ sub _build_btn_change_sel {
         q{ },
         [-1, -1],
         [-1, -1],
-        wxRB_GROUP,             # first button in group
     );
 }
 
@@ -212,6 +211,7 @@ sub _build_btn_project {
         q{Project},
         [ -1, -1 ],
         [ -1, -1 ],
+        wxRB_GROUP,             # first button in group
     );
 }
 

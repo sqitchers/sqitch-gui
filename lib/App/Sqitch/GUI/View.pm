@@ -3,7 +3,7 @@ package App::Sqitch::GUI::View;
 use Moose;
 use namespace::autoclean;
 use Wx qw<:everything>;
-use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU>;
+use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU EVT_RADIOBUTTON>;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
@@ -17,6 +17,8 @@ use App::Sqitch::GUI::View::Panel::Bottom;
 use App::Sqitch::GUI::View::Panel::Change;
 use App::Sqitch::GUI::View::Panel::Project;
 use App::Sqitch::GUI::View::Panel::Plan;
+
+#use Data::Printer;
 
 # Main window
 has 'position' => (
@@ -96,7 +98,6 @@ sub BUILD {
     $self->frame->Hide;
 
     $self->frame->SetMenuBar($self->menu_bar);
-    $self->_build_status_bar;
 
     $self->main_sizer->Add( $self->left_side->panel,  1, wxEXPAND | wxALL, 0 );
     $self->main_sizer->Add( $self->right_side->panel, 0, wxEXPAND | wxALL, 0 );
@@ -116,10 +117,9 @@ sub BUILD {
 
     $self->frame->SetSizer($self->main_sizer);
 
-    $self->change->panel->Show;              # OK, default panel is Change
-                                             # NOT Ok for others: Gtk-WARNINGs
+    $self->change->panel->Show; # Gtk-WARNINGs if default is not Change
+                                # later set to Project pragmatically ;)
 
-    $self->_set_events;
     $self->frame->Show;
 
     return $self;
@@ -280,17 +280,16 @@ sub _set_events {
 
     EVT_CLOSE( $self->frame, sub { $self->OnClose(@_) } );
 
-    EVT_BUTTON $self->frame, $self->right_side->btn_change->GetId, sub {
-        $self->show_panel('change');
-    };
+    foreach my $name ( qw{change project plan} ) {
+        my $btn = q{btn_} . $name;
+        EVT_BUTTON $self->frame, $self->right_side->$btn->GetId, sub {
+            $self->show_panel($name);
+        };
 
-    EVT_BUTTON $self->frame, $self->right_side->btn_project->GetId, sub {
-        $self->show_panel('project');
-    };
-
-    EVT_BUTTON $self->frame, $self->right_side->btn_plan->GetId, sub {
-        $self->show_panel('plan');
-    };
+        my $btn_sel = q{btn_} . $name . q{_sel};
+        EVT_RADIOBUTTON $self->frame, $self->right_side->$btn_sel->GetId,
+            sub { $self->on_radio($name); };
+    }
 
     return 1;
 }
@@ -333,6 +332,27 @@ sub control_write_e {
     $control->Clear;
     $control->SetValue($value) if defined $value;
 
+    return;
+}
+
+sub set_status {
+    my ($self, $state, $settings) = @_;
+
+    $self->status_bar->change_caption($state, 1);
+
+    foreach my $btn (keys %{$settings->$state} ) {
+        my $enable = $settings->$state->{$btn};
+        $self->right_side->$btn->Enable($enable);
+    }
+
+    $self->show_panel('project');
+
+    return;
+}
+
+sub on_radio {
+    my( $self, $name ) = @_;
+    $self->show_panel($name);
     return;
 }
 
