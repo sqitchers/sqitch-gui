@@ -90,6 +90,9 @@ sub BUILD {
     $self->subform2_fg_sz->Add( $self->txt_user, 1, wxEXPAND | wxLEFT, 20 );
     $self->form_fg_sz->Add( $self->subform2_fg_sz, 1, wxEXPAND | wxLEFT, 0 );
 
+    $self->form_fg_sz->Add( $self->lbl_path, 0, wxLEFT, 5 );
+    $self->form_fg_sz->Add( $self->dpc_path, 1, wxEXPAND | wxLEFT, 0 );
+
     $self->form_fg_sz->Add( $self->lbl_uri, 0, wxLEFT, 5 );
     $self->form_fg_sz->Add( $self->txt_uri, 1, wxEXPAND | wxLEFT, 0 );
 
@@ -101,9 +104,6 @@ sub BUILD {
 
     $self->form_fg_sz->Add( $self->lbl_creator_email, 0, wxLEFT, 5 );
     $self->form_fg_sz->Add( $self->txt_creator_email, 1, wxEXPAND | wxLEFT, 0 );
-
-    $self->form_fg_sz->Add( $self->lbl_path, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->dpc_path, 1, wxEXPAND | wxLEFT, 0 );
 
     #-- List and buttons
 
@@ -218,7 +218,7 @@ sub _build_lbl_db {
 
 sub _build_lbl_path {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Path} );
+    return Wx::StaticText->new( $self->panel, -1, q{Repository} );
 }
 
 #-- Entry
