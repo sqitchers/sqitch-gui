@@ -9,20 +9,20 @@ use utf8;
 
 extends 'App::Sqitch::Config';
 
-has project_path => (
+has repository_path => (
     is      => 'ro',
     isa     => 'Maybe[Path::Class::Dir]',
     lazy    => 1,
     default => sub {
         my $self    = shift;
-        my $default = $self->get(key => 'project.default');
-        dir $self->get(key => "project.${default}.path");
+        my $default = $self->get(key => 'repository.default');
+        dir $self->get(key => "repository.${default}.path");
     }
 );
 
 override load_dirs => sub {
     my $self = shift;
-    my $conf = file( $self->project_path, $self->local_file );
+    my $conf = file( $self->repository_path, $self->local_file );
     $self->load_file($conf) if -f $conf;
 };
 
@@ -32,14 +32,14 @@ __PACKAGE__->meta->make_immutable;
 
 Additions to the user configuration file C<sqitch.conf>:
 
-  [project]
+  [repository]
       default = FliprPg
-  [project "FliprPg"]
+  [repository "FliprPg"]
       path = /home/user/sqitch/flipr-pg
-  [project "FliprCubrid"]
+  [repository "FliprCubrid"]
       path = /home/user/sqitch/flipr-cubrid
 
-The list of project names and paths and a default project name.
+The list of repository names and paths and a default repository name.
 
 =cut
 
