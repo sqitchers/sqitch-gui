@@ -3,6 +3,7 @@ package App::Sqitch::GUI::View::Panel::Project;
 use utf8;
 use Moose;
 use namespace::autoclean;
+
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE EVT_DIRPICKER_CHANGED);
 use Wx::Perl::ListCtrl;
@@ -19,7 +20,8 @@ has 'sb_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'list_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'form_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'subform_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'subform1_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'subform2_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 has 'list' => ( is => 'rw', isa => 'Wx::Perl::ListCtrl', lazy_build => 1 );
 
@@ -28,6 +30,8 @@ has 'btn_default' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 
 has 'lbl_project'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_database' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_user'     => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'lbl_uri'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'lbl_created_at'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'lbl_creator_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
@@ -36,12 +40,29 @@ has 'lbl_path' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'lbl_db'   => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 
 has 'txt_project'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_database' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_user'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_uri'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_created_at'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_creator_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_creator_email'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'dpc_path'  => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
-has 'cho_db'    => ( is => 'rw', isa => 'Wx::Choice',   lazy_build => 1 );
+has 'cb_driver'    => ( is => 'rw', isa => 'Wx::ComboBox',      lazy_build => 1 );
+has 'engines' => (
+    is       => 'ro',
+    isa      => 'HashRef',
+    required => 1,
+    lazy     => 1,
+    default => sub {
+        return {
+            pg     => 'PostgreSQL',
+            mysql  => 'MySQL',
+            sqlite => 'SQLite',
+            cubrid => 'CUBRID',
+            oracle => 'Oracle',
+        };
+    },
+);
 
 sub BUILD {
     my $self = shift;
@@ -58,10 +79,16 @@ sub BUILD {
     #-- Top form
 
     $self->form_fg_sz->Add( $self->lbl_project, 0, wxLEFT, 5 );
-    $self->subform_fg_sz->Add( $self->txt_project, 1, wxLEFT, 0 );
-    $self->subform_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 50 );
-    $self->subform_fg_sz->Add( $self->cho_db, 0, wxLEFT, 20 );
-    $self->form_fg_sz->Add( $self->subform_fg_sz, 1, wxEXPAND | wxLEFT, 0 );
+    $self->subform1_fg_sz->Add( $self->txt_project, 1, wxLEFT, 0 );
+    $self->subform1_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 50 );
+    $self->subform1_fg_sz->Add( $self->cb_driver, 0, wxLEFT, 20 );
+    $self->form_fg_sz->Add( $self->subform1_fg_sz, 1, wxEXPAND | wxLEFT, 0 );
+
+    $self->form_fg_sz->Add( $self->lbl_database, 0, wxLEFT, 5 );
+    $self->subform2_fg_sz->Add( $self->txt_database, 1, wxLEFT, 0 );
+    $self->subform2_fg_sz->Add( $self->lbl_user, 0, wxLEFT, 53 );
+    $self->subform2_fg_sz->Add( $self->txt_user, 1, wxEXPAND | wxLEFT, 20 );
+    $self->form_fg_sz->Add( $self->subform2_fg_sz, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_uri, 0, wxLEFT, 5 );
     $self->form_fg_sz->Add( $self->txt_uri, 1, wxEXPAND | wxLEFT, 0 );
@@ -92,9 +119,6 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->btn_sizer, 1, wxALIGN_CENTRE);
 
     $self->panel->SetSizer($self->sizer);
-    # $self->parent->Layout();
-
-    # $self->panel->Show;
 
     return $self;
 }
@@ -131,13 +155,20 @@ sub _build_main_fg_sz {
 }
 
 #-  Form
+
 sub _build_form_fg_sz {
     my $fgs = Wx::FlexGridSizer->new( 7, 2, 6, 10 );
     $fgs->AddGrowableCol(1);
     return $fgs;
 }
 
-sub _build_subform_fg_sz {
+sub _build_subform1_fg_sz {
+    my $fgs = Wx::FlexGridSizer->new( 1, 3, 0, 0 );
+    $fgs->AddGrowableCol(0);
+    return $fgs;
+}
+
+sub _build_subform2_fg_sz {
     my $fgs = Wx::FlexGridSizer->new( 1, 3, 0, 0 );
     $fgs->AddGrowableCol(0);
     return $fgs;
@@ -148,6 +179,16 @@ sub _build_subform_fg_sz {
 sub _build_lbl_project {
     my $self = shift;
     return Wx::StaticText->new( $self->panel, -1, q{Project} );
+}
+
+sub _build_lbl_database {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{Database} );
+}
+
+sub _build_lbl_user {
+    my $self = shift;
+    return Wx::StaticText->new( $self->panel, -1, q{User} );
 }
 
 sub _build_lbl_uri {
@@ -172,7 +213,7 @@ sub _build_lbl_creator_email {
 
 sub _build_lbl_db {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Database} );
+    return Wx::StaticText->new( $self->panel, -1, q{Driver} );
 }
 
 sub _build_lbl_path {
@@ -183,6 +224,16 @@ sub _build_lbl_path {
 #-- Entry
 
 sub _build_txt_project {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
+sub _build_txt_database {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
+sub _build_txt_user {
     my $self = shift;
     return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
@@ -215,20 +266,21 @@ sub _build_dpc_path {
         q{Choose a directory},
         [ -1, -1 ],
         [ -1, -1 ],
-        wxDIRP_USE_TEXTCTRL,
+        wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL,
     );
 }
 
-sub _build_cho_db {
+sub _build_cb_driver {
     my $self = shift;
-
-    return Wx::Choice->new(
+    my @engines = values %{$self->engines};
+    return Wx::ComboBox->new(
         $self->panel,
         -1,
+        q{},
         [ -1,  -1 ],
-        [ 165, -1 ],
-        [ 'PostgreSQL', 'MySQL', 'SQLite', 'CUBRID', 'Oracle' ],
-        wxCB_SORT,
+        [ 170, -1 ],
+        \@engines,
+        wxCB_SORT | wxCB_READONLY,
     );
 }
 

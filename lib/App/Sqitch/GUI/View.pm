@@ -335,6 +335,25 @@ sub control_write_e {
     return;
 }
 
+sub dirpicker_write {
+    my ( $self, $path ) = @_;
+
+    die "Wrong path: $path!" unless -d $path;
+
+    $self->project->dpc_path->SetPath($path);
+
+    return;
+}
+
+sub combobox_write {
+    my ( $self, $name ) = @_;
+
+    my $driver = $self->project->engines->{$name};
+    $self->project->cb_driver->SetValue($driver) if $driver;
+
+    return;
+}
+
 sub set_status {
     my ($self, $state, $settings) = @_;
 

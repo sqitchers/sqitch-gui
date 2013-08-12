@@ -82,14 +82,6 @@ sub init_sqitch {
 sub BUILD {
     my $self = shift;
 
-    #print scalar $self->config->dump, "\n";
-    # my $local_file = $config->local_file;
-    # print "Local file is $local_file\n";
-    # my $user_file = $config->user_file;
-    # print "User file is $user_file\n";
-    #print 'Top dir is:', $self->sqitch->top_dir, "\n";
-    #p $self->config->config_files;
-
     $self->_setup_events;
     $self->_init_observers;
 
@@ -101,9 +93,12 @@ sub BUILD {
     try {
         App::Sqitch::Plan->new(sqitch => $sqitch)->load;
     }
+    catch {
+        print "Err: $_\n";
+    }
     finally {
         if (@_) {
-            $self->log_message('Sqitch is NOT initialized yet. Please set a valid project path!');
+            $self->log_message('Sqitch is NOT initialized yet. Please set a valid repository path!');
             $self->status->set_state('init');
         } else {
             $self->log_message('Sqitch is initialized.');
@@ -111,7 +106,10 @@ sub BUILD {
         }
     };
 
-    $self->load_project if $self->status->is_state('idle');
+    if ( $self->status->is_state('idle') ) {
+        $self->load_change;
+        $self->load_projects;
+    }
 
     return;
 }
@@ -143,38 +141,67 @@ sub _init_observers {
     return;
 }
 
-sub load_project {
+sub load_projects {
+    my $self = shift;
+
+    my $config = $self->config;
+    my $sqitch = $self->sqitch;
+    my $plan   = $sqitch->plan;
+
+    my %fields = (
+        project       => $plan->project,
+        uri           => $plan->uri,
+        database      => $sqitch->engine->db_name,
+        user          => $sqitch->engine->username,
+        created_at    => undef,
+        creator_name  => undef,
+        creator_email => undef,
+    );
+    while ( my ( $field, $value ) = each(%fields) ) {
+        $self->load_form_for( 'project', $field, $value );
+    }
+
+    my $repo_path = $config->repository_path;
+    $self->view->dirpicker_write($repo_path );
+    my $driver = $config->get( key => 'core.engine' );
+    $self->view->combobox_write($driver);
+
+    return;
+}
+
+sub load_change {
     my $self = shift;
 
     my $sqitch = $self->sqitch;
     my $plan   = $sqitch->plan;
     my $change = $plan->last;
     my $name   = $change->name;
+    my $state  = $sqitch->engine->current_state( $plan->project );
 
-    # print "Plan:\n";
-    # p $plan;
-    # print "Change\n";
-    # p $change;
-    # my $state = $sqitch->engine->current_state( $plan->project );
-    # print "State\n";
-    # p $state;
+    my $planned_at
+        = defined $state
+        ? $state->{planned_at}->as_string
+        : undef;
+    my $committed_at
+        = defined $state
+        ? $state->{committed_at}->as_string
+        : undef;
 
     my %fields = (
         change_id       => $change->id,
         name            => $change->name,
         note            => $change->note,
-        #planned_at      => $change->{planned_at}->as_string,
         planner_name    => $change->{planner_name},
         planner_email   => $change->{planner_email},
-        # planned_at      => $state->{planned_at}->as_string,
-        # planner_name    => $state->{planner_name},
-        # planner_email   => $state->{planner_email},
-        # committed_at    => $state->{committed_at}->as_string,
-        # committer_name  => $state->{committer_name},
-        # committer_email => $state->{committer_email},
+        planned_at      => $planned_at,
+        planner_name    => $state->{planner_name},
+        planner_email   => $state->{planner_email},
+        committed_at    => $committed_at,
+        committer_name  => $state->{committer_name},
+        committer_email => $state->{committer_email},
     );
     while ( my ( $field, $value ) = each(%fields) ) {
-        $self->load_change_for( $field, $value );
+        $self->load_form_for( 'change', $field, $value );
     }
 
     $self->load_sql_for($_, $name) for qw(deploy revert verify);
@@ -209,11 +236,11 @@ sub execute_command {
     return;
 }
 
-sub load_change_for {
-    my ($self, $field, $value) = @_;
+sub load_form_for {
+    my ($self, $form, $field, $value) = @_;
 
     my $ctrl_name = "txt_$field";
-    my $ctrl = $self->view->change->$ctrl_name;
+    my $ctrl = $self->view->$form->$ctrl_name;
     $self->view->control_write_e($ctrl, $value);
 
     return;
@@ -222,8 +249,8 @@ sub load_change_for {
 sub load_sql_for {
     my ($self, $command, $name) = @_;
 
-    my $proj_path = $self->config->project_path;
-    my $sql_file  = file($proj_path, $command, "$name.sql");
+    my $repo_path = $self->config->repository_path;
+    my $sql_file  = file($repo_path, $command, "$name.sql");
     my $text = read_file($sql_file);
     my $ctrl_name = "edit_$command";
     my $ctrl = $self->view->change->$ctrl_name;
