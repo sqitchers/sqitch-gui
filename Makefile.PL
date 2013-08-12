@@ -34,6 +34,7 @@ requires(
     'Wx::Perl::ListCtrl' => '0.03',
     'Wx::STC'            => '0.01',
     'MooseX::NonMoose'   => '0.22',
+    'MooseX::Observer'   => '0.10',
 );
 
 #install_as_cpan;
