@@ -14,7 +14,9 @@ has project_path => (
     isa     => 'Maybe[Path::Class::Dir]',
     lazy    => 1,
     default => sub {
-        dir shift->get(key => 'projects.path');
+        my $self    = shift;
+        my $default = $self->get(key => 'project.default');
+        dir $self->get(key => "project.${default}.path");
     }
 );
 
@@ -25,5 +27,20 @@ override load_dirs => sub {
 };
 
 __PACKAGE__->meta->make_immutable;
+
+=pod
+
+Additions to the user configuration file C<sqitch.conf>:
+
+  [project]
+      default = FliprPg
+  [project "FliprPg"]
+      path = /home/user/sqitch/flipr-pg
+  [project "FliprCubrid"]
+      path = /home/user/sqitch/flipr-cubrid
+
+The list of project names and paths and a default project name.
+
+=cut
 
 1;
