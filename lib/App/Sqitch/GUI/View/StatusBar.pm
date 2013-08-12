@@ -2,8 +2,10 @@ package App::Sqitch::GUI::View::StatusBar;
 
 use Moose;
 use namespace::autoclean;
+
 use Wx qw(:everything);
 use Wx::Event qw(EVT_SIZE);
+
 with 'App::Sqitch::GUI::Roles::Element';
 
 has 'status_bar' => (
@@ -12,29 +14,48 @@ has 'status_bar' => (
     lazy_build => 1,
 );
 
-has 'caption' => (
+has 'caption_msg' => (
     is         => 'rw',
     isa        => 'Str',
     lazy_build => 1,
 );
 
-has 'old_w' => (is => 'rw', isa => 'Int', lazy => 1, default => 0);
-has 'old_h' => (is => 'rw', isa => 'Int', lazy => 1, default => 0);
+has 'caption_state' => (
+    is         => 'rw',
+    isa        => 'Str',
+    lazy_build => 1,
+);
+
+has 'caption_proj' => (
+    is         => 'rw',
+    isa        => 'Str',
+    lazy_build => 1,
+);
 
 sub BUILD {
     my $self = shift;
-    $self->bar_reset; # Resets the whole bar, including the gauge.
-    return $self;
+    my $sb   = $self->bar_reset;
+    return $sb;
 }
 
 sub _build_status_bar {
     my $self = shift;
-    return $self->parent->CreateStatusBar(2);
+    return $self->parent->CreateStatusBar(3);
 }
 
-sub _build_caption {
+sub _build_caption_msg {
     my $self = shift;
-    return 'Welcome!';
+    return q{};
+}
+
+sub _build_caption_state {
+    my $self = shift;
+    return q{};
+}
+
+sub _build_caption_proj {
+    my $self = shift;
+    return q{};
 }
 
 sub _set_events {
@@ -45,41 +66,31 @@ sub _set_events {
 
 sub bar_reset {
     my $self = shift;
+
     $self->status_bar->DestroyChildren();
-    $self->status_bar->SetStatusWidths(-5, -1);
-    $self->status_bar->SetStatusText($self->caption, 0);
-
-    my $rect = $self->status_bar->GetFieldRect(1);
-    #$self->gauge( $self->_build_gauge );
-    # $self->yield;
-
+    $self->status_bar->SetStatusWidths(-1, 100, 100);
+    $self->status_bar->SetStatusText($self->caption_msg, 0);
+    $self->status_bar->SetStatusText($self->caption_state, 1);
+    $self->status_bar->SetStatusText($self->caption_proj, 2);
     $self->status_bar->Update;
+
     return $self->status_bar;
 }
 
 sub change_caption {
-    my $self = shift;
-    my $new_text = shift;
-    my $old_text = $self->status_bar->GetStatusText(0);
-    $self->caption($new_text);
-    $self->status_bar->SetStatusText($new_text, 0);
+    my ($self, $new_text, $field_no) = @_;
+
+    my $old_text = $self->status_bar->GetStatusText($field_no);
+    $self->caption_msg($new_text)   if $field_no == 0;
+    $self->caption_state($new_text) if $field_no == 1;
+    $self->caption_proj($new_text)  if $field_no == 2;
+    $self->status_bar->SetStatusText( $new_text, $field_no );
+
     return $old_text;
 }
 
 sub OnResize {
     my($self, $status_bar, $event) = @_;
-
-    if( $self->has_view ) {
-        my $mf = $self->get_view;
-        my $current_size = $mf->frame->GetSize;
-        if (   $current_size->width != $self->old_w
-            or $current_size->height != $self->old_h )
-        {
-            $self->bar_reset;   # otherwise the throbber gauge gets all screwy
-            $self->old_w( $current_size->width );
-            $self->old_h( $current_size->height );
-        }
-    }
     return 1;
 }
 
