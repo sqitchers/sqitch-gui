@@ -4,7 +4,7 @@ use utf8;
 use Moose;
 use namespace::autoclean;
 use Wx qw(:allclasses :everything);
-use Wx::Event qw(EVT_CLOSE);
+use Wx::Event qw(EVT_CLOSE EVT_DIRPICKER_CHANGED);
 use Wx::Perl::ListCtrl;
 
 with 'App::Sqitch::GUI::Roles::Element';
@@ -19,8 +19,7 @@ has 'sb_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'list_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'form_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'subform1_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'subform2_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'subform_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 has 'list' => ( is => 'rw', isa => 'Wx::Perl::ListCtrl', lazy_build => 1 );
 
@@ -41,7 +40,6 @@ has 'txt_uri'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_created_at'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_creator_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_creator_email'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_path'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'dpc_path'  => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
 has 'cho_db'    => ( is => 'rw', isa => 'Wx::Choice',   lazy_build => 1 );
 
@@ -60,27 +58,25 @@ sub BUILD {
     #-- Top form
 
     $self->form_fg_sz->Add( $self->lbl_project, 0, wxLEFT, 5 );
-    $self->subform1_fg_sz->Add( $self->txt_project, 1, wxLEFT, 0 );
-    $self->subform1_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 50 );
-    $self->subform1_fg_sz->Add( $self->cho_db, 0, wxLEFT, 25 );
-    $self->form_fg_sz->Add( $self->subform1_fg_sz, 1, wxEXPAND | wxLEFT, 2 );
+    $self->subform_fg_sz->Add( $self->txt_project, 1, wxLEFT, 0 );
+    $self->subform_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 50 );
+    $self->subform_fg_sz->Add( $self->cho_db, 0, wxLEFT, 20 );
+    $self->form_fg_sz->Add( $self->subform_fg_sz, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_uri, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->txt_uri, 1, wxEXPAND | wxLEFT, 2 );
+    $self->form_fg_sz->Add( $self->txt_uri, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_created_at, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->txt_created_at, 1, wxEXPAND | wxLEFT, 2 );
+    $self->form_fg_sz->Add( $self->txt_created_at, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_creator_name, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->txt_creator_name, 1, wxEXPAND | wxLEFT, 2 );
+    $self->form_fg_sz->Add( $self->txt_creator_name, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_creator_email, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->txt_creator_email, 1, wxEXPAND | wxLEFT, 2 );
+    $self->form_fg_sz->Add( $self->txt_creator_email, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_path, 0, wxLEFT, 5 );
-    $self->subform2_fg_sz->Add( $self->txt_path, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, 5 );
-    $self->subform2_fg_sz->Add( $self->dpc_path, 0, wxLEFT, 10 );
-    $self->form_fg_sz->Add( $self->subform2_fg_sz, 1, wxEXPAND | wxLEFT, 2 );
+    $self->form_fg_sz->Add( $self->dpc_path, 1, wxEXPAND | wxLEFT, 0 );
 
     #-- List and buttons
 
@@ -141,13 +137,7 @@ sub _build_form_fg_sz {
     return $fgs;
 }
 
-sub _build_subform2_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 1, 2, 0, 0 );
-    $fgs->AddGrowableCol(0);
-    return $fgs;
-}
-
-sub _build_subform1_fg_sz {
+sub _build_subform_fg_sz {
     my $fgs = Wx::FlexGridSizer->new( 1, 3, 0, 0 );
     $fgs->AddGrowableCol(0);
     return $fgs;
@@ -217,24 +207,16 @@ sub _build_txt_creator_email {
     return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
-sub _build_txt_path {
-    my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
-}
-
 sub _build_dpc_path {
     my $self = shift;
 
-    my $dp = Wx::DirPickerCtrl->new(
+    return Wx::DirPickerCtrl->new(
         $self->panel, -1, q{},
         q{Choose a directory},
         [ -1, -1 ],
-        [ 170, -1 ],                         # ???
-        # style
+        [ -1, -1 ],
+        wxDIRP_USE_TEXTCTRL,
     );
-    #EVT_DIRPICKER_CHANGED( $self, $dp, \&on_change );
-
-    return $dp;
 }
 
 sub _build_cho_db {
@@ -330,7 +312,17 @@ sub _build_list {
     return $list;
 }
 
-sub _set_events { }
+sub _set_events {
+    my ($self, $event) = @_;
+
+    EVT_DIRPICKER_CHANGED $self->panel, $self->dpc_path->GetId, sub {
+        $self->on_dpc_change;
+    };
+}
+
+sub on_dpc_change {
+    print "Path changed\n";
+}
 
 sub OnClose {
     my ($self, $event) = @_;
