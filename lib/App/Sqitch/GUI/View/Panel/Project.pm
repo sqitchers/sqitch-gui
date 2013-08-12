@@ -19,6 +19,8 @@ has 'sb_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'list_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'form_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'subform1_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'subform2_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 has 'list' => ( is => 'rw', isa => 'Wx::Perl::ListCtrl', lazy_build => 1 );
 
@@ -39,6 +41,7 @@ has 'txt_uri'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_created_at'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_creator_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_creator_email'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_path'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'dpc_path'  => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
 has 'cho_db'    => ( is => 'rw', isa => 'Wx::Choice',   lazy_build => 1 );
 
@@ -57,7 +60,10 @@ sub BUILD {
     #-- Top form
 
     $self->form_fg_sz->Add( $self->lbl_project, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->txt_project, 0, wxLEFT, 2 );
+    $self->subform1_fg_sz->Add( $self->txt_project, 1, wxLEFT, 0 );
+    $self->subform1_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 50 );
+    $self->subform1_fg_sz->Add( $self->cho_db, 0, wxLEFT, 25 );
+    $self->form_fg_sz->Add( $self->subform1_fg_sz, 1, wxEXPAND | wxLEFT, 2 );
 
     $self->form_fg_sz->Add( $self->lbl_uri, 0, wxLEFT, 5 );
     $self->form_fg_sz->Add( $self->txt_uri, 1, wxEXPAND | wxLEFT, 2 );
@@ -71,11 +77,10 @@ sub BUILD {
     $self->form_fg_sz->Add( $self->lbl_creator_email, 0, wxLEFT, 5 );
     $self->form_fg_sz->Add( $self->txt_creator_email, 1, wxEXPAND | wxLEFT, 2 );
 
-    $self->form_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->cho_db, 0, wxLEFT, 0);
-
     $self->form_fg_sz->Add( $self->lbl_path, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->dpc_path, 0, wxLEFT, 0);
+    $self->subform2_fg_sz->Add( $self->txt_path, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, 5 );
+    $self->subform2_fg_sz->Add( $self->dpc_path, 0, wxLEFT, 10 );
+    $self->form_fg_sz->Add( $self->subform2_fg_sz, 1, wxEXPAND | wxLEFT, 2 );
 
     #-- List and buttons
 
@@ -131,8 +136,20 @@ sub _build_main_fg_sz {
 
 #-  Form
 sub _build_form_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 7, 2, 5, 10 );
+    my $fgs = Wx::FlexGridSizer->new( 7, 2, 6, 10 );
     $fgs->AddGrowableCol(1);
+    return $fgs;
+}
+
+sub _build_subform2_fg_sz {
+    my $fgs = Wx::FlexGridSizer->new( 1, 2, 0, 0 );
+    $fgs->AddGrowableCol(0);
+    return $fgs;
+}
+
+sub _build_subform1_fg_sz {
+    my $fgs = Wx::FlexGridSizer->new( 1, 3, 0, 0 );
+    $fgs->AddGrowableCol(0);
     return $fgs;
 }
 
@@ -196,6 +213,11 @@ sub _build_txt_creator_name {
 }
 
 sub _build_txt_creator_email {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+}
+
+sub _build_txt_path {
     my $self = shift;
     return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
