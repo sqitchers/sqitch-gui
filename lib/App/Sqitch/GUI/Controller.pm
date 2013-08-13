@@ -119,7 +119,7 @@ sub _setup_events {
 
     # Set events for some of the commands
     # 'Revert' needs confirmation - can't use it
-    foreach my $cmd ( qw(status deploy verify) ) {
+    foreach my $cmd ( qw(status deploy verify log) ) {
         my $btn = "btn_$cmd";
         EVT_BUTTON $self->view->frame,
             $self->view->right_side->$btn->GetId, sub {

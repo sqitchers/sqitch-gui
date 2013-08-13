@@ -20,25 +20,35 @@ has +top_dir => (
         },
 );
 
-sub emit {
+override 'emit' => sub {
     shift;
     Wx::LogMessage(@_);
-}
+};
 
-sub emit_literal {
+override 'emit_literal' => sub {
     shift;
     Wx::LogMessage(@_);
-}
+};
 
-sub vent {
+override 'vent' => sub {
     shift;
     Wx::LogMessage(@_);
-}
+};
 
-sub vent_literal {
+override 'vent_literal' => sub {
     shift;
     Wx::LogMessage(@_);
-}
+};
+
+override 'page' => sub {
+    shift;
+    Wx::LogMessage(@_);
+};
+
+override 'page_literal' => sub {
+    shift;
+    Wx::LogMessage(@_);
+};
 
 __PACKAGE__->meta->make_immutable(inline_constructor => 0);
 

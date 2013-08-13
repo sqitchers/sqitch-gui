@@ -19,6 +19,8 @@ has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_deploy'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_revert'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_verify'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+has 'btn_log'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+
 has 'btn_project' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_project_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1 );
 has 'btn_change'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
@@ -54,6 +56,7 @@ sub BUILD {
     $self->commands_fgs->Add( $self->btn_deploy,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_revert,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_verify,   1, wxEXPAND,         0 );
+    $self->commands_fgs->Add( $self->btn_log   ,   1, wxEXPAND,         0 );
 
     $self->panel->Show(1);
 
@@ -161,6 +164,18 @@ sub _build_btn_verify {
         $self->panel,
         -1,
         q{Verify},
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
+}
+
+sub _build_btn_log {
+    my $self = shift;
+
+    return Wx::Button->new(
+        $self->panel,
+        -1,
+        q{Log},
         [ -1, -1 ],
         [ -1, -1 ],
     );
