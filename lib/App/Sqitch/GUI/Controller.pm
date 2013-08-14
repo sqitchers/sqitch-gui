@@ -4,7 +4,8 @@ use Moose;
 use namespace::autoclean;
 
 use Wx qw<:everything>;
-use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU>;
+use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU EVT_DIRPICKER_CHANGED>;
+
 use Path::Class;
 use File::Slurp;
 use Try::Tiny;
@@ -15,7 +16,9 @@ use App::Sqitch::GUI::Config;
 use App::Sqitch::GUI::Status;
 use App::Sqitch::GUI::Refresh;
 
-#use Data::Printer;
+use App::Sqitch::GUI::View::Dialog::Repo;
+
+use Data::Printer;
 
 has 'app' => (
     is         => 'ro',
@@ -117,6 +120,10 @@ sub BUILD {
 sub _setup_events {
     my $self = shift;
 
+    EVT_MENU $self->view->frame,
+        $self->view->menu_bar->menu_admin->itm_admin->GetId,
+        sub { $self->on_admin(@_) };
+
     # Set events for some of the commands
     # 'Revert' needs confirmation - can't use it
     foreach my $cmd ( qw(status deploy verify log) ) {
@@ -126,6 +133,11 @@ sub _setup_events {
                 $self->execute_command($cmd);
             };
     }
+
+    EVT_DIRPICKER_CHANGED $self->view->frame,
+        $self->view->project->dpc_path->GetId, sub {
+        $self->on_dpc_change(@_);
+    };
 
     return;
 }
@@ -255,6 +267,32 @@ sub load_sql_for {
     my $ctrl_name = "edit_$command";
     my $ctrl = $self->view->change->$ctrl_name;
     $self->view->control_write_s($ctrl, $text);
+
+    return;
+}
+
+sub on_dpc_change {
+    my ($self, $frame, $event) = @_;
+    print "Path changed\n";
+    my $new_path = $event->GetEventObject->GetPath;
+    #$self->status->set_state('idle');
+}
+
+sub on_admin {
+    my ($self, $frame, $event) = @_;
+    print "Dialog Admin\n";
+    my $d = App::Sqitch::GUI::View::Dialog::Repo->new(
+        app         => $self->app,
+        ancestor    => $self,
+        parent      => undef,
+    );
+    if ( $d->ShowModal == wxID_CANCEL ) {
+        print " Cancel?\n";
+        return;
+    }
+    else {
+       print "NOT Cancel?\n";
+    }
 
     return;
 }

@@ -9,6 +9,7 @@ use Wx::AUI;
 with 'App::Sqitch::GUI::Roles::Element';
 
 use MooseX::NonMoose::InsideOut;
+
 extends 'Wx::AuiNotebook';
 
 has 'page_deploy' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
@@ -31,7 +32,6 @@ sub FOREIGNBUILDARGS {
 
 sub BUILD {
     my $self = shift;
-
     return $self;
 };
 
