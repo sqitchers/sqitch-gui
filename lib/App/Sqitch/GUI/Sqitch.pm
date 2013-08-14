@@ -14,7 +14,7 @@ has +top_dir => (
     lazy     => 1,
     default => sub {
         my $self = shift;
-        dir( $self->config->repository_path,
+        dir( $self->config->repo_default_path,
             $self->config->get( key => 'core.top_dir' ) )
             || ();
         },

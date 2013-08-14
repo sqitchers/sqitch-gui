@@ -42,7 +42,7 @@ has config => (
 );
 
 has sqitch => (
-    is      => 'ro',
+    is      => 'rw',
     isa     => 'Maybe[App::Sqitch]',
     lazy    => 1,
     builder => 'init_sqitch',
@@ -72,11 +72,17 @@ sub _build_app {
 sub init_sqitch {
     my $self = shift;
 
+    print "Initializing Sqitch\n";
+
     my $opts = {};
     $opts->{config} = $self->config;
+
     my $sqitch;
     try {
         $sqitch = App::Sqitch::GUI::Sqitch->new($opts);
+    }
+    catch {
+        print "Error on init: $_\n";
     };
 
     return $sqitch;
@@ -90,6 +96,14 @@ sub BUILD {
 
     $self->log_message('Welcome to Sqitch!');
 
+    $self->check_plan();
+
+    return;
+}
+
+sub check_plan {
+    my $self = shift;
+
     my $sqitch = $self->sqitch;
 
     # Do we have a valid configuration - plan?
@@ -97,7 +111,9 @@ sub BUILD {
         App::Sqitch::Plan->new(sqitch => $sqitch)->load;
     }
     catch {
-        print "Err: $_\n";
+        my $msg = "ERROR: $_";
+        #$self->log_message($msg);
+        print "$msg\n";
     }
     finally {
         if (@_) {
@@ -160,11 +176,15 @@ sub load_projects {
     my $sqitch = $self->sqitch;
     my $plan   = $sqitch->plan;
 
+    # CUBRID has user not username ???
+    my $user = $sqitch->engine->can('username')
+        ? $sqitch->engine->username : $sqitch->engine->user;
+
     my %fields = (
         project       => $plan->project,
         uri           => $plan->uri,
         database      => $sqitch->engine->db_name,
-        user          => $sqitch->engine->username,
+        user          => $user,
         created_at    => undef,
         creator_name  => undef,
         creator_email => undef,
@@ -173,7 +193,7 @@ sub load_projects {
         $self->load_form_for( 'project', $field, $value );
     }
 
-    my $repo_path = $config->repository_path;
+    my $repo_path = $config->repo_default_path;
     $self->view->dirpicker_write($repo_path );
     my $driver = $config->get( key => 'core.engine' );
     $self->view->combobox_write($driver);
@@ -261,7 +281,7 @@ sub load_form_for {
 sub load_sql_for {
     my ($self, $command, $name) = @_;
 
-    my $repo_path = $self->config->repository_path;
+    my $repo_path = $self->config->repo_default_path;
     my $sql_file  = file($repo_path, $command, "$name.sql");
     my $text = read_file($sql_file);
     my $ctrl_name = "edit_$command";
@@ -280,20 +300,48 @@ sub on_dpc_change {
 
 sub on_admin {
     my ($self, $frame, $event) = @_;
-    print "Dialog Admin\n";
+
     my $d = App::Sqitch::GUI::View::Dialog::Repo->new(
-        app         => $self->app,
-        ancestor    => $self,
-        parent      => undef,
+        app      => $self->app,
+        ancestor => $self,
+        parent   => undef,                   # for dialogs
     );
-    if ( $d->ShowModal == wxID_CANCEL ) {
-        print " Cancel?\n";
+    if ( $d->ShowModal == wxID_OK ) {
+        print "OK!\n";
         return;
     }
     else {
-       print "NOT Cancel?\n";
+        print "This should NOT happen!\n";
+        return;
     }
+}
 
+sub config_load {
+    my ($self, $name, $path) = @_;
+
+    # Doesn't work :(
+
+    # $self->config->repo_default_name($name);
+    # $self->config->repo_default_path($path);
+
+    # my $c_name = $self->config->repo_default_name;
+    # my $c_path = $self->config->repo_default_path;
+
+    # $self->init_sqitch;
+    # $self->check_plan;
+
+    return;
+}
+
+sub config_set_default {
+    my ($self, $name, $path) = @_;
+    $self->config->config_set_default($name, $path);
+    return;
+}
+
+sub config_add_repo {
+    my ($self, $name, $path) = @_;
+    $self->config->config_add_repo($name, $path);
     return;
 }
 

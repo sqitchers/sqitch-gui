@@ -9,22 +9,94 @@ use utf8;
 
 extends 'App::Sqitch::Config';
 
-has repository_path => (
-    is      => 'ro',
+has repo_default_name => (
+    is      => 'rw',
+    isa     => 'Maybe[Str]',
+    lazy    => 1,
+    default => sub {
+        shift->get(key => 'repository.default');
+    }
+);
+
+has repo_default_path => (
+    is      => 'rw',
     isa     => 'Maybe[Path::Class::Dir]',
     lazy    => 1,
     default => sub {
         my $self    = shift;
-        my $default = $self->get(key => 'repository.default');
-        dir $self->get(key => "repository.${default}.path");
+        my $default = $self->repo_default_name;
+        return $default
+            ? dir $self->get( key => "repository.${default}.path" )
+            : undef;
     }
 );
 
 override load_dirs => sub {
     my $self = shift;
-    my $conf = file( $self->repository_path, $self->local_file );
+    my $conf = file( $self->repo_default_path, $self->local_file );
     $self->load_file($conf) if -f $conf;
 };
+
+has repo_conf_list => (
+    is      => 'ro',
+    isa     => 'Maybe[HashRef]',
+    lazy    => 1,
+    default => sub {
+        shift->get_regexp( key => '^repository\..+\.path$' );
+    }
+);
+
+has repo_list => (
+    is      => 'ro',
+    isa     => 'Maybe[HashRef]',
+    lazy_build => 1,
+);
+
+# This should be the user file: ~/.sqitch/sqitch.conf ???
+has 'config_file' => (
+    is      => 'rw',
+    isa     => 'Maybe[Path::Class::File]',
+    lazy    => 1,
+    default => sub { file shift->config_files->[0]; },
+);
+
+sub _build_repo_list {
+    my $self = shift;
+
+    my $repo_cfg_lst = $self->repo_conf_list;
+
+    my $repo_list = {};
+    while ( my ( $key, $path ) = each( %{$repo_cfg_lst} ) ) {
+        my ($name) = $key =~ m{^repository\.(.+)\.path$}xmg;
+        $repo_list->{$name} = dir $path;
+    }
+
+    return $repo_list;
+}
+
+sub config_set_default {
+    my ($self, $name, $path) = @_;
+
+    $self->set(
+        key      => 'repository.default',
+        value    => $name,
+        filename => $self->config_file,
+    );
+
+    return;
+}
+
+sub config_add_repo {
+    my ($self, $name, $path) = @_;
+
+    $self->set(
+        key      => "repository.$name.path",
+        value    => $path,
+        filename => $self->config_file,
+    );
+
+    return;
+}
 
 __PACKAGE__->meta->make_immutable;
 

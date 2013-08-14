@@ -349,7 +349,7 @@ sub combobox_write {
     my ( $self, $name ) = @_;
 
     my $driver = $self->project->engines->{$name};
-    $self->project->cb_driver->SetValue($driver) if $driver;
+    $self->project->cbx_driver->SetValue($driver) if $driver;
 
     return;
 }
