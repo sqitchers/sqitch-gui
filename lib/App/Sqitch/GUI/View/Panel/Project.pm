@@ -5,7 +5,7 @@ use Moose;
 use namespace::autoclean;
 
 use Wx qw(:allclasses :everything);
-use Wx::Event qw(EVT_CLOSE EVT_DIRPICKER_CHANGED);
+use Wx::Event qw(EVT_CLOSE);
 use Wx::Perl::ListCtrl;
 
 with 'App::Sqitch::GUI::Roles::Element';
@@ -37,7 +37,7 @@ has 'lbl_created_at'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 
 has 'lbl_creator_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'lbl_creator_email' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'lbl_path' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_db'   => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_driver'   => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 
 has 'txt_project'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_database' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
@@ -45,9 +45,10 @@ has 'txt_user'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_uri'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_created_at'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_creator_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_creator_email'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_creator_email' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'dpc_path'  => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
-has 'cb_driver'    => ( is => 'rw', isa => 'Wx::ComboBox',      lazy_build => 1 );
+has 'cbx_driver' => ( is => 'rw', isa => 'Wx::ComboBox',      lazy_build => 1 );
+
 has 'engines' => (
     is       => 'ro',
     isa      => 'HashRef',
@@ -80,8 +81,8 @@ sub BUILD {
 
     $self->form_fg_sz->Add( $self->lbl_project, 0, wxLEFT, 5 );
     $self->subform1_fg_sz->Add( $self->txt_project, 1, wxLEFT, 0 );
-    $self->subform1_fg_sz->Add( $self->lbl_db, 0, wxLEFT, 50 );
-    $self->subform1_fg_sz->Add( $self->cb_driver, 0, wxLEFT, 20 );
+    $self->subform1_fg_sz->Add( $self->lbl_driver, 0, wxLEFT, 50 );
+    $self->subform1_fg_sz->Add( $self->cbx_driver, 0, wxLEFT, 20 );
     $self->form_fg_sz->Add( $self->subform1_fg_sz, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_database, 0, wxLEFT, 5 );
@@ -211,7 +212,7 @@ sub _build_lbl_creator_email {
     return Wx::StaticText->new( $self->panel, -1, q{Creator email} );
 }
 
-sub _build_lbl_db {
+sub _build_lbl_driver {
     my $self = shift;
     return Wx::StaticText->new( $self->panel, -1, q{Driver} );
 }
@@ -266,11 +267,11 @@ sub _build_dpc_path {
         q{Choose a directory},
         [ -1, -1 ],
         [ -1, -1 ],
-        wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL,
+        wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL | wxDIRP_CHANGE_DIR,
     );
 }
 
-sub _build_cb_driver {
+sub _build_cbx_driver {
     my $self = shift;
     my @engines = values %{$self->engines};
     return Wx::ComboBox->new(
@@ -287,7 +288,7 @@ sub _build_cb_driver {
 #-  List and buttons
 
 sub _build_list_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 2, 0, 1, 5 );
+    my $fgs = Wx::FlexGridSizer->new( 2, 1, 1, 5 );
     $fgs->AddGrowableRow(0);
     $fgs->AddGrowableCol(0);
     return $fgs;
@@ -366,14 +367,7 @@ sub _build_list {
 
 sub _set_events {
     my ($self, $event) = @_;
-
-    EVT_DIRPICKER_CHANGED $self->panel, $self->dpc_path->GetId, sub {
-        $self->on_dpc_change;
-    };
-}
-
-sub on_dpc_change {
-    print "Path changed\n";
+    return;
 }
 
 sub OnClose {
