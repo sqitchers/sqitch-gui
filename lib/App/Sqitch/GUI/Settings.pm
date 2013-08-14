@@ -22,6 +22,7 @@ has 'settings' => (
                 btn_deploy      => 0,
                 btn_revert      => 0,
                 btn_verify      => 0,
+                btn_log         => 0,
             },
             idle => {
                 btn_change      => 1,
@@ -35,6 +36,7 @@ has 'settings' => (
                 btn_deploy      => 1,
                 btn_revert      => 0,
                 btn_verify      => 1,
+                btn_log         => 1,
             },
         };
     },
