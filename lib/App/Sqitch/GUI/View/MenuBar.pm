@@ -11,11 +11,18 @@ use MooseX::NonMoose::InsideOut;
 extends 'Wx::MenuBar';
 
 use App::Sqitch::GUI::View::MenuBar::App;
+use App::Sqitch::GUI::View::MenuBar::Admin;
 use App::Sqitch::GUI::View::MenuBar::Help;
 
 has 'menu_app' => (
     is         => 'rw',
     isa        => 'App::Sqitch::GUI::View::MenuBar::App',
+    lazy_build => 1
+);
+
+has 'menu_admin' => (
+    is         => 'rw',
+    isa        => 'App::Sqitch::GUI::View::MenuBar::Admin',
     lazy_build => 1
 );
 
@@ -32,6 +39,7 @@ has 'menu_list' => (
     default => sub {
         [   qw(
                   menu_app
+                  menu_admin
                   menu_help
           )
         ];
@@ -48,10 +56,9 @@ sub FOREIGNBUILDARGS {
 sub BUILD {
     my $self = shift;
 
-    $self->Append( $self->menu_app, "&App");
-    # $self->Append( $self->menu_edit,   "&Edit");
-    # $self->Append( $self->menu_tools,  "&Tools");
-    $self->Append( $self->menu_help, "&Help");
+    $self->Append( $self->menu_app,   "&App");
+    $self->Append( $self->menu_admin, "A&dmin");
+    $self->Append( $self->menu_help,  "&Help");
 
     return $self;
 }
@@ -59,6 +66,15 @@ sub BUILD {
 sub _build_menu_app {
     my $self = shift;
     return App::Sqitch::GUI::View::MenuBar::App->new(
+        ancestor => $self,
+        app      => $self->app,
+        parent   => $self->parent,    # View is the parent.
+    );
+}
+
+sub _build_menu_admin {
+    my $self = shift;
+    return App::Sqitch::GUI::View::MenuBar::Admin->new(
         ancestor => $self,
         app      => $self->app,
         parent   => $self->parent,    # View is the parent.

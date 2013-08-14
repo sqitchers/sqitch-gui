@@ -1,4 +1,4 @@
-package App::Sqitch::GUI::View::MenuBar::App;
+package App::Sqitch::GUI::View::MenuBar::Admin;
 
 use Moose;
 use namespace::autoclean;
@@ -12,7 +12,7 @@ use MooseX::NonMoose::InsideOut;
 
 extends 'Wx::Menu';
 
-has 'itm_quit' => (is => 'rw', isa => 'Wx::MenuItem', lazy_build => 1);
+has 'itm_admin' => (is => 'rw', isa => 'Wx::MenuItem', lazy_build => 1);
 
 sub FOREIGNBUILDARGS {
     return;                       # Wx::Menu->new() takes no arguments
@@ -20,17 +20,17 @@ sub FOREIGNBUILDARGS {
 
 sub BUILD {
     my $self = shift;
-    $self->Append( $self->itm_quit );
+    $self->Append( $self->itm_admin );
     return $self;
 }
 
-sub _build_itm_quit {
+sub _build_itm_admin {
     my $self = shift;
     return Wx::MenuItem->new(
         $self,
-        wxID_EXIT,
-        '&Quit',
-        'Quit',
+        -1,
+        'Repository',
+        'Repository management',
         wxITEM_NORMAL,
         undef   # if defined, this is a sub-menu
     );
@@ -38,18 +38,6 @@ sub _build_itm_quit {
 
 sub _set_events {
     my $self = shift;
-    EVT_MENU(
-        $self->parent,
-        $self->itm_quit->GetId,
-        sub { $self->OnQuit(@_) }
-    );
-    return 1;
-}
-
-sub OnQuit {
-    my ($self, $frame, $event) = @_;
-    print "Normal exit.\n";
-    $frame->Close(1);
     return 1;
 }
 
@@ -86,4 +74,4 @@ by the Free Software Foundation.
 
 =cut
 
-1;    # End of App::Sqitch::GUI::View::MenuBar::App
+1;    # End of App::Sqitch::GUI::View::MenuBar::Admin
