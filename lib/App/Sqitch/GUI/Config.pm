@@ -77,9 +77,9 @@ sub _build_repo_list {
 sub config_set_default {
     my ($self, $name, $path) = @_;
 
-    # DEBUG
-    if ($self->is_repo_name($name)) {
-        print "Is name: $name\n";
+    #DEBUG
+    if ($self->has_repo_name($name)) {
+        print "Has name: $name\n";
     }
     else {
         print "No name: $name\n";
