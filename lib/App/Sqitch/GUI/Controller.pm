@@ -37,8 +37,15 @@ has config => (
     isa     => 'App::Sqitch::GUI::Config',
     lazy    => 1,
     default => sub {
-        App::Sqitch::GUI::Config->new;
-    }
+        my $config;
+        try {
+            $config = App::Sqitch::GUI::Config->new;
+        }
+        catch {
+            print "Config error: $_\n";
+        };
+        return $config;
+    },
 );
 
 has sqitch => (

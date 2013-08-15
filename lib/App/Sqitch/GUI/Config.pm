@@ -1,11 +1,11 @@
 package App::Sqitch::GUI::Config;
 
+use utf8;
 use Moose;
 use namespace::autoclean;
 use Path::Class;
-#use Locale::TextDomain qw(App-Sqitch);
-#use App::Sqitch::X qw(hurl);
-use utf8;
+use List::Util qw(first);
+use App::Sqitch::X qw(hurl);
 
 extends 'App::Sqitch::Config';
 
@@ -77,6 +77,14 @@ sub _build_repo_list {
 sub config_set_default {
     my ($self, $name, $path) = @_;
 
+    # DEBUG
+    if ($self->is_repo_name($name)) {
+        print "Is name: $name\n";
+    }
+    else {
+        print "No name: $name\n";
+    }
+
     $self->set(
         key      => 'repository.default',
         value    => $name,
@@ -96,6 +104,18 @@ sub config_add_repo {
     );
 
     return;
+}
+
+sub has_repo_name {
+    my ($self, $name) = @_;
+    return 1 if first { $name eq $_ } keys %{$self->repo_list};
+    return 0;
+}
+
+sub has_repo_path {
+    my ($self, $name) = @_;
+    return 1 if first { $name eq $_ } values %{$self->repo_list};
+    return 0;
 }
 
 __PACKAGE__->meta->make_immutable;
