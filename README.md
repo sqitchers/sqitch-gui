@@ -70,9 +70,10 @@ License And Copyright
 ---------------------
 
 Copyright (C) 2012-2013 iovation Inc.
-Copyright (C) 2013 Ștefan Suciu
 
-The license is from Sqitch:
+Copyright (C) 2013 Ștefan Suciu.
+
+The license is the same as for Sqitch:
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
