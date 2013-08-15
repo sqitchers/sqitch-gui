@@ -5,7 +5,7 @@ App/Sqitch/GUI version 0.002
 
 GUI for Sqitch - Simple SQL change management.
 
-Please see [Sqitch](sqitch.org) for a detailed description of the
+Please see [Sqitch](http://sqitch.org) for a detailed description of the
 command line application.
 
 Requirements
