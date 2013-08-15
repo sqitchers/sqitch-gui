@@ -214,6 +214,7 @@ sub load_change {
     my $sqitch = $self->sqitch;
     my $plan   = $sqitch->plan;
     my $change = $plan->last;
+    #die "No change plan!" unless $change->isa('App::Sqitch::Plan::Change');
     my $name   = $change->name;
     my $state  = $sqitch->engine->current_state( $plan->project );
 
