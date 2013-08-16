@@ -27,3 +27,4 @@ cava20-logs/
 cava20-temp/
 installer/
 release/
+*.db
