@@ -23,20 +23,28 @@ Draft - Limited functionality:
 - Add repository and set a default one;
 - Load project and change details;
 
-Installation
-------------
+Test usage
+----------
 
-This is a Perl application:
-
+    % git clone https://github.com/stefansbv/sqitch-gui.git
     % cd sqitch-gui
 
     # Install prereqs
     % cpanm --installdeps .
 
-    % perl Makefile.PL
-    % make
-    % make test
-    % make install
+    % PERL5LIB=lib perl bin/sqitch-gui
+
+After the application start, open the menu Admin -> Repository.
+
+It should show a dialog window.  Select a path to an existing Sqitch
+repository, fill in a name and click on the Add button.  The path
+should be added to the list.  Click on the Default button and quit the
+dialog and the application.
+
+After the restart, the other panels buttons should be enabled...
+
+Still much work to do but some feedback, in this stage, would be
+awesome...
 
 Implementation notes
 --------------------
