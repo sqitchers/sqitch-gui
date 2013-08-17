@@ -77,13 +77,8 @@ sub _build_repo_list {
 sub config_set_default {
     my ($self, $name, $path) = @_;
 
-    #DEBUG
-    if ($self->has_repo_name($name)) {
-        print "Has name: $name\n";
-    }
-    else {
-        print "No name: $name\n";
-    }
+    hurl 'Wrong arguments passed to config_set_default()'
+        unless $name and defined $path;
 
     $self->set(
         key      => 'repository.default',
@@ -97,6 +92,9 @@ sub config_set_default {
 sub config_add_repo {
     my ($self, $name, $path) = @_;
 
+    hurl 'Wrong arguments passed to config_add_repo()'
+        unless $name and defined $path;
+
     $self->set(
         key      => "repository.$name.path",
         value    => $path,
@@ -108,13 +106,17 @@ sub config_add_repo {
 
 sub has_repo_name {
     my ($self, $name) = @_;
+    hurl 'Wrong arguments passed to has_repo_name()'
+        unless $name;
     return 1 if first { $name eq $_ } keys %{$self->repo_list};
     return 0;
 }
 
 sub has_repo_path {
-    my ($self, $name) = @_;
-    return 1 if first { $name eq $_ } values %{$self->repo_list};
+    my ($self, $path) = @_;
+    hurl 'Wrong arguments passed to has_repo_path()'
+        unless $path;
+    return 1 if first { $path eq $_ } values %{$self->repo_list};
     return 0;
 }
 
