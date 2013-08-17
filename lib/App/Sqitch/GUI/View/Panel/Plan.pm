@@ -5,7 +5,8 @@ use Moose;
 use namespace::autoclean;
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
-use Wx::Perl::ListCtrl;
+
+use App::Sqitch::GUI::View::List;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
@@ -19,7 +20,11 @@ has 'sb_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'list_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
-has 'list' => ( is => 'rw', isa => 'Wx::Perl::ListCtrl', lazy_build => 1 );
+has 'list_ctrl' => (
+    is         => 'rw',
+    isa        => 'App::Sqitch::GUI::View::List',
+    lazy_build => 1,
+);
 
 sub BUILD {
     my $self = shift;
@@ -34,12 +39,9 @@ sub BUILD {
 
     #-- List
 
-    $self->list_fg_sz->Add( $self->list, 1, wxEXPAND, 3 );
+    $self->list_fg_sz->Add( $self->list_ctrl, 1, wxEXPAND, 3 );
 
     $self->panel->SetSizer($self->sizer);
-    # $self->parent->Layout();
-
-    # $self->panel->Show;
 
     return $self;
 }
@@ -85,22 +87,21 @@ sub _build_sb_sizer {
         Wx::StaticBox->new( $self->panel, -1, ' Plan ', ), wxVERTICAL );
 }
 
-sub _build_list {
+sub _build_list_ctrl {
     my $self = shift;
 
-    my $list = Wx::Perl::ListCtrl->new(
-        $self->panel, -1,
-        [ -1, -1 ],
-        [ -1, -1 ],
-        Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
+    my $list = App::Sqitch::GUI::View::List->new(
+        app       => $self->app,
+        parent    => $self->panel,
+        ancestor  => $self,
+        count_col => 1,                      # add a count column
     );
 
-    $list->InsertColumn( 0, '#', wxLIST_FORMAT_LEFT, 30 );
-    $list->InsertColumn( 1, 'Name', wxLIST_FORMAT_LEFT, 100 );
-    $list->InsertColumn( 2, 'Dependends', wxLIST_FORMAT_LEFT, 100 );
-    $list->InsertColumn( 3, 'Create time', wxLIST_FORMAT_LEFT, 100 );
-    $list->InsertColumn( 4, 'Creator', wxLIST_FORMAT_LEFT, 100 );
-    $list->InsertColumn( 5, 'Description', wxLIST_FORMAT_LEFT, 180 );
+    $list->add_column( 'Name',        wxLIST_FORMAT_LEFT, 100, 'name' );
+    $list->add_column( 'Dependends',  wxLIST_FORMAT_LEFT, 100, 'dependends' );
+    $list->add_column( 'Create time', wxLIST_FORMAT_LEFT, 100, 'create_time' );
+    $list->add_column( 'Creator',     wxLIST_FORMAT_LEFT, 100, 'creator' );
+    $list->add_column( 'Description', wxLIST_FORMAT_LEFT, 180, 'description' );
 
     return $list;
 }
