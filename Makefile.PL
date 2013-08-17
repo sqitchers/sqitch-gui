@@ -35,6 +35,7 @@ requires(
     'Wx::STC'            => '0.01',
     'MooseX::NonMoose'   => '0.22',
     'MooseX::Observer'   => '0.010',
+    'MooseX::InsideOut'  => '0.106',
 );
 
 #install_as_cpan;
