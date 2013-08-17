@@ -135,6 +135,7 @@ sub check_plan {
     if ( $self->status->is_state('idle') ) {
         $self->load_change;
         $self->load_projects;
+        $self->load_plan;
     }
 
     return;
@@ -249,6 +250,29 @@ sub load_change {
     return;
 }
 
+sub load_plan {
+    my $self = shift;
+
+    my $config = $self->config;
+    my $sqitch = $self->sqitch;
+    my $plan   = $sqitch->plan;
+
+    use Data::Printer; p $plan->lines;
+
+    # my $records = [
+    #     {   name        => 'Name',
+    #         dependends  => 'Dependends',
+    #         create_time => 'Create time',
+    #         creator     => 'Creator',
+    #         description => 'Description',
+    #     },
+    # ];
+
+    # $self->view->plan->list_ctrl->populate($records);
+
+    return;
+}
+
 sub execute_command {
     my ($self, $cmd) = @_;
 
@@ -315,12 +339,10 @@ sub on_admin {
         parent   => undef,                   # for dialogs
     );
     if ( $d->ShowModal == wxID_OK ) {
-        print "OK!\n";
         return;
     }
     else {
-        print "This should NOT happen!\n";
-        return;
+        die "This should NOT happen!\n";
     }
 }
 

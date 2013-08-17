@@ -48,7 +48,6 @@ after 'BUILD' => sub {
     my $self = shift;
     if ( $self->count_col ) {
         my $label = $self->count_col_label;
-        print "Add count col with label '$label'\n";
         $self->add_column( $label, wxLIST_FORMAT_CENTER, 30, 'count_row' );
     }
     return;
@@ -85,7 +84,7 @@ sub add_column {
     return;
 }
 
-sub _list_max_index {
+sub list_max_index {
     return ( shift->GetItemCount() - 1 );
 }
 
