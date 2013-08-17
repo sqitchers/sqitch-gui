@@ -4,19 +4,19 @@ use Moose;
 use namespace::autoclean;
 use Try::Tiny;
 use Path::Class;
+use App::Sqitch::X qw(hurl);
 
 use Wx qw(:everything);
 use Wx::Event qw(EVT_CLOSE EVT_BUTTON EVT_LIST_ITEM_SELECTED
                  EVT_DIRPICKER_CHANGED);
-use Wx::Perl::ListCtrl;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
 use MooseX::NonMoose::InsideOut;
 
-use Data::Printer;
-
 extends 'Wx::Dialog';
+
+use App::Sqitch::GUI::View::List;
 
 has 'sizer'      => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
 has 'vbox_sizer' => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
@@ -34,7 +34,13 @@ has 'dpc_path' => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
 has 'lbl_driver' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'cbx_driver' => ( is => 'rw', isa => 'Wx::ComboBox',   lazy_build => 1 );
 
-has 'repo_list' => ( is => 'rw', isa => 'Wx::Perl::ListCtrl', lazy_build => 1 );
+has 'list_ctrl' => (
+    is         => 'rw',
+    isa        => 'App::Sqitch::GUI::View::List',
+    lazy_build => 1,
+);
+
+has 'mesg_ctrl' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 
 has 'btn_sizer'   => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
 has 'btn_load'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
@@ -91,11 +97,13 @@ sub BUILD {
 
     $self->sizer->Add( $self->vbox_sizer, 1, wxEXPAND | wxALL, 5 );
 
-    $self->list_fg_sz->Add( $self->repo_list,  1, wxEXPAND | wxALL, 5 );
-    $self->list_fg_sz->Add( $self->h_line1,     1, wxEXPAND | wxALL, 10 );
-    $self->list_fg_sz->Add( $self->form_fg_sz, 1, wxEXPAND | wxALL, 5 );
-    $self->list_fg_sz->Add( $self->h_line2,     1, wxEXPAND | wxALL, 10 );
-    $self->list_fg_sz->Add( $self->btn_sizer,  1, wxALIGN_CENTRE,   0 );
+    $self->list_fg_sz->Add( $self->list_ctrl, 1, wxEXPAND | wxALL, 5 );
+    $self->list_fg_sz->Add( $self->mesg_ctrl, 1, wxEXPAND | wxALL, 5 );
+
+    $self->list_fg_sz->Add( $self->h_line1,    1, wxEXPAND | wxALL, 10 );
+    $self->list_fg_sz->Add( $self->form_fg_sz, 1, wxEXPAND | wxALL,  5 );
+    $self->list_fg_sz->Add( $self->h_line2,    1, wxEXPAND | wxALL, 10 );
+    $self->list_fg_sz->Add( $self->btn_sizer,  1, wxEXPAND | wxALL,  0 );
 
     $self->vbox_sizer->Add( $self->list_fg_sz, 1, wxEXPAND | wxALL, 10 );
 
@@ -189,7 +197,7 @@ sub _build_cbx_driver {
 }
 
 sub _build_list_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 3, 1, 0, 5 );
+    my $fgs = Wx::FlexGridSizer->new( 4, 1, 0, 5 );
     $fgs->AddGrowableRow(0);
     $fgs->AddGrowableCol(0);
     return $fgs;
@@ -246,19 +254,35 @@ sub _build_btn_exit {
     return $button;
 }
 
-sub _build_repo_list {
+sub _build_list_ctrl {
     my $self = shift;
-    my $list = Wx::Perl::ListCtrl->new(
-        $self, -1,
-        [ -1, -1 ],
-        [ -1, -1 ],
-        Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
+
+    my $list = App::Sqitch::GUI::View::List->new(
+        app       => $self->app,
+        parent    => $self,
+        ancestor  => $self,
+        count_col => 1,                      # add a count column
     );
-    $list->InsertColumn( 0, '#', wxLIST_FORMAT_CENTER, 50 );
-    $list->InsertColumn( 1, 'Name', wxLIST_FORMAT_LEFT, 100 );
-    $list->InsertColumn( 2, 'Path', wxLIST_FORMAT_LEFT, 250 );
-    $list->InsertColumn( 3, 'Default', wxLIST_FORMAT_CENTER, 60 );
+
+    $list->add_column( 'Name',    wxLIST_FORMAT_LEFT, 100, 'name' );
+    $list->add_column( 'Path',    wxLIST_FORMAT_LEFT, 250, 'path' );
+    $list->add_column( 'Default', wxLIST_FORMAT_CENTER,    'default' );
+
     return $list;
+}
+
+sub _build_mesg_ctrl {
+    my $self = shift;
+    my $label = Wx::StaticText->new(
+        $self, -1,
+        q{},
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxST_NO_AUTORESIZE | wxALIGN_CENTRE | wxRAISED_BORDER, # ! doesn't work
+    );
+    $label->SetForegroundColour( Wx::Colour->new('red') );
+    $label->SetBackgroundColour( Wx::Colour->new('white') ); # ! doesn't work
+    return $label;
 }
 
 #-- Lines
@@ -309,7 +333,7 @@ sub _set_events {
         $self->config_add_repo;
     };
 
-    EVT_LIST_ITEM_SELECTED $self, $self->repo_list, sub {
+    EVT_LIST_ITEM_SELECTED $self, $self->list_ctrl, sub {
         $self->_on_item_selected(@_);
     };
 
@@ -326,28 +350,43 @@ sub _set_events {
 sub _init {
     my $self = shift;
 
-    my $repo_list    = $self->config->repo_list;
+    my $repo_list = $self->config->repo_list;
+
+    # Prepare records
+    my $records_ref = [];
+    while ( my ( $name, $path ) = each( %{$repo_list} ) ) {
+        push @{$records_ref}, { name => $name, path => $path };
+    }
+
+    $self->list_ctrl->populate($records_ref);
+
+    # Default from config
     my $repo_default = $self->config->repo_default_name;
+    my $index = 0;
+    foreach my $rec ( @{$records_ref} ) {
+        last if $repo_default eq $rec->{name};
+        $index++;
+    }
 
-    $self->_control_write_l($repo_list, 0, $repo_default);
-
-    my $default_item = $self->_get_default_item;
-    $self->_select_item($default_item);
-    $self->_load_item($default_item);
+    $self->_set_default($index);
+    $self->list_ctrl->select_item($index);
+    $self->_load_item($index);
 
     return;
 }
 
 sub _control_write_p {
-    my ( $self, $name, $value ) = @_;
-    die unless $name;
-    $self->$name->SetPath($value);
+    my ( $self, $name, $path ) = @_;
+    hurl 'Wrong arguments passed to _control_write_p()'
+        unless $name and defined $path;
+    $self->$name->SetPath($path);
     return;
 }
 
 sub _control_write_e {
     my ( $self, $name, $value ) = @_;
-    die unless $name;
+    hurl 'Wrong arguments passed to _control_write_e()'
+        unless $name;
     $self->$name->Clear;
     $self->$name->SetValue($value) if defined $value;
     return;
@@ -355,13 +394,15 @@ sub _control_write_e {
 
 sub _control_read_e {
     my ( $self, $name ) = @_;
-    die unless $name;
+    hurl 'Wrong arguments passed to _control_read_e()'
+        unless $name;
     return $self->$name->GetValue;
 }
 
 sub _control_read_p {
     my ( $self, $name ) = @_;
-    die unless $name;
+    hurl 'Wrong arguments passed to _control_read_p()'
+        unless $name;
     return $self->$name->GetPath;
 }
 
@@ -372,7 +413,7 @@ sub _control_write_l {
 
     my $item = $index;
     while (my ($name, $path) = each (%{$data})) {
-        $self->repo_list->InsertStringItem( $item, 'dummy' );
+        $self->list_ctrl->InsertStringItem( $item, 'dummy' );
         $self->_set_list_item_text($item, 0, $item+1 );
         $self->_set_list_item_text($item, 1, $name );
         $self->_set_list_item_text($item, 2, $path);
@@ -390,34 +431,6 @@ sub _clear_form {
     return;
 }
 
-sub _list_max_index {
-    return ( shift->repo_list->GetItemCount() - 1 );
-}
-
-sub _get_list_item_text {
-    my ($self, $item, $col) = @_;
-    die unless defined $item and defined $col;
-    return $self->repo_list->GetItemText($item, $col);
-}
-
-sub _set_list_item_text {
-    my ($self, $item, $col, $text) = @_;
-    die unless defined $item and defined $col and defined $text;
-    return $self->repo_list->SetItemText($item, $col, $text);
-}
-
-sub _get_list_item_data {
-    my ($self, $item) = @_;
-    die unless defined $item;
-    return $self->repo_list->GetItemData( $item );
-}
-
-sub _set_list_item_data {
-    my ($self, $item, $data) = @_;
-    die unless defined $item and ref $data;
-    return $self->repo_list->SetItemData( $item, $data );
-}
-
 sub _on_item_selected {
     my ($self, $var, $event) =  @_;
     my $item = $event->GetIndex;
@@ -428,8 +441,8 @@ sub _on_item_selected {
 sub _load_item {
     my ($self, $item) = @_;
 
-    my $name = $self->_get_list_item_text($item, 1);
-    my $path = $self->_get_list_item_text($item, 2);
+    my $name = $self->list_ctrl->get_list_item_text($item, 1);
+    my $path = $self->list_ctrl->get_list_item_text($item, 2);
     $self->_control_write_e('txt_name', $name);
     $self->_control_write_p('dpc_path', $path);
 
@@ -442,23 +455,29 @@ sub _load_item {
 }
 
 sub _set_default {
-    my $self = shift;
+    my ($self, $item) = @_;
 
-    my $item = $self->selected_item();
-    print "Set default to $item\n";
+    $item = $self->selected_item unless defined $item;
     $self->_clear_default_mark;
     $self->_set_default_mark($item);
 
     return;
 }
 
+sub set_message {
+    my ($self, $mesg) = @_;
+    $self->mesg_ctrl->SetLabel('');          # clear
+    $self->mesg_ctrl->SetLabel($mesg) if $mesg;
+    return;
+}
+
 sub _clear_default_mark {
     my $self = shift;
 
-    my $max_index = $self->_list_max_index;
+    my $max_index = $self->list_ctrl->list_max_index;
     for my $item (0..$max_index) {
-        $self->_set_list_item_data( $item, { default => 0 } );
-        $self->_set_list_item_text( $item, 3, q{} );
+        $self->list_ctrl->set_list_item_data( $item, { default => 0 } );
+        $self->list_ctrl->set_list_item_text( $item, 3, q{} );
     }
 
     return;
@@ -466,36 +485,25 @@ sub _clear_default_mark {
 
 sub _set_default_mark {
     my ($self, $item) = @_;
-
-    die unless defined $item;
-    $self->_set_list_item_data( $item, { default => 1 } );
-    $self->_set_list_item_text($item, 3, 'Yes');
+    hurl 'Wrong arguments passed to _set_default_mark()'
+        unless defined $item;
+    $self->list_ctrl->set_list_item_data( $item, { default => 1 } );
+    $self->list_ctrl->set_list_item_text($item, 3, 'Yes');
 
     return;
 }
 
 sub _get_default_item {
-    my ($self, $lname) = @_;
-
-    my $max_index = $self->_list_max_index;
+    my $self = shift;
+    my $max_index = $self->list_ctrl->list_max_index;
     my $defa_item = 0;
     for my $item (0..$max_index) {
-        my $data = $self->_get_list_item_data($item);
+        my $data = $self->list_ctrl->get_list_item_data($item);
         if (exists $data->{default} and $data->{default} == 1) {
             $defa_item = $item;
         }
     }
-
     return $defa_item;
-}
-
-sub _select_item {
-    my ($self, $item) = @_;
-
-    $self->repo_list->Select( $item, 1 );
-    $self->repo_list->EnsureVisible($item);
-
-    return;
 }
 
 sub config_add_repo {
@@ -504,40 +512,34 @@ sub config_add_repo {
     my $name = $self->_control_read_e('txt_name');
     my $path = $self->_control_read_p('dpc_path');
 
-    ## ???
-    $self->check_name($name);
-    $self->check_path($path);
-    #TODO: Code to validate the path  # ???
-    return unless $name and -d $path; # ???
+    unless ($name and $path) {
+        $self->set_message('Add a name.');
+        return;
+    }                                            # ???
 
-    my $list_item = {$name => dir $path};
-    my $new_index = $self->_list_max_index + 1;
+    if (   $self->is_duplicate( 'name', $name )
+        or $self->is_duplicate( 'path', $path ) )
+    {
+        $self->set_message('Duplicate!, select a new repository path and add a name.');
+        return;
+    }
 
-    $self->_control_write_l($list_item, $new_index);
+    # New item
+    my $list_item = [ { name => $name, path => dir $path } ];
+    my $new_index = $self->list_ctrl->list_max_index + 1;
+
+    $self->list_ctrl->populate($list_item, $new_index);
 
     $self->ancestor->config_add_repo($name, $path);
 
     return;
 }
 
-sub check_name {
-    my ($self, $name) = @_;
-
-    # ???
-    die "Name exists in list"   if $self->selected_name eq $name;
-    die "Name exists in config" if $self->config->has_repo_name($name);
-
-    return;
-}
-
-sub check_path {
-    my ($self, $path) = @_;
-
-    # ???
-    die "Path exists in list"   if $self->selected_path eq $path;
-    die "Path exists in config" if $self->config->has_repo_path($path);
-
-    return;
+sub is_duplicate {
+    my ($self, $field, $name) = @_;
+    my $proc = "selected_$field";
+    return 1 if $self->$proc eq $name;
+    return 0;
 }
 
 sub OnClose {
