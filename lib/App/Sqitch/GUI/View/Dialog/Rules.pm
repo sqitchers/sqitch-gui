@@ -11,21 +11,27 @@ has 'dia_rules' => (
     default => sub {
         return {
             init => {
+                btn_new     => 0,
+                btn_add     => 0,
+                btn_remove  => 0,
                 btn_load    => 0,
                 btn_default => 0,
-                btn_add     => 0,
                 btn_exit    => 1,
             },
             idle => {
+                btn_new     => 0,
+                btn_add     => 0,
+                btn_remove  => 0,
                 btn_load    => 0,
                 btn_default => 0,
-                btn_add     => 0,
                 btn_exit    => 1,
             },
             sele => {
+                btn_new     => 0,
+                btn_add     => 1,
+                btn_remove  => 0,
                 btn_load    => 0,
                 btn_default => 1,
-                btn_add     => 1,
                 btn_exit    => 1,
             },
         };

@@ -42,10 +42,15 @@ has 'list_ctrl' => (
 
 has 'mesg_ctrl' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 
-has 'btn_sizer'   => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
+has 'btn_sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'btn_sizer_l' => ( is => 'rw', isa => 'Wx::GridSizer', lazy_build => 1 );
+has 'btn_sizer_r' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+
+has 'btn_new'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+has 'btn_remove'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_load'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_default' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_exit'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 
 has 'selected_item' => (
@@ -103,7 +108,8 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->h_line1,    1, wxEXPAND | wxALL, 10 );
     $self->list_fg_sz->Add( $self->form_fg_sz, 1, wxEXPAND | wxALL,  5 );
     $self->list_fg_sz->Add( $self->h_line2,    1, wxEXPAND | wxALL, 10 );
-    $self->list_fg_sz->Add( $self->btn_sizer,  1, wxEXPAND | wxALL,  0 );
+
+    $self->list_fg_sz->Add( $self->btn_sizer, 1, wxEXPAND | wxALL,  0 );
 
     $self->vbox_sizer->Add( $self->list_fg_sz, 1, wxEXPAND | wxALL, 10 );
 
@@ -114,10 +120,16 @@ sub BUILD {
     $self->form_fg_sz->Add( $self->lbl_driver, 0, wxLEFT,            5 );
     $self->form_fg_sz->Add( $self->cbx_driver, 1, wxLEFT,            0 );
 
-    $self->btn_sizer->Add( $self->btn_load,    1, wxEXPAND | wxALL, 15 );
-    $self->btn_sizer->Add( $self->btn_default, 1, wxEXPAND | wxALL, 15 );
-    $self->btn_sizer->Add( $self->btn_add,     1, wxEXPAND | wxALL, 15 );
-    $self->btn_sizer->Add( $self->btn_exit,    1, wxEXPAND | wxALL, 15 );
+    $self->btn_sizer->Add( $self->btn_sizer_l, 1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer->Add( $self->btn_sizer_r, 0, wxALL | wxALIGN_BOTTOM, 10 );
+
+    $self->btn_sizer_l->Add( $self->btn_new,    1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_add,    1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_remove, 1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_load,    1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_default, 1, wxEXPAND | wxALL, 5 );
+
+    $self->btn_sizer_r->Add( $self->btn_exit,    1, wxEXPAND | wxALL, 0 );
 
     $self->SetSizer( $self->sizer );
 
@@ -148,6 +160,14 @@ sub _build_sizer {
 }
 
 sub _build_btn_sizer {
+    return Wx::BoxSizer->new(wxHORIZONTAL);
+}
+
+sub _build_btn_sizer_l {
+    return Wx::GridSizer->new(2, 3, 0, 0);
+}
+
+sub _build_btn_sizer_r {
     return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
@@ -210,7 +230,7 @@ sub _build_cbx_driver {
 }
 
 sub _build_list_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 4, 1, 0, 5 );
+    my $fgs = Wx::FlexGridSizer->new( 5, 1, 0, 5 );
     $fgs->AddGrowableRow(0);
     $fgs->AddGrowableCol(0);
     return $fgs;
@@ -242,12 +262,38 @@ sub _build_btn_default {
     return $button;
 }
 
+sub _build_btn_new {
+    my $self = shift;
+    my $button = Wx::Button->new(
+        $self,
+        -1,
+        q{New},
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
+    $button->Enable(0);
+    return $button;
+}
+
 sub _build_btn_add {
     my $self = shift;
     my $button = Wx::Button->new(
         $self,
         -1,
         q{Add},
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
+    $button->Enable(1);
+    return $button;
+}
+
+sub _build_btn_remove {
+    my $self = shift;
+    my $button = Wx::Button->new(
+        $self,
+        -1,
+        q{Remove},
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -293,7 +339,7 @@ sub _build_mesg_ctrl {
         [ -1, -1 ],
         wxST_NO_AUTORESIZE | wxALIGN_CENTRE | wxRAISED_BORDER, # ! doesn't work
     );
-    $label->SetForegroundColour( Wx::Colour->new('red') );
+    $label->SetForegroundColour( Wx::Colour->new('orange') );
     $label->SetBackgroundColour( Wx::Colour->new('white') ); # ! doesn't work
     return $label;
 }
@@ -378,7 +424,7 @@ sub _init {
         $index++;
     }
 
-    $self->_set_default($index);
+    $self->_set_as_default($index);
     $self->list_ctrl->select_item($index);
     $self->_load_item($index);
 
@@ -416,25 +462,6 @@ sub _control_read_p {
     return $self->$name->GetPath;
 }
 
-sub _control_write_l {
-    my ($self, $data, $index, $repo_default) = @_;
-
-    # Check params?
-
-    my $item = $index;
-    while (my ($name, $path) = each (%{$data})) {
-        $self->list_ctrl->InsertStringItem( $item, 'dummy' );
-        $self->_set_list_item_text($item, 0, $item+1 );
-        $self->_set_list_item_text($item, 1, $name );
-        $self->_set_list_item_text($item, 2, $path);
-        if ($repo_default and $repo_default eq $name) {
-            $self->_clear_default_mark;
-            $self->_set_default_mark($item);
-        }
-        $item++;
-    }
-}
-
 sub _clear_form {
     my $self = shift;
     $self->_control_write_e('txt_name', undef);
@@ -464,14 +491,12 @@ sub _load_item {
     return;
 }
 
-sub _set_default {
+sub _set_as_default {
     my ($self, $item) = @_;
 
     $self->_clear_default_mark;
     $item = $self->selected_item unless defined $item;
-    if ($item) {
-        $self->_set_default_mark($item);
-    }
+    $self->_set_default_mark($item) if defined $item;
 
     return;
 }
@@ -524,7 +549,7 @@ sub config_add_repo {
     my $name = $self->_control_read_e('txt_name');
     my $path = $self->_control_read_p('dpc_path');
 
-    unless ($name and -d $path) {
+    unless ($name and $path) {
         $self->set_message('Add a repository Path and a Name, please.');
         return;
     }
@@ -532,7 +557,7 @@ sub config_add_repo {
     if (   $self->is_duplicate( 'name', $name )
         or $self->is_duplicate( 'path', $path ) )
     {
-        $self->set_message('Duplicate!, select a new repository path and add a name.');
+        $self->set_message('Duplicate! To add a new repository, select a new path and add a name for it.');
         return;
     }
 
@@ -550,11 +575,12 @@ sub config_add_repo {
 sub config_set_default {
     my $self = shift;
 
-    $self->_set_default;
+    $self->_set_as_default;
+
     my $name = $self->selected_name;
     my $path = $self->selected_path;
-    unless ( $name and -d $path ) {
-        $self->set_message('Add a repository Path and a Name, please.');
+    unless ( $name and $path ) {
+        $self->set_message('Select a repository Path and a Name, please.');
         return;
     }
     $self->ancestor->config_set_default( $name, $path );
