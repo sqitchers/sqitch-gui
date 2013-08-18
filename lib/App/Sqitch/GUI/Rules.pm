@@ -1,9 +1,9 @@
-package App::Sqitch::GUI::Settings;
+package App::Sqitch::GUI::Rules;
 
 use Moose;
 use namespace::autoclean;
 
-has 'settings' => (
+has 'gui_rules' => (
     is       => 'ro',
     isa      => 'HashRef',
     required => 1,
@@ -43,11 +43,11 @@ has 'settings' => (
 );
 
 sub init {
-    return shift->settings->{init};
+    return shift->gui_rules->{init};
 }
 
 sub idle {
-    return shift->settings->{idle};
+    return shift->gui_rules->{idle};
 }
 
 __PACKAGE__->meta->make_immutable;

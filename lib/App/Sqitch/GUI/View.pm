@@ -355,12 +355,12 @@ sub combobox_write {
 }
 
 sub set_status {
-    my ($self, $state, $settings) = @_;
+    my ($self, $state, $gui_rules) = @_;
 
     $self->status_bar->change_caption($state, 1);
 
-    foreach my $btn (keys %{$settings->$state} ) {
-        my $enable = $settings->$state->{$btn};
+    foreach my $btn (keys %{$gui_rules->$state} ) {
+        my $enable = $gui_rules->$state->{$btn};
         $self->right_side->$btn->Enable($enable);
     }
 

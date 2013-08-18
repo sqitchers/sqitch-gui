@@ -257,7 +257,7 @@ sub load_plan {
     my $sqitch = $self->sqitch;
     my $plan   = $sqitch->plan;
 
-    use Data::Printer; p $plan->lines;
+    # use Data::Printer; p $plan->lines;
 
     # my $records = [
     #     {   name        => 'Name',
