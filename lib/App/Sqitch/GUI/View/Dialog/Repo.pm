@@ -126,6 +126,19 @@ sub BUILD {
     return $self;
 }
 
+sub set_status {
+    my ($self, $state, $dia_rules) = @_;
+
+    print "set status for dialog\n";
+
+    foreach my $btn (keys %{$dia_rules->$state} ) {
+        my $enable = $dia_rules->$state->{$btn};
+        $self->$btn->Enable($enable);
+    }
+
+    return;
+}
+
 sub _build_vbox_sizer {
     return Wx::BoxSizer->new(wxVERTICAL);
 }

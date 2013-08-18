@@ -17,8 +17,10 @@ use App::Sqitch::GUI::Status;
 use App::Sqitch::GUI::Refresh;
 
 use App::Sqitch::GUI::View::Dialog::Repo;
+use App::Sqitch::GUI::View::Dialog::Status;
+use App::Sqitch::GUI::View::Dialog::Refresh;
 
-use Data::Printer;
+#use Data::Printer;
 
 has 'app' => (
     is         => 'ro',
@@ -61,6 +63,15 @@ has status => (
     lazy    => 1,
     default => sub {
         App::Sqitch::GUI::Status->new;
+    }
+);
+
+has dia_status => (
+    is      => 'rw',
+    isa     => 'App::Sqitch::GUI::View::Dialog::Status',
+    lazy    => 1,
+    default => sub {
+        App::Sqitch::GUI::View::Dialog::Status->new;
     }
 );
 
@@ -169,9 +180,7 @@ sub _setup_events {
 sub _init_observers {
     my $self = shift;
 
-    my $status = $self->status;
-
-    $status->add_observer(
+    $self->status->add_observer(
         App::Sqitch::GUI::Refresh->new( view => $self->view ) );
 
     return;
@@ -333,12 +342,21 @@ sub on_dpc_change {
 sub on_admin {
     my ($self, $frame, $event) = @_;
 
-    my $d = App::Sqitch::GUI::View::Dialog::Repo->new(
+    my $dialog = App::Sqitch::GUI::View::Dialog::Repo->new(
         app      => $self->app,
         ancestor => $self,
         parent   => undef,                   # for dialogs
     );
-    if ( $d->ShowModal == wxID_OK ) {
+
+    $self->dia_status->add_observer(
+        App::Sqitch::GUI::View::Dialog::Refresh->new( dialog => $dialog ) );
+
+    $self->dia_status->set_state('init');
+    $self->dia_status->set_state('idle');
+    $self->dia_status->set_state('sele');
+
+    if ( $dialog->ShowModal == wxID_OK ) {
+        $self->dia_status->remove_all_observers;
         return;
     }
     else {
