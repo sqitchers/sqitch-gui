@@ -91,7 +91,7 @@ sub FOREIGNBUILDARGS {
 sub BUILD {
     my $self = shift;
 
-    $self->SetMinSize([500, 400]);
+    $self->SetMinSize([500, 500]);
 
     #-- List and buttons
 
@@ -323,10 +323,7 @@ sub _set_events {
     };
 
     EVT_BUTTON $self, $self->btn_default->GetId, sub {
-        $self->_set_default;
-        $self->ancestor->config_set_default(
-            $self->selected_name, $self->selected_path,
-        );
+        $self->config_set_default;
     };
 
     EVT_BUTTON $self, $self->btn_add->GetId, sub {
@@ -457,9 +454,11 @@ sub _load_item {
 sub _set_default {
     my ($self, $item) = @_;
 
-    $item = $self->selected_item unless defined $item;
     $self->_clear_default_mark;
-    $self->_set_default_mark($item);
+    $item = $self->selected_item unless defined $item;
+    if ($item) {
+        $self->_set_default_mark($item);
+    }
 
     return;
 }
@@ -512,10 +511,10 @@ sub config_add_repo {
     my $name = $self->_control_read_e('txt_name');
     my $path = $self->_control_read_p('dpc_path');
 
-    unless ($name and $path) {
-        $self->set_message('Add a name.');
+    unless ($name and -d $path) {
+        $self->set_message('Add a repository Path and a Name, please.');
         return;
-    }                                            # ???
+    }
 
     if (   $self->is_duplicate( 'name', $name )
         or $self->is_duplicate( 'path', $path ) )
@@ -531,6 +530,21 @@ sub config_add_repo {
     $self->list_ctrl->populate($list_item, $new_index);
 
     $self->ancestor->config_add_repo($name, $path);
+
+    return;
+}
+
+sub config_set_default {
+    my $self = shift;
+
+    $self->_set_default;
+    my $name = $self->selected_name;
+    my $path = $self->selected_path;
+    unless ( $name and -d $path ) {
+        $self->set_message('Add a repository Path and a Name, please.');
+        return;
+    }
+    $self->ancestor->config_set_default( $name, $path );
 
     return;
 }
