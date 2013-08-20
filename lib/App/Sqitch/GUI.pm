@@ -6,7 +6,7 @@ use namespace::autoclean;
 
 use App::Sqitch::GUI::Controller;
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 has 'controller' => (
     is         => 'rw',

@@ -52,12 +52,13 @@ has repo_list => (
     lazy_build => 1,
 );
 
-# This should be the user file: ~/.sqitch/sqitch.conf ???
 has 'config_file' => (
     is      => 'rw',
     isa     => 'Maybe[Path::Class::File]',
     lazy    => 1,
-    default => sub { file shift->config_files->[0]; },
+    default => sub {
+        my $self = shift;
+        file($self->user_dir, $self->local_file); },
 );
 
 sub _build_repo_list {
@@ -72,36 +73,6 @@ sub _build_repo_list {
     }
 
     return $repo_list;
-}
-
-sub config_set_default {
-    my ($self, $name, $path) = @_;
-
-    hurl 'Wrong arguments passed to config_set_default()'
-        unless $name and defined $path;
-
-    $self->set(
-        key      => 'repository.default',
-        value    => $name,
-        filename => $self->config_file,
-    );
-
-    return;
-}
-
-sub config_add_repo {
-    my ($self, $name, $path) = @_;
-
-    hurl 'Wrong arguments passed to config_add_repo()'
-        unless $name and defined $path;
-
-    $self->set(
-        key      => "repository.$name.path",
-        value    => $path,
-        filename => $self->config_file,
-    );
-
-    return;
 }
 
 sub has_repo_name {

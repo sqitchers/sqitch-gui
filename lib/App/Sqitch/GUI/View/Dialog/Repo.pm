@@ -389,6 +389,10 @@ sub _set_events {
         $self->config_add_repo;
     };
 
+    EVT_BUTTON $self, $self->btn_remove->GetId, sub {
+        $self->config_remove_repo;
+    };
+
     EVT_LIST_ITEM_SELECTED $self, $self->list_ctrl, sub {
         $self->_on_item_selected(@_);
     };
@@ -427,6 +431,8 @@ sub _init {
     $self->_set_as_default($index);
     $self->list_ctrl->select_item($index);
     $self->_load_item($index);
+
+    $self->ancestor->dia_status->set_state('sele');
 
     return;
 }
@@ -572,6 +578,25 @@ sub config_add_repo {
     return;
 }
 
+sub config_remove_repo {
+    my $self = shift;
+
+    my $name = $self->_control_read_e('txt_name');
+    my $path = $self->_control_read_p('dpc_path');
+
+    unless ($name and $path) {
+        $self->set_message('Select a repository item, please.');
+        return;
+    }
+
+    my $default    = $self->config->repo_default_name;
+    my $is_default = $name eq $default ? 1 : 0;
+
+    $self->ancestor->config_remove_repo($name, $path, $is_default);
+
+    return;
+}
+
 sub config_set_default {
     my $self = shift;
 
@@ -580,10 +605,10 @@ sub config_set_default {
     my $name = $self->selected_name;
     my $path = $self->selected_path;
     unless ( $name and $path ) {
-        $self->set_message('Select a repository Path and a Name, please.');
+        $self->set_message('Select a repository item, please.');
         return;
     }
-    $self->ancestor->config_set_default( $name, $path );
+    $self->ancestor->config_set_default($name);
 
     return;
 }

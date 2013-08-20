@@ -20,7 +20,7 @@ use App::Sqitch::GUI::View::Dialog::Repo;
 use App::Sqitch::GUI::View::Dialog::Status;
 use App::Sqitch::GUI::View::Dialog::Refresh;
 
-#use Data::Printer;
+use Data::Printer;
 
 has 'app' => (
     is         => 'ro',
@@ -89,8 +89,6 @@ sub _build_app {
 
 sub init_sqitch {
     my $self = shift;
-
-    print "Initializing Sqitch\n";
 
     my $opts = {};
     $opts->{config} = $self->config;
@@ -283,22 +281,19 @@ sub load_plan {
 }
 
 sub execute_command {
-    my ($self, $cmd) = @_;
-
-    print "Execute '$cmd'\n";
-    my $cmd_args;
+    my ($self, $cmd, @cmd_args) = @_;
 
     # Instantiate the command object.
     my $command = App::Sqitch::Command->load({
         sqitch  => $self->sqitch,
         command => $cmd,
         config  => $self->config,
-        args    => $cmd_args,
+        args    => \@cmd_args,
     });
 
     # Execute command.
     try {
-        $command->execute( @{$cmd_args} );
+        $command->execute(@cmd_args);
     }
     catch {
         local $@ = $_;
@@ -351,10 +346,6 @@ sub on_admin {
     $self->dia_status->add_observer(
         App::Sqitch::GUI::View::Dialog::Refresh->new( dialog => $dialog ) );
 
-    $self->dia_status->set_state('init');
-    $self->dia_status->set_state('idle');
-    $self->dia_status->set_state('sele');
-
     if ( $dialog->ShowModal == wxID_OK ) {
         $self->dia_status->remove_all_observers;
         return;
@@ -382,15 +373,25 @@ sub config_load {
 }
 
 sub config_set_default {
-    my ($self, $name, $path) = @_;
-    $self->config->config_set_default($name, $path);
-    return;
+    my ($self, $name) = @_;
+    my @cmd = qw(config --user);
+    $self->execute_command(@cmd, "repository.default", $name);
+    return 1;
 }
 
 sub config_add_repo {
     my ($self, $name, $path) = @_;
-    $self->config->config_add_repo($name, $path);
-    return;
+    my @cmd = qw(config --user);
+    $self->execute_command(@cmd, "repository.${name}.path", $path);
+    return 1;
+}
+
+sub config_remove_repo {
+    my ($self, $name, $path, $is_default) = @_;
+    my @cmd = qw(config --user --remove-section);
+    $self->execute_command(@cmd, "repository.${name}");
+    $self->execute_command(@cmd, "repository") if $is_default;
+    return 1;
 }
 
 __PACKAGE__->meta->make_immutable;
