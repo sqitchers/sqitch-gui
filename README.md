@@ -12,7 +12,7 @@ Requirements
 ------------
 
 - Perl v5.10.01 or newer;
-- Sqitch v0.973 or newer;
+- Sqitch v0.980 or newer;
 - wxPerl, Moose and other modules;
 
 Status
