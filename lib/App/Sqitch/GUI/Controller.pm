@@ -10,6 +10,8 @@ use Path::Class;
 use File::Slurp;
 use Try::Tiny;
 
+use App::Sqitch::X qw(hurl);
+
 use App::Sqitch::GUI::Sqitch;
 use App::Sqitch::GUI::WxApp;
 use App::Sqitch::GUI::Config;
@@ -222,7 +224,7 @@ sub load_change {
     my $sqitch = $self->sqitch;
     my $plan   = $sqitch->plan;
     my $change = $plan->last;
-    #die "No change plan!" unless $change->isa('App::Sqitch::Plan::Change');
+    hurl "No change plan!" unless $change->isa('App::Sqitch::Plan::Change');
     my $name   = $change->name;
     my $state  = $sqitch->engine->current_state( $plan->project );
 
@@ -351,7 +353,7 @@ sub on_admin {
         return;
     }
     else {
-        die "This should NOT happen!\n";
+        hurl "This should NOT happen!\n";
     }
 }
 
