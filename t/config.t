@@ -35,7 +35,10 @@ my ($name, $path) = ('Test','t/test-repo');
 
 ok $controller->config_add_repo($name, $path), 'Add test repo';
 
-# ReRead CONFIG?
+# ReRead CONFIG? How?
+#isa_ok $config = $CLASS->new, $CLASS, 'New config object';
+# $controller->config->DESTROY;
+
 diag scalar $config->dump, "\n";
 # p $config->repo_conf_list;
 is_deeply $config->repo_conf_list, undef, 'Repository list';
