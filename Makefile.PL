@@ -29,7 +29,7 @@ build_requires (
 );
 
 requires(
-    'App::Sqitch'        => '0.973',
+    'App::Sqitch'        => '0.980',
     'Wx'                 => '0.970101',
     'Wx::Perl::ListCtrl' => '0.03',
     'Wx::STC'            => '0.01',
