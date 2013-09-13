@@ -1,4 +1,4 @@
-App::Sqitch::GUI version 0.002
+App::Sqitch::GUI version 0.003
 ==============================
 Ștefan Suciu <stefan@s2i2.ro>
 2013-08-15
