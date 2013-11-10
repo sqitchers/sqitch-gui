@@ -23,8 +23,8 @@ cover_db/
 nytprof.out
 pm_to_blib
 # Cava
-cava20-logs/
-cava20-temp/
-installer/
-release/
+Cava/Linux/cava20-logs/
+Cava/Linux/cava20-temp/
+Cava/Linux/installer/
+Cava/Linux/release/
 *.db

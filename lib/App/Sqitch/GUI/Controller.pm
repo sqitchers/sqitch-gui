@@ -144,9 +144,14 @@ sub check_plan {
     };
 
     if ( $self->status->is_state('idle') ) {
-        $self->load_change;
-        $self->load_projects;
-        $self->load_plan;
+        try {
+            $self->load_change;
+            $self->load_projects;
+            $self->load_plan;
+        }
+        catch {
+            $self->log_message("Error: $_");
+        };
     }
 
     return;
