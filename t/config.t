@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 16;
+use Test::More;
 use File::HomeDir;
 use Path::Class;
 use File::Spec;
@@ -14,6 +14,8 @@ use App::Sqitch::GUI;
 
 my $CLASS;
 BEGIN {
+    plan( skip_all => 'Not ready!' );
+
     $CLASS = 'App::Sqitch::GUI::Config';
     use_ok $CLASS or die;
 }
