@@ -4,6 +4,8 @@ use utf8;
 use Moose;
 use namespace::autoclean;
 
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
+use Locale::Messages qw(bind_textdomain_filter);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 use Wx::Perl::ListCtrl;
@@ -56,11 +58,12 @@ has 'engines' => (
     lazy     => 1,
     default => sub {
         return {
-            pg     => 'PostgreSQL',
-            mysql  => 'MySQL',
-            sqlite => 'SQLite',
-            cubrid => 'CUBRID',
-            oracle => 'Oracle',
+            pg      => 'PostgreSQL',
+            mysql   => 'MySQL',
+            sqlite  => 'SQLite',
+            cubrid  => 'CUBRID',
+            oracle  => 'Oracle',
+            firbird => 'Firebird',
         };
     },
 );
@@ -179,47 +182,47 @@ sub _build_subform2_fg_sz {
 
 sub _build_lbl_project {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Project} );
+    return Wx::StaticText->new( $self->panel, -1, __ 'Project' );
 }
 
 sub _build_lbl_database {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Database} );
+    return Wx::StaticText->new( $self->panel, -1, __ 'Database' );
 }
 
 sub _build_lbl_user {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{User} );
+    return Wx::StaticText->new( $self->panel, -1, __ 'User' );
 }
 
 sub _build_lbl_uri {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{URI} );
+    return Wx::StaticText->new( $self->panel, -1, __ 'URI' );
 }
 
 sub _build_lbl_created_at {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Created at} );
+    return Wx::StaticText->new( $self->panel, -1, __ 'Created at' );
 }
 
 sub _build_lbl_creator_name {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Creator name} );
+    return Wx::StaticText->new( $self->panel, -1, __ 'Creator name' );
 }
 
 sub _build_lbl_creator_email {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Creator email} );
+    return Wx::StaticText->new( $self->panel, -1, __ 'Creator email' );
 }
 
 sub _build_lbl_driver {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Driver} );
+    return Wx::StaticText->new( $self->panel, -1, __ 'Driver' );
 }
 
 sub _build_lbl_path {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, q{Repository} );
+    return Wx::StaticText->new( $self->panel, -1, __ 'Repository' );
 }
 
 #-- Entry
@@ -264,7 +267,7 @@ sub _build_dpc_path {
 
     return Wx::DirPickerCtrl->new(
         $self->panel, -1, q{},
-        q{Choose a directory},
+        __ 'Choose a directory',
         [ -1, -1 ],
         [ -1, -1 ],
         wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL | wxDIRP_CHANGE_DIR,
@@ -298,7 +301,7 @@ sub _build_sb_sizer {
     my $self = shift;
 
     return Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->panel, -1, ' Project ', ), wxVERTICAL );
+        Wx::StaticBox->new( $self->panel, -1, __ 'Project', ), wxVERTICAL );
 }
 
 sub _build_btn_load {
@@ -307,7 +310,7 @@ sub _build_btn_load {
     my $button = Wx::Button->new(
         $self->panel,
         -1,
-        q{Load},
+        __ 'Load',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -322,7 +325,7 @@ sub _build_btn_default {
     my $button = Wx::Button->new(
         $self->panel,
         -1,
-        q{Default},
+        __ 'Default',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -337,7 +340,7 @@ sub _build_btn_add {
     my $button = Wx::Button->new(
         $self->panel,
         -1,
-        q{Add},
+        __ 'Add',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -356,11 +359,11 @@ sub _build_list {
         Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
     );
 
-    $list->InsertColumn( 0, '#', wxLIST_FORMAT_LEFT, 50 );
-    $list->InsertColumn( 1, 'Project', wxLIST_FORMAT_LEFT, 100 );
-    $list->InsertColumn( 2, 'Database', wxLIST_FORMAT_LEFT, 100 );
-    $list->InsertColumn( 3, 'Default', wxLIST_FORMAT_LEFT, 60 );
-    $list->InsertColumn( 4, 'Description', wxLIST_FORMAT_LEFT, 180 );
+    $list->InsertColumn( 0,    '#', wxLIST_FORMAT_LEFT, 50 );
+    $list->InsertColumn( 1, __ 'Project', wxLIST_FORMAT_LEFT, 100 );
+    $list->InsertColumn( 2, __ 'Database', wxLIST_FORMAT_LEFT, 100 );
+    $list->InsertColumn( 3, __ 'Default', wxLIST_FORMAT_LEFT, 60 );
+    $list->InsertColumn( 4, __ 'Description', wxLIST_FORMAT_LEFT, 180 );
 
     return $list;
 }

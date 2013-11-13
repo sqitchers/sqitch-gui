@@ -2,8 +2,11 @@ package App::Sqitch::GUI::View::Dialog::Repo;
 
 use Moose;
 use namespace::autoclean;
+
 use Try::Tiny;
 use Path::Class;
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
+use Locale::Messages qw(bind_textdomain_filter);
 use App::Sqitch::X qw(hurl);
 
 use Wx qw(:everything);
@@ -86,7 +89,7 @@ sub FOREIGNBUILDARGS {
     return (
         $args{parent},
         -1,
-        'Repository List',
+        __ 'Repository List',
         [-1, -1],
         [-1, -1],
         wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE,
@@ -141,8 +144,6 @@ sub BUILD {
 sub set_status {
     my ($self, $state, $dia_rules) = @_;
 
-    print "set status for dialog\n";
-
     foreach my $btn (keys %{$dia_rules->$state} ) {
         my $enable = $dia_rules->$state->{$btn};
         $self->$btn->Enable($enable);
@@ -181,7 +182,7 @@ sub _build_form_fg_sz {
 
 sub _build_lbl_name {
     my $self = shift;
-    return Wx::StaticText->new( $self, -1, q{Name} );
+    return Wx::StaticText->new( $self, -1, __ 'Name' );
 }
 
 sub _build_txt_name {
@@ -191,14 +192,15 @@ sub _build_txt_name {
 
 sub _build_lbl_path {
     my $self = shift;
-    return Wx::StaticText->new( $self, -1, q{Repository} );
+    return Wx::StaticText->new( $self, -1, __ 'Repository' );
 }
 
 sub _build_dpc_path {
     my $self = shift;
     return Wx::DirPickerCtrl->new(
-        $self, -1, q{},
-        q{Choose a directory},
+        $self, -1,
+        q{},
+        __ 'Choose a directory',
         [ -1, -1 ],
         [ -1, -1 ],
         wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL | wxDIRP_CHANGE_DIR,
@@ -207,14 +209,14 @@ sub _build_dpc_path {
 
 sub _build_lbl_driver {
     my $self = shift;
-    return Wx::StaticText->new( $self, -1, q{Driver} );
+    return Wx::StaticText->new( $self, -1, __ 'Driver' );
 }
 
 #-  Buttons
 
 sub _build_cbx_driver {
     my $self = shift;
-    my @engines = qw{Not yet used};
+    my @engines = __ 'Not yet used';
     my $cbx = Wx::ComboBox->new(
         $self,
         -1,
@@ -241,7 +243,7 @@ sub _build_btn_load {
     my $button = Wx::Button->new(
         $self,
         -1,
-        q{Load},
+        __ 'Load',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -254,7 +256,7 @@ sub _build_btn_default {
     my $button = Wx::Button->new(
         $self,
         -1,
-        q{Default},
+        __ 'Default',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -267,7 +269,7 @@ sub _build_btn_new {
     my $button = Wx::Button->new(
         $self,
         -1,
-        q{New},
+        __ 'New',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -280,7 +282,7 @@ sub _build_btn_add {
     my $button = Wx::Button->new(
         $self,
         -1,
-        q{Add},
+        __ 'Add',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -293,7 +295,7 @@ sub _build_btn_remove {
     my $button = Wx::Button->new(
         $self,
         -1,
-        q{Remove},
+        __ 'Remove',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -306,7 +308,7 @@ sub _build_btn_exit {
     my $button = Wx::Button->new(
         $self,
         -1,
-        q{E&xit},
+        __ 'E&xit',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -323,9 +325,9 @@ sub _build_list_ctrl {
         count_col => 1,                      # add a count column
     );
 
-    $list->add_column( 'Name',    wxLIST_FORMAT_LEFT, 100, 'name' );
-    $list->add_column( 'Path',    wxLIST_FORMAT_LEFT, 250, 'path' );
-    $list->add_column( 'Default', wxLIST_FORMAT_CENTER,    'default' );
+    $list->add_column( __ 'Name',    wxLIST_FORMAT_LEFT, 100, 'name' );
+    $list->add_column( __ 'Path',    wxLIST_FORMAT_LEFT, 250, 'path' );
+    $list->add_column( __ 'Default', wxLIST_FORMAT_CENTER,    'default' );
 
     return $list;
 }
@@ -397,9 +399,8 @@ sub _set_events {
         $self->_on_item_selected(@_);
     };
 
-    EVT_DIRPICKER_CHANGED $self,
-        $self->dpc_path->GetId, sub {
-            $self->_clear_form;
+    EVT_DIRPICKER_CHANGED $self, $self->dpc_path->GetId, sub {
+        $self->_on_dpc_change(@_);
     };
 
     return;
@@ -439,7 +440,7 @@ sub _init {
 
 sub _control_write_p {
     my ( $self, $name, $path ) = @_;
-    hurl 'Wrong arguments passed to _control_write_p()'
+    hurl __ 'Wrong arguments passed to _control_write_p()'
         unless $name and defined $path;
     $self->$name->SetPath($path);
     return;
@@ -447,7 +448,7 @@ sub _control_write_p {
 
 sub _control_write_e {
     my ( $self, $name, $value ) = @_;
-    hurl 'Wrong arguments passed to _control_write_e()'
+    hurl __ 'Wrong arguments passed to _control_write_e()'
         unless $name;
     $self->$name->Clear;
     $self->$name->SetValue($value) if defined $value;
@@ -456,20 +457,21 @@ sub _control_write_e {
 
 sub _control_read_e {
     my ( $self, $name ) = @_;
-    hurl 'Wrong arguments passed to _control_read_e()'
+    hurl __ 'Wrong arguments passed to _control_read_e()'
         unless $name;
     return $self->$name->GetValue;
 }
 
 sub _control_read_p {
     my ( $self, $name ) = @_;
-    hurl 'Wrong arguments passed to _control_read_p()'
+    hurl __ 'Wrong arguments passed to _control_read_p()'
         unless $name;
     return $self->$name->GetPath;
 }
 
 sub _clear_form {
     my $self = shift;
+    print " clear form\n";
     $self->_control_write_e('txt_name', undef);
     return;
 }
@@ -478,6 +480,15 @@ sub _on_item_selected {
     my ($self, $var, $event) =  @_;
     my $item = $event->GetIndex;
     $self->_load_item($item);
+    return;
+}
+
+sub _on_dpc_change {
+    my ($self, $frame, $event) = @_;
+    print "Path changed\n";
+    my $new_path = $event->GetEventObject->GetPath;
+    print " is $new_path\n";
+    $self->_clear_form;
     return;
 }
 
@@ -528,7 +539,7 @@ sub _clear_default_mark {
 
 sub _set_default_mark {
     my ($self, $item) = @_;
-    hurl 'Wrong arguments passed to _set_default_mark()'
+    hurl __ 'Wrong arguments passed to _set_default_mark()'
         unless defined $item;
     $self->list_ctrl->set_list_item_data( $item, { default => 1 } );
     $self->list_ctrl->set_list_item_text($item, 3, 'Yes');
@@ -563,7 +574,7 @@ sub config_add_repo {
     if (   $self->is_duplicate( 'name', $name )
         or $self->is_duplicate( 'path', $path ) )
     {
-        $self->set_message('Duplicate! To add a new repository, select a new path and add a name for it.');
+        $self->set_message(__ 'Duplicate! To add a new repository, select a new path and add a name for it.');
         return;
     }
 
@@ -585,7 +596,7 @@ sub config_remove_repo {
     my $path = $self->_control_read_p('dpc_path');
 
     unless ($name and $path) {
-        $self->set_message('Select a repository item, please.');
+        $self->set_message(__ 'Select a repository item, please.');
         return;
     }
 
@@ -605,7 +616,7 @@ sub config_set_default {
     my $name = $self->selected_name;
     my $path = $self->selected_path;
     unless ( $name and $path ) {
-        $self->set_message('Select a repository item, please.');
+        $self->set_message(__ 'Select a repository item, please.');
         return;
     }
     $self->ancestor->config_set_default($name);

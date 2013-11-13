@@ -3,6 +3,8 @@ package App::Sqitch::GUI::View::Panel::Plan;
 use utf8;
 use Moose;
 use namespace::autoclean;
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
+use Locale::Messages qw(bind_textdomain_filter);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 
@@ -84,7 +86,7 @@ sub _build_sb_sizer {
     my $self = shift;
 
     return Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->panel, -1, ' Plan ', ), wxVERTICAL );
+        Wx::StaticBox->new( $self->panel, -1, __ 'Plan ', ), wxVERTICAL );
 }
 
 sub _build_list_ctrl {

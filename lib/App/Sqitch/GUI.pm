@@ -1,12 +1,22 @@
 package App::Sqitch::GUI;
 
+# ABSTRACT: GUI for Sqitch
+
 use 5.010001;
 use Moose;
 use namespace::autoclean;
 
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
+use Locale::Messages qw(bind_textdomain_filter);
 use App::Sqitch::GUI::Controller;
 
 our $VERSION = '0.003';
+
+BEGIN {
+    # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
+    $ENV{OUTPUT_CHARSET} = 'UTF-8';
+    bind_textdomain_filter 'App-Sqitch-GUI' => \&Encode::decode_utf8;
+}
 
 has 'controller' => (
     is         => 'rw',
