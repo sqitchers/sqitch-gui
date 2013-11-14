@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Sqitch-GUI 0.003\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-13 22:04+0200\n"
-"PO-Revision-Date: 2013-11-13 22:05+0200\n"
+"POT-Creation-Date: 2013-11-14 19:02+0200\n"
+"PO-Revision-Date: 2013-11-14 19:05+0200\n"
 "Last-Translator: Ștefan Suciu <stefan@s2i2.ro>\n"
 "Language-Team: none\n"
 "Language: ro\n"
@@ -17,70 +17,86 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:168
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:290
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:349
+#: lib/App/Sqitch/GUI/Controller.pm:138
+msgid "Sqitch is NOT initialized yet. Please set a valid repository path!"
+msgstr "Sqitch NU este încă inițializat. Rog, setați o cale către un depozit valid!"
+
+#: lib/App/Sqitch/GUI/Controller.pm:141
+msgid "Sqitch is initialized."
+msgstr "Sqitch este inițializat."
+
+#: lib/App/Sqitch/GUI/Controller.pm:153
+msgid "Error: "
+msgstr "Eroare:"
+
+#: lib/App/Sqitch/GUI/Controller.pm:378
+msgid "This should NOT happen!"
+msgstr "Acesta NU ar fi trebuit să se întâmple!"
+
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:171
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:293
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:364
 msgid "Project"
 msgstr "Proiect"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:173
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:350
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:176
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:365
 #: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:238
 msgid "Database"
 msgstr "Bază de date"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:178
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:181
 msgid "User"
 msgstr "Utilizator"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:183
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:186
 msgid "URI"
 msgstr "URI"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:188
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:191
 msgid "Created at"
 msgstr "Creat la"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:193
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:196
 msgid "Creator name"
 msgstr "Nume creator"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:198
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:201
 msgid "Creator email"
 msgstr "Email creator"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:203
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:206
 #: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:216
 msgid "Driver"
 msgstr "Driver"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:208
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:211
 #: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:199
 msgid "Repository"
 msgstr "Depozit"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:253
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:256
 #: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:207
 msgid "Choose a directory"
 msgstr "Alege un subdirector"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:299
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:314
 #: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:260
 msgid "Load"
 msgstr "Încarc"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:314
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:351
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:329
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:366
 #: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:273
 #: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:344
 msgid "Default"
 msgstr "Implicit"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:329
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:344
 msgid "Add"
 msgstr "Adaug"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:352
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:367
 msgid "Description"
 msgstr "Descriere"
 
