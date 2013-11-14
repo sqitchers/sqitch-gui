@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: App-Sqitch-GUI 0.003\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-13 12:19+0200\n"
+"POT-Creation-Date: 2013-11-13 22:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,70 +17,70 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:185
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:304
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:363
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:168
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:290
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:349
 msgid "Project"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:190
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:364
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:173
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:350
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:238
 msgid "Database"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:195
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:178
 msgid "User"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:200
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:183
 msgid "URI"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:205
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:188
 msgid "Created at"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:210
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:193
 msgid "Creator name"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:215
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:198
 msgid "Creator email"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:220
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:214
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:203
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:216
 msgid "Driver"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:225
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:197
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:208
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:199
 msgid "Repository"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:270
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:205
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:253
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:207
 msgid "Choose a directory"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:313
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:248
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:299
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:260
 msgid "Load"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:328
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:365
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:261
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:332
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:314
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:351
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:273
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:344
 msgid "Default"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:343
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:287
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:329
 msgid "Add"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:366
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:352
 msgid "Description"
 msgstr ""
 
@@ -88,12 +88,12 @@ msgstr ""
 msgid "Plan "
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:92
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:94
 msgid "Repository List"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:187
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:330
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:189
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:342
 msgid "Name"
 msgstr ""
 
@@ -101,48 +101,56 @@ msgstr ""
 msgid "Not yet used"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:274
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:286
 msgid "New"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:300
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:299
+msgid "Save"
+msgstr ""
+
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:312
 msgid "Remove"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:313
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:325
 msgid "E&xit"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:331
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:343
 msgid "Path"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:449
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:457
 msgid "Wrong arguments passed to _control_write_p()"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:457
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:465
 msgid "Wrong arguments passed to _control_write_e()"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:466
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:474
 msgid "Wrong arguments passed to _control_read_e()"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:473
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:481
 msgid "Wrong arguments passed to _control_read_p()"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:539
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:556
 msgid "Wrong arguments passed to _set_default_mark()"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:574
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:559
+msgid "Yes"
+msgstr ""
+
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:591
 msgid ""
 "Duplicate! To add a new repository, select a new path and add a name for it."
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:596
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:616
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:613
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:633
 msgid "Select a repository item, please."
 msgstr ""
