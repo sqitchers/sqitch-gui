@@ -9,20 +9,20 @@ has 'app' => (
     required    => 1,
     weak_ref    => 1,
     handles => {
-        get_view       => 'view',
-        has_view       => 'has_view',
-        menu           => 'menu_bar',
-        get_left_pane  => 'left_pane',
-        get_right_pane => 'right_pane',
+        # get_view       => 'view',
+        # has_view       => 'has_view',
+        # menu           => 'menu_bar',
+        # get_left_pane  => 'left_pane',
+        # get_right_pane => 'right_pane',
     }
 );
 has 'ancestor'  => (is => 'rw', isa => 'Object', weak_ref => 1 );
 has 'parent'    => (is => 'rw', isa => 'Maybe[Wx::Window]' );
-has 'sizer_debug' => (is => 'rw', isa => 'Int',  lazy => 1, default => 0,
-        documentation => q{
-            draws boxes with titles around all sizers if true.
-        }
-    );
+# has 'sizer_debug' => (is => 'rw', isa => 'Int',  lazy => 1, default => 0,
+#         documentation => q{
+#             draws boxes with titles around all sizers if true.
+#         }
+#     );
 has 'sizers' => (is => 'rw', isa => 'HashRef', lazy => 1, default => sub{ {} });
 
 requires '_set_events';
@@ -32,28 +32,6 @@ after BUILD => sub {
     $self->_set_events;
     return 1;
 };
-
-sub build_sizer {
-    my $self        = shift;
-    my $parent      = shift;
-    my $direction   = shift;
-    my $name        = shift or die "the Sizer name is required!";
-    my $force_box   = shift || 0;
-    my $pos         = shift || wxDefaultPosition;
-    my $size        = shift || wxDefaultSize;
-
-    my $hr = { };
-    if( $self->sizer_debug or $force_box ) {
-        $hr->{'box'} = Wx::StaticBox->new($parent, -1, $name, $pos, $size),
-        $hr->{'sizer'} = Wx::StaticBoxSizer->new($hr->{'box'}, $direction);
-    }
-    else {
-        $hr->{'sizer'} = Wx::BoxSizer->new($direction);
-    }
-    $self->sizers->{$name} = $hr;
-
-    return $hr->{'sizer'};
-}
 
 no Moose::Role;
 

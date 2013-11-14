@@ -34,7 +34,8 @@ has repo_default_path => (
 override load_dirs => sub {
     my $self = shift;
     my $conf = file( $self->repo_default_path, $self->local_file );
-    $self->load_file($conf) if -f $conf;
+    print "Loading configurations from: ", $conf, "\n";
+    $self->load_file($conf);# if -f $conf;
 };
 
 has repo_conf_list => (
@@ -52,13 +53,30 @@ has repo_list => (
     lazy_build => 1,
 );
 
-has 'config_file' => (
-    is      => 'rw',
-    isa     => 'Maybe[Path::Class::File]',
-    lazy    => 1,
+# has 'config_file' => (
+#     is      => 'rw',
+#     isa     => 'Maybe[Path::Class::File]',
+#     lazy    => 1,
+#     default => sub {
+#         my $self = shift;
+#         file($self->user_dir, $self->local_file); },
+# );
+
+has 'engines' => (
+    is       => 'ro',
+    isa      => 'HashRef',
+    required => 1,
+    lazy     => 1,
     default => sub {
-        my $self = shift;
-        file($self->user_dir, $self->local_file); },
+        return {
+            pg      => 'PostgreSQL',
+            mysql   => 'MySQL',
+            sqlite  => 'SQLite',
+            cubrid  => 'CUBRID',
+            oracle  => 'Oracle',
+            firbird => 'Firebird',
+        };
+    },
 );
 
 sub _build_repo_list {
@@ -90,6 +108,8 @@ sub has_repo_path {
     return 1 if first { $path eq $_ } values %{$self->repo_list};
     return 0;
 }
+
+sub reload { shift->load; }
 
 __PACKAGE__->meta->make_immutable;
 

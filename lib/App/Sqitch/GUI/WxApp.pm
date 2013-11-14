@@ -10,12 +10,18 @@ use MooseX::NonMoose;
 extends 'Wx::App';
 
 use App::Sqitch::GUI::View;
+use App::Sqitch::GUI::Config;
 
 has 'view' => (
     is         => 'rw',
     isa        => 'App::Sqitch::GUI::View',
     lazy_build => 1,
     handles    => { menu_bar => 'menu_bar' },
+);
+
+has config => (
+    is  => 'ro',
+    isa => 'App::Sqitch::GUI::Config',
 );
 
 sub FOREIGNBUILDARGS {
@@ -36,8 +42,9 @@ sub _build_view {
     my $self = shift;
 
     my $args = {
-        app   => $self,
-        title => 'Sqitch::GUI',
+        app    => $self,
+        config => $self->config,
+        title  => 'Sqitch::GUI',
     };
 
     return App::Sqitch::GUI::View->new( $args );

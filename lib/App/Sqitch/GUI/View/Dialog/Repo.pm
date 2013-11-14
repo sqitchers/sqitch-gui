@@ -218,7 +218,7 @@ sub _build_lbl_driver {
 
 sub _build_cbx_driver {
     my $self = shift;
-    my @engines = __ 'Not yet used';
+    my @engines = values %{$self->app->config->engines;};
     my $cbx = Wx::ComboBox->new(
         $self,
         -1,
@@ -228,8 +228,7 @@ sub _build_cbx_driver {
         \@engines,
         wxCB_SORT | wxCB_READONLY,
     );
-    $cbx->Enable(0);
-
+    $cbx->Enable(1);
     return $cbx;
 }
 

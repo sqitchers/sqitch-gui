@@ -213,7 +213,7 @@ sub _build_btn_change_sel {
     return Wx::RadioButton->new(
         $self->panel,
         -1,
-        q{ },
+        q{« },
         [-1, -1],
         [-1, -1],
     );
@@ -237,7 +237,7 @@ sub _build_btn_project_sel {
     return Wx::RadioButton->new(
         $self->panel,
         -1,
-        q{ },
+        q{« },
         [-1, -1],
         [-1, -1],
     );
@@ -262,7 +262,7 @@ sub _build_btn_plan_sel {
     return Wx::RadioButton->new(
         $self->panel,
         -1,
-        q{ },
+        q{« },
         [-1, -1],
         [-1, -1],
     );

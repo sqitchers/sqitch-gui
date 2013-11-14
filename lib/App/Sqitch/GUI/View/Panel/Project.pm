@@ -262,10 +262,7 @@ sub _build_dpc_path {
 
 sub _build_cbx_driver {
     my $self = shift;
-
-    #use Data::Printer; p $self->config;
-
-    my @engines;# = values %{$self->engines};
+    my @engines = values %{$self->app->config->engines;};
     return Wx::ComboBox->new(
         $self->panel,
         -1,

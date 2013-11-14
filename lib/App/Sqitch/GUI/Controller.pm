@@ -86,7 +86,7 @@ sub log_message {
 
 sub _build_app {
     my $self = shift;
-    my $app = App::Sqitch::GUI::WxApp->new();
+    my $app = App::Sqitch::GUI::WxApp->new( config => $self->config );
     return $app;
 }
 
