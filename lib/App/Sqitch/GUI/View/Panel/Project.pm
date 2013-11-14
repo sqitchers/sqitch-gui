@@ -5,7 +5,6 @@ use Moose;
 use namespace::autoclean;
 
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
-use Locale::Messages qw(bind_textdomain_filter);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 use Wx::Perl::ListCtrl;
@@ -26,6 +25,8 @@ has 'subform1_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'subform2_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 has 'list' => ( is => 'rw', isa => 'Wx::Perl::ListCtrl', lazy_build => 1 );
+
+has 'h_line1' => ( is => 'rw', isa => 'Wx::StaticLine',  lazy_build => 1 );
 
 has 'btn_load'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_default' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
@@ -50,23 +51,6 @@ has 'txt_creator_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 
 has 'txt_creator_email' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'dpc_path'  => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
 has 'cbx_driver' => ( is => 'rw', isa => 'Wx::ComboBox',      lazy_build => 1 );
-
-has 'engines' => (
-    is       => 'ro',
-    isa      => 'HashRef',
-    required => 1,
-    lazy     => 1,
-    default => sub {
-        return {
-            pg      => 'PostgreSQL',
-            mysql   => 'MySQL',
-            sqlite  => 'SQLite',
-            cubrid  => 'CUBRID',
-            oracle  => 'Oracle',
-            firbird => 'Firebird',
-        };
-    },
-);
 
 sub BUILD {
     my $self = shift;
@@ -112,6 +96,8 @@ sub BUILD {
     #-- List and buttons
 
     $self->list_fg_sz->Add( $self->list, 1, wxEXPAND, 3 );
+
+    $self->list_fg_sz->Add( $self->h_line1, 1, wxEXPAND | wxTOP | wxBOTTOM, 10 );
 
     $self->btn_sizer->Add( $self->btn_load, 1, wxLEFT | wxRIGHT | wxEXPAND,
         25 );
@@ -276,7 +262,10 @@ sub _build_dpc_path {
 
 sub _build_cbx_driver {
     my $self = shift;
-    my @engines = values %{$self->engines};
+
+    #use Data::Printer; p $self->config;
+
+    my @engines;# = values %{$self->engines};
     return Wx::ComboBox->new(
         $self->panel,
         -1,
@@ -302,6 +291,18 @@ sub _build_sb_sizer {
 
     return Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $self->panel, -1, __ 'Project', ), wxVERTICAL );
+}
+
+#-- Lines
+
+sub _build_h_line1 {
+    my $self = shift;
+    return Wx::StaticLine->new(
+        $self->panel,
+        -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
 }
 
 sub _build_btn_load {
