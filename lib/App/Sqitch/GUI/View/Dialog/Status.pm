@@ -23,7 +23,7 @@ sub set_state {
     my ($self, $state) = @_;
 
     $self->state($state);
-    print " Dialog status is $state\n";
+    # print " Dialog status is $state\n";
 
     return;
 }

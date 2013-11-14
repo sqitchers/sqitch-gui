@@ -4,7 +4,7 @@ use utf8;
 use Moose;
 use namespace::autoclean;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
-use Locale::Messages qw(bind_textdomain_filter);
+#use Locale::Messages qw(bind_textdomain_filter);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 

@@ -6,7 +6,7 @@ use namespace::autoclean;
 use Try::Tiny;
 use Path::Class;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
-use Locale::Messages qw(bind_textdomain_filter);
+#use Locale::Messages qw(bind_textdomain_filter);
 use App::Sqitch::X qw(hurl);
 
 use Wx qw(:everything);
@@ -36,6 +36,8 @@ has 'lbl_path' => ( is => 'rw', isa => 'Wx::StaticText',    lazy_build => 1 );
 has 'dpc_path' => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
 has 'lbl_driver' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'cbx_driver' => ( is => 'rw', isa => 'Wx::ComboBox',   lazy_build => 1 );
+has 'lbl_db'   => ( is => 'rw', isa => 'Wx::StaticText',    lazy_build => 1 );
+has 'txt_db'   => ( is => 'rw', isa => 'Wx::TextCtrl',      lazy_build => 1 );
 
 has 'list_ctrl' => (
     is         => 'rw',
@@ -50,7 +52,7 @@ has 'btn_sizer_l' => ( is => 'rw', isa => 'Wx::GridSizer', lazy_build => 1 );
 has 'btn_sizer_r' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 
 has 'btn_new'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+has 'btn_save'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_remove'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_load'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_default' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
@@ -108,26 +110,28 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->list_ctrl, 1, wxEXPAND | wxALL, 5 );
     $self->list_fg_sz->Add( $self->mesg_ctrl, 1, wxEXPAND | wxALL, 5 );
 
-    $self->list_fg_sz->Add( $self->h_line1,    1, wxEXPAND | wxALL, 10 );
-    $self->list_fg_sz->Add( $self->form_fg_sz, 1, wxEXPAND | wxALL,  5 );
-    $self->list_fg_sz->Add( $self->h_line2,    1, wxEXPAND | wxALL, 10 );
+    $self->list_fg_sz->Add( $self->h_line1,    1, wxEXPAND | wxALL, 5 );
+    $self->list_fg_sz->Add( $self->form_fg_sz, 1, wxEXPAND | wxALL, 5 );
+    $self->list_fg_sz->Add( $self->h_line2,    1, wxEXPAND | wxALL, 5 );
 
     $self->list_fg_sz->Add( $self->btn_sizer, 1, wxEXPAND | wxALL,  0 );
 
     $self->vbox_sizer->Add( $self->list_fg_sz, 1, wxEXPAND | wxALL, 10 );
 
     $self->form_fg_sz->Add( $self->lbl_path,   0, wxLEFT,            5 );
-    $self->form_fg_sz->Add( $self->dpc_path,   1, wxEXPAND | wxLEFT, 0 );
+    $self->form_fg_sz->Add( $self->dpc_path,   1, wxEXPAND | wxRIGHT,5 );
     $self->form_fg_sz->Add( $self->lbl_name,   0, wxLEFT,            5 );
     $self->form_fg_sz->Add( $self->txt_name,   0, wxLEFT,            0 );
     $self->form_fg_sz->Add( $self->lbl_driver, 0, wxLEFT,            5 );
     $self->form_fg_sz->Add( $self->cbx_driver, 1, wxLEFT,            0 );
+    $self->form_fg_sz->Add( $self->lbl_db,     0, wxLEFT,            5 );
+    $self->form_fg_sz->Add( $self->txt_db,     1, wxEXPAND | wxRIGHT,5 );
 
     $self->btn_sizer->Add( $self->btn_sizer_l, 1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer->Add( $self->btn_sizer_r, 0, wxALL | wxALIGN_BOTTOM, 10 );
 
     $self->btn_sizer_l->Add( $self->btn_new,    1, wxEXPAND | wxALL, 5 );
-    $self->btn_sizer_l->Add( $self->btn_add,    1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_save,   1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer_l->Add( $self->btn_remove, 1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer_l->Add( $self->btn_load,    1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer_l->Add( $self->btn_default, 1, wxEXPAND | wxALL, 5 );
@@ -175,7 +179,7 @@ sub _build_btn_sizer_r {
 #-- Form
 
 sub _build_form_fg_sz {
-    my $fgs = Wx::FlexGridSizer->new( 3, 2, 6, 10 );
+    my $fgs = Wx::FlexGridSizer->new( 4, 2, 6, 10 );
     $fgs->AddGrowableCol(1);
     return $fgs;
 }
@@ -212,8 +216,6 @@ sub _build_lbl_driver {
     return Wx::StaticText->new( $self, -1, __ 'Driver' );
 }
 
-#-  Buttons
-
 sub _build_cbx_driver {
     my $self = shift;
     my @engines = __ 'Not yet used';
@@ -231,6 +233,18 @@ sub _build_cbx_driver {
     return $cbx;
 }
 
+sub _build_lbl_db {
+    my $self = shift;
+    return Wx::StaticText->new( $self, -1, __ 'Database' );
+}
+
+sub _build_txt_db {
+    my $self = shift;
+    return Wx::TextCtrl->new( $self, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+}
+
+#-  Buttons
+
 sub _build_list_fg_sz {
     my $fgs = Wx::FlexGridSizer->new( 5, 1, 0, 5 );
     $fgs->AddGrowableRow(0);
@@ -247,7 +261,7 @@ sub _build_btn_load {
         [ -1, -1 ],
         [ -1, -1 ],
     );
-    $button->Enable(0);
+    $button->Enable(1);
     return $button;
 }
 
@@ -277,12 +291,12 @@ sub _build_btn_new {
     return $button;
 }
 
-sub _build_btn_add {
+sub _build_btn_save {
     my $self = shift;
     my $button = Wx::Button->new(
         $self,
         -1,
-        __ 'Add',
+        __ 'Save',
         [ -1, -1 ],
         [ -1, -1 ],
     );
@@ -376,7 +390,7 @@ sub _set_events {
     };
 
     EVT_BUTTON $self, $self->btn_load->GetId, sub {
-        $self->ancestor->config_load(
+        $self->ancestor->config_reload(
             $self->selected_name,
             $self->selected_path,
         );
@@ -387,7 +401,7 @@ sub _set_events {
         $self->config_set_default;
     };
 
-    EVT_BUTTON $self, $self->btn_add->GetId, sub {
+    EVT_BUTTON $self, $self->btn_save->GetId, sub {
         $self->config_add_repo;
     };
 
@@ -542,7 +556,7 @@ sub _set_default_mark {
     hurl __ 'Wrong arguments passed to _set_default_mark()'
         unless defined $item;
     $self->list_ctrl->set_list_item_data( $item, { default => 1 } );
-    $self->list_ctrl->set_list_item_text($item, 3, 'Yes');
+    $self->list_ctrl->set_list_item_text($item, 3, __ 'Yes');
 
     return;
 }
