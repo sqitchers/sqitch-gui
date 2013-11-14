@@ -38,18 +38,6 @@ sub _build_itm_quit {
 
 sub _set_events {
     my $self = shift;
-    EVT_MENU(
-        $self->parent,
-        $self->itm_quit->GetId,
-        sub { $self->OnQuit(@_) }
-    );
-    return 1;
-}
-
-sub OnQuit {
-    my ($self, $frame, $event) = @_;
-    print "Normal exit.\n";
-    $frame->Close(1);
     return 1;
 }
 

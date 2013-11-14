@@ -14,12 +14,15 @@ has 'panel_sbs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'panel_fgs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'commands_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'commands_fgs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'sizer_cmdtop' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'sizer_cmdbot' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'btn_status'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_deploy'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_revert'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_verify'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_log'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+has 'btn_quit'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 
 has 'btn_project' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
 has 'btn_project_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1 );
@@ -50,13 +53,16 @@ sub BUILD {
     #--- Commands
 
     $self->sizer->Add( $self->commands_sbs, 1, wxEXPAND | wxALL, 5 );
-    $self->commands_sbs->Add( $self->commands_fgs, 1, wxEXPAND | wxALL, 5 );
+    $self->commands_sbs->Add( $self->sizer_cmdtop, 1, wxEXPAND | wxALL, 5 );
+    $self->commands_sbs->Add( $self->sizer_cmdbot, 0, wxEXPAND | wxALL, 5 );
+    $self->sizer_cmdtop->Add( $self->commands_fgs, 1, wxEXPAND | wxALL, 5 );
     $self->commands_fgs->Add( $self->btn_status,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_add,      1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_deploy,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_revert,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_verify,   1, wxEXPAND,         0 );
-    $self->commands_fgs->Add( $self->btn_log   ,   1, wxEXPAND,         0 );
+    $self->commands_fgs->Add( $self->btn_log,      1, wxEXPAND,         0 );
+    $self->sizer_cmdbot->Add( $self->btn_quit,     1, wxALIGN_BOTTOM | wxALL, 5 );
 
     $self->panel->Show(1);
 
@@ -88,7 +94,7 @@ sub _build_commands_sbs {
 
     return Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $self->panel, -1, ' Commands ', ),
-        wxHORIZONTAL );
+        wxVERTICAL );
 }
 
 sub _build_panel_sbs {
@@ -103,6 +109,14 @@ sub _build_commands_fgs {
     my $fgsz = Wx::FlexGridSizer->new( 10, 0, 5, 0 ); # 10 rows for buttons
     $fgsz->AddGrowableCol( 0, 1 );
     return $fgsz;
+}
+
+sub _build_sizer_cmdtop {
+    return Wx::BoxSizer->new(wxVERTICAL);
+}
+
+sub _build_sizer_cmdbot {
+    return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
 sub _build_panel_fgs {
@@ -176,6 +190,18 @@ sub _build_btn_log {
         $self->panel,
         -1,
         q{Log},
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
+}
+
+sub _build_btn_quit {
+    my $self = shift;
+
+    return Wx::Button->new(
+        $self->panel,
+        -1,
+        q{Quit},
         [ -1, -1 ],
         [ -1, -1 ],
     );

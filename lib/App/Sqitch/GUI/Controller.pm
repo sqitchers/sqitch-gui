@@ -130,8 +130,7 @@ sub check_plan {
     }
     catch {
         my $msg = "ERROR: $_";
-        #$self->log_message($msg);
-        print "$msg\n";
+        print "Catch: $msg\n";
     }
     finally {
         if (@_) {
@@ -164,6 +163,10 @@ sub _setup_events {
         $self->view->menu_bar->menu_admin->itm_admin->GetId,
         sub { $self->on_admin(@_) };
 
+    EVT_MENU $self->view->frame,
+        $self->view->menu_bar->menu_app->itm_quit->GetId,
+        sub { $self->on_quit(@_) };
+
     # Set events for some of the commands
     # 'Revert' needs confirmation - can't use it
     foreach my $cmd ( qw(status deploy verify log) ) {
@@ -173,6 +176,10 @@ sub _setup_events {
                 $self->execute_command($cmd);
             };
     }
+
+    EVT_BUTTON $self->view->frame,
+        $self->view->right_side->btn_quit->GetId,
+        sub { $self->on_quit(@_) };
 
     EVT_DIRPICKER_CHANGED $self->view->frame,
         $self->view->project->dpc_path->GetId, sub {
@@ -344,6 +351,12 @@ sub on_dpc_change {
     #$self->status->set_state('idle');
 }
 
+sub on_quit {
+    my ($self, $frame, $event) = @_;
+    print "Normal exit.\n";
+    $frame->Close(1);
+}
+
 sub on_admin {
     my ($self, $frame, $event) = @_;
 
@@ -365,10 +378,12 @@ sub on_admin {
     }
 }
 
-sub config_load {
+sub config_reload {
     my ($self, $name, $path) = @_;
 
-    # Doesn't work :(
+    print "Reload config...\n";
+
+    $self->config->reload;
 
     # $self->config->repo_default_name($name);
     # $self->config->repo_default_path($path);
@@ -386,6 +401,7 @@ sub config_set_default {
     my ($self, $name) = @_;
     my @cmd = qw(config --user);
     $self->execute_command(@cmd, "repository.default", $name);
+#    $self->config_reload;
     return 1;
 }
 
@@ -393,6 +409,7 @@ sub config_add_repo {
     my ($self, $name, $path) = @_;
     my @cmd = qw(config --user);
     $self->execute_command(@cmd, "repository.${name}.path", $path);
+#    $self->config_reload;
     return 1;
 }
 
@@ -401,6 +418,7 @@ sub config_remove_repo {
     my @cmd = qw(config --user --remove-section);
     $self->execute_command(@cmd, "repository.${name}");
     $self->execute_command(@cmd, "repository") if $is_default;
+#    $self->config_reload;
     return 1;
 }
 
