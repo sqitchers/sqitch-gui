@@ -3,6 +3,7 @@ package App::Sqitch::GUI::Controller;
 use Moose;
 use namespace::autoclean;
 
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw<:everything>;
 use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU EVT_DIRPICKER_CHANGED>;
 
@@ -134,10 +135,10 @@ sub check_plan {
     }
     finally {
         if (@_) {
-            $self->log_message('Sqitch is NOT initialized yet. Please set a valid repository path!');
+            $self->log_message(__ 'Sqitch is NOT initialized yet. Please set a valid repository path!');
             $self->status->set_state('init');
         } else {
-            $self->log_message('Sqitch is initialized.');
+            $self->log_message(__ 'Sqitch is initialized.');
             $self->status->set_state('idle');
         }
     };
@@ -149,7 +150,7 @@ sub check_plan {
             $self->load_plan;
         }
         catch {
-            $self->log_message("Error: $_");
+            $self->log_message(__ 'Error' . ': '. $_);
         };
     }
 
@@ -168,7 +169,7 @@ sub _setup_events {
         sub { $self->on_quit(@_) };
 
     # Set events for some of the commands
-    # 'Revert' needs confirmation - can't use it
+    # 'Revert' needs confirmation - can't use it, yet
     foreach my $cmd ( qw(status deploy verify log) ) {
         my $btn = "btn_$cmd";
         EVT_BUTTON $self->view->frame,
@@ -205,7 +206,7 @@ sub load_projects {
     my $sqitch = $self->sqitch;
     my $plan   = $sqitch->plan;
 
-    # CUBRID has user not username ???
+    # CUBRID has user not username
     my $user = $sqitch->engine->can('username')
         ? $sqitch->engine->username : $sqitch->engine->user;
 
@@ -374,7 +375,7 @@ sub on_admin {
         return;
     }
     else {
-        hurl "This should NOT happen!\n";
+        hurl __ 'This should NOT happen!';
     }
 }
 
