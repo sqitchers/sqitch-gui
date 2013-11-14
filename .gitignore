@@ -29,3 +29,4 @@ Cava/Linux/installer/
 Cava/Linux/release/
 *.db
 TAGS
+*.mo
