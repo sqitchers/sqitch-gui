@@ -127,12 +127,13 @@ sub BUILD {
     $self->form_fg_sz->Add( $self->lbl_db,     0, wxLEFT,            5 );
     $self->form_fg_sz->Add( $self->txt_db,     1, wxEXPAND | wxRIGHT,5 );
 
-    $self->btn_sizer->Add( $self->btn_sizer_l, 1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer->Add( $self->btn_sizer_l, 1,
+        wxEXPAND | wxLEFT | wxRIGHT, 35 );
     $self->btn_sizer->Add( $self->btn_sizer_r, 0, wxALL | wxALIGN_BOTTOM, 10 );
 
-    $self->btn_sizer_l->Add( $self->btn_new,    1, wxEXPAND | wxALL, 5 );
-    $self->btn_sizer_l->Add( $self->btn_save,   1, wxEXPAND | wxALL, 5 );
-    $self->btn_sizer_l->Add( $self->btn_remove, 1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_new,     1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_save,    1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_remove,  1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer_l->Add( $self->btn_load,    1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer_l->Add( $self->btn_default, 1, wxEXPAND | wxALL, 5 );
 
@@ -259,6 +260,7 @@ sub _build_btn_load {
         __ 'Load',
         [ -1, -1 ],
         [ -1, -1 ],
+        wxBU_EXACTFIT,
     );
     $button->Enable(1);
     return $button;
@@ -272,6 +274,7 @@ sub _build_btn_default {
         __ 'Default',
         [ -1, -1 ],
         [ -1, -1 ],
+        wxBU_EXACTFIT,
     );
     $button->Enable(1);
     return $button;
@@ -285,6 +288,7 @@ sub _build_btn_new {
         __ 'New',
         [ -1, -1 ],
         [ -1, -1 ],
+        wxBU_EXACTFIT,
     );
     $button->Enable(0);
     return $button;
@@ -298,6 +302,7 @@ sub _build_btn_save {
         __ 'Save',
         [ -1, -1 ],
         [ -1, -1 ],
+        wxBU_EXACTFIT,
     );
     $button->Enable(1);
     return $button;
@@ -311,6 +316,7 @@ sub _build_btn_remove {
         __ 'Remove',
         [ -1, -1 ],
         [ -1, -1 ],
+        wxBU_EXACTFIT,
     );
     $button->Enable(1);
     return $button;

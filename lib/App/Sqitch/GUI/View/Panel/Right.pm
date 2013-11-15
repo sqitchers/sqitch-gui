@@ -3,6 +3,7 @@ package App::Sqitch::GUI::View::Panel::Right;
 use utf8;
 use Moose;
 use namespace::autoclean;
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw<EVT_CLOSE>;
 
@@ -201,7 +202,7 @@ sub _build_btn_quit {
     return Wx::Button->new(
         $self->panel,
         -1,
-        q{Quit},
+        __ '&Quit',
         [ -1, -1 ],
         [ -1, -1 ],
     );

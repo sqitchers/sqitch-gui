@@ -97,8 +97,8 @@ sub BUILD {
 
     $self->list_fg_sz->Add( $self->list, 1, wxEXPAND, 3 );
 
-    $self->list_fg_sz->Add( $self->h_line1, 1, wxEXPAND | wxTOP | wxBOTTOM, 10 );
-
+    $self->list_fg_sz->Add( $self->h_line1, 1, wxEXPAND | wxTOP | wxBOTTOM,
+        10 );
     $self->btn_sizer->Add( $self->btn_load, 1, wxLEFT | wxRIGHT | wxEXPAND,
         25 );
     $self->btn_sizer->Add( $self->btn_default, 1,

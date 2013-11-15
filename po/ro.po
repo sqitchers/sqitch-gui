@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Sqitch-GUI 0.003\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-14 19:02+0200\n"
-"PO-Revision-Date: 2013-11-14 19:05+0200\n"
+"POT-Creation-Date: 2013-11-15 12:38+0200\n"
+"PO-Revision-Date: 2013-11-15 12:40+0200\n"
 "Last-Translator: Ștefan Suciu <stefan@s2i2.ro>\n"
 "Language-Team: none\n"
 "Language: ro\n"
@@ -34,14 +34,14 @@ msgid "This should NOT happen!"
 msgstr "Acesta NU ar fi trebuit să se întâmple!"
 
 #: lib/App/Sqitch/GUI/View/Panel/Project.pm:171
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:293
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:364
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:290
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:361
 msgid "Project"
 msgstr "Proiect"
 
 #: lib/App/Sqitch/GUI/View/Panel/Project.pm:176
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:365
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:238
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:362
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:237
 msgid "Database"
 msgstr "Bază de date"
 
@@ -80,23 +80,23 @@ msgstr "Depozit"
 msgid "Choose a directory"
 msgstr "Alege un subdirector"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:314
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:260
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:311
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:259
 msgid "Load"
 msgstr "Încarc"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:329
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:366
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:273
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:344
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:326
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:363
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:272
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:343
 msgid "Default"
 msgstr "Implicit"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:344
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:341
 msgid "Add"
 msgstr "Adaug"
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:367
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:364
 msgid "Description"
 msgstr "Descriere"
 
@@ -104,71 +104,74 @@ msgstr "Descriere"
 msgid "Plan "
 msgstr "Plan"
 
+#: lib/App/Sqitch/GUI/View/Panel/Right.pm:205
+msgid "&Quit"
+msgstr "Înc&hide"
+
 #: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:94
 msgid "Repository List"
 msgstr "Listă Depozite"
 
 #: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:189
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:342
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:341
 msgid "Name"
 msgstr "Nume"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:221
-msgid "Not yet used"
-msgstr "Nu este folosit"
-
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:286
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:285
 msgid "New"
 msgstr "Nou"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:299
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:298
 msgid "Save"
 msgstr "Salvează"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:312
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:311
 msgid "Remove"
 msgstr "Șterg"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:325
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:324
 msgid "E&xit"
-msgstr "Exit"
+msgstr "E&xit"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:343
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:342
 msgid "Path"
 msgstr "Cale"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:457
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:456
 msgid "Wrong arguments passed to _control_write_p()"
 msgstr "Argumente eronate pentru _control_write_p()"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:465
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:464
 msgid "Wrong arguments passed to _control_write_e()"
 msgstr "Argumente eronate pentru _control_write_e()"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:474
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:473
 msgid "Wrong arguments passed to _control_read_e()"
 msgstr "Argumente eronate pentru _control_read_e()"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:481
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:480
 msgid "Wrong arguments passed to _control_read_p()"
 msgstr "Argumente eronate pentru _control_read_p()"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:556
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:555
 msgid "Wrong arguments passed to _set_default_mark()"
 msgstr "Argumente eronate pentru _set_default_mark()"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:559
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:558
 msgid "Yes"
 msgstr "Da"
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:591
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:590
 msgid "Duplicate! To add a new repository, select a new path and add a name for it."
 msgstr "Duplicat! Ca să adaugați un depozit, selectați o cale şi dați-i un nume."
 
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:613
-#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:633
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:612
+#: lib/App/Sqitch/GUI/View/Dialog/Repo.pm:632
 msgid "Select a repository item, please."
 msgstr "Rog, selectați un articol de tip depozit."
+
+#~ msgid "Not yet used"
+#~ msgstr "Nu este folosit"
 
 #~ msgid "Update"
 #~ msgstr "Actualizare"
