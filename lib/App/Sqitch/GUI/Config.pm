@@ -69,12 +69,12 @@ has 'engines' => (
     lazy     => 1,
     default => sub {
         return {
-            pg      => 'PostgreSQL',
-            mysql   => 'MySQL',
-            sqlite  => 'SQLite',
-            cubrid  => 'CUBRID',
-            oracle  => 'Oracle',
-            firbird => 'Firebird',
+            pg       => 'PostgreSQL',
+            mysql    => 'MySQL',
+            sqlite   => 'SQLite',
+            cubrid   => 'CUBRID',
+            oracle   => 'Oracle',
+            firebird => 'Firebird',
         };
     },
 );
