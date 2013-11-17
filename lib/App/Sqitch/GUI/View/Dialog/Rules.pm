@@ -2,53 +2,71 @@ package App::Sqitch::GUI::View::Dialog::Rules;
 
 use Moose;
 use namespace::autoclean;
+use MooseX::AttributeHelpers;
 
-has 'dia_rules' => (
-    is       => 'ro',
-    isa      => 'HashRef',
-    required => 1,
-    lazy     => 1,
+has 'rules' => (
+    metaclass => 'Collection::Hash',
+    is        => 'ro',
+    isa       => 'HashRef[HashRef]',
+    required  => 1,
+    lazy      => 1,
     default => sub {
-        return {
-            init => {
+        {   init => {
                 btn_new     => 0,
-                btn_add     => 0,
+                btn_edit    => 0,
                 btn_remove  => 0,
                 btn_load    => 0,
                 btn_default => 0,
-                btn_exit    => 1,
-            },
-            idle => {
-                btn_new     => 0,
-                btn_add     => 0,
-                btn_remove  => 0,
-                btn_load    => 0,
-                btn_default => 0,
-                btn_exit    => 1,
+                btn_save    => 0,
+                btn_close   => 1,
+                txt_name    => 0,
+                dpc_path    => 0,
+                cbx_engine  => 0,
+                txt_db      => 0,
             },
             sele => {
+                btn_new     => 1,
+                btn_edit    => 1,
+                btn_remove  => 1,
+                btn_load    => 1,
+                btn_default => 1,
+                btn_save    => 0,
+                btn_close   => 1,
+                txt_name    => 0,
+                dpc_path    => 0,
+                cbx_engine  => 0,
+                txt_db      => 0,
+            },
+            edit => {
                 btn_new     => 0,
-                btn_add     => 1,
+                btn_edit    => 1,
                 btn_remove  => 0,
                 btn_load    => 0,
-                btn_default => 1,
-                btn_exit    => 1,
+                btn_default => 0,
+                btn_save    => 1,
+                btn_close   => 0,
+                txt_name    => 1,
+                dpc_path    => 1,
+                cbx_engine  => 0,
+                txt_db      => 1,
+            },
+            add => {
+                btn_new     => 1,
+                btn_edit    => 0,
+                btn_remove  => 0,
+                btn_load    => 0,
+                btn_default => 0,
+                btn_save    => 1,
+                btn_close   => 1,
+                txt_name    => 1,
+                dpc_path    => 1,
+                cbx_engine  => 1,
+                txt_db      => 1,
             },
         };
     },
+    provides => { 'get' => 'get_rules', },
 );
-
-sub init {
-    return shift->dia_rules->{init};
-}
-
-sub idle {
-    return shift->dia_rules->{idle};
-}
-
-sub sele {
-    return shift->dia_rules->{sele};
-}
 
 __PACKAGE__->meta->make_immutable;
 

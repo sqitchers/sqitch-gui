@@ -4,7 +4,7 @@ use Moose;
 use namespace::autoclean;
 use Moose::Util::TypeConstraints;
 
-has state => (
+has gui_state => (
     is       => 'rw',
     isa      => enum([ qw(load init idle edit) ]),
     required => 1,
@@ -21,18 +21,18 @@ with 'MooseX::Observer::Role::Observable' => {
 
 sub set_state {
     my ($self, $state) = @_;
-    $self->state($state);
+    $self->gui_state($state);
     return;
 }
 
 sub get_state {
     my $self = shift;
-    return $self->state;
+    return $self->gui_state;
 }
 
 sub is_state {
     my ($self, $state) = @_;
-    return 1 if $self->state eq $state;
+    return 1 if $self->gui_state eq $state;
     return;
 }
 

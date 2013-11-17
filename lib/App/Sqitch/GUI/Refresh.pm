@@ -13,20 +13,20 @@ has 'view' => (
     isa  => 'App::Sqitch::GUI::View',
 );
 
-has 'gui_rules' => (
+has 'rules' => (
     is         => 'ro',
     isa        => 'App::Sqitch::GUI::Rules',
     lazy_build => 1,
 );
 
-sub _build_gui_rules {
+sub _build_rules {
     return App::Sqitch::GUI::Rules->new;
 }
 
 sub update {
     my ( $self, $subject, $args, $eventname ) = @_;
     my $state = $subject->get_state;
-    $self->view->set_status($state, $self->gui_rules);
+    $self->view->set_status( $state, $self->rules->get_rules($state) );
     return;
 }
 

@@ -2,15 +2,16 @@ package App::Sqitch::GUI::Rules;
 
 use Moose;
 use namespace::autoclean;
+use MooseX::AttributeHelpers;
 
-has 'gui_rules' => (
-    is       => 'ro',
-    isa      => 'HashRef',
-    required => 1,
-    lazy     => 1,
-    default => sub {
-        return {
-            init => {
+has 'rules' => (
+    metaclass => 'Collection::Hash',
+    is        => 'ro',
+    isa       => 'HashRef[HashRef]',
+    required  => 1,
+    lazy      => 1,
+    default   => sub {
+        {   init => {
                 btn_change      => 0,
                 btn_change_sel  => 0,
                 btn_project     => 1,
@@ -40,15 +41,8 @@ has 'gui_rules' => (
             },
         };
     },
+    provides => { 'get' => 'get_rules', },
 );
-
-sub init {
-    return shift->gui_rules->{init};
-}
-
-sub idle {
-    return shift->gui_rules->{idle};
-}
 
 __PACKAGE__->meta->make_immutable;
 

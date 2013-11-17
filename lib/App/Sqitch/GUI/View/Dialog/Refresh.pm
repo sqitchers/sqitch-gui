@@ -13,20 +13,20 @@ has 'dialog' => (
     isa  => 'App::Sqitch::GUI::View::Dialog::Repo',
 );
 
-has 'dia_rules' => (
+has 'rules' => (
     is         => 'ro',
     isa        => 'App::Sqitch::GUI::View::Dialog::Rules',
     lazy_build => 1,
 );
 
-sub _build_dia_rules {
+sub _build_rules {
     return App::Sqitch::GUI::View::Dialog::Rules->new;
 }
 
 sub update {
     my ( $self, $subject, $args, $eventname ) = @_;
     my $state = $subject->get_state;
-    $self->dialog->set_status($state, $self->dia_rules);
+    $self->dialog->set_status($state, $self->rules->get_rules($state) );
     return;
 }
 
