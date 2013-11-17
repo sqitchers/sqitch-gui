@@ -29,7 +29,7 @@ sub _build_itm_admin {
     return Wx::MenuItem->new(
         $self,
         -1,
-        'Repository',
+        'Repository management',
         'Repository management',
         wxITEM_NORMAL,
         undef   # if defined, this is a sub-menu
