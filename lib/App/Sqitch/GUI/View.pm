@@ -159,7 +159,7 @@ sub _build_status_bar {
 }
 
 sub _build_size {
-    return Wx::Size->new(800, 600); # default window size
+    return Wx::Size->new(800, 650); # default window size
 }
 
 sub _build_style {
@@ -347,10 +347,7 @@ sub dirpicker_write {
 
 sub combobox_write {
     my ( $self, $name ) = @_;
-
-    my $driver = $self->project->engines->{$name};
-    $self->project->cbx_driver->SetValue($driver) if $driver;
-
+    $self->project->cbx_driver->SetValue($name) if $name;
     return;
 }
 
@@ -358,12 +355,10 @@ sub set_status {
     my ($self, $state, $gui_rules) = @_;
 
     $self->status_bar->change_caption($state, 1);
-
-    foreach my $btn (keys %{$gui_rules->$state} ) {
-        my $enable = $gui_rules->$state->{$btn};
+    foreach my $btn ( keys %{$gui_rules} ) {
+        my $enable = $gui_rules->{$btn};
         $self->right_side->$btn->Enable($enable);
     }
-
     $self->show_panel('project');
 
     return;
