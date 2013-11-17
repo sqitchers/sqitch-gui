@@ -7,7 +7,7 @@ use namespace::autoclean;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
-use Wx::Perl::ListCtrl;
+use App::Sqitch::GUI::View::List;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
@@ -262,7 +262,7 @@ sub _build_dpc_path {
 
 sub _build_cbx_driver {
     my $self = shift;
-    my @engines = values %{$self->app->config->engines;};
+    my @engines = values %{$self->app->config->engine_list;};
     return Wx::ComboBox->new(
         $self->panel,
         -1,
@@ -350,18 +350,16 @@ sub _build_btn_add {
 sub _build_list {
     my $self = shift;
 
-    my $list = Wx::Perl::ListCtrl->new(
-        $self->panel, -1,
-        [ -1, -1 ],
-        [ -1, -1 ],
-        Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
+    my $list = App::Sqitch::GUI::View::List->new(
+        app       => $self->app,
+        parent    => $self->panel,
+        count_col => 1,                      # add a count column
     );
 
-    $list->InsertColumn( 0,    '#', wxLIST_FORMAT_LEFT, 50 );
-    $list->InsertColumn( 1, __ 'Project', wxLIST_FORMAT_LEFT, 100 );
-    $list->InsertColumn( 2, __ 'Database', wxLIST_FORMAT_LEFT, 100 );
-    $list->InsertColumn( 3, __ 'Default', wxLIST_FORMAT_LEFT, 60 );
-    $list->InsertColumn( 4, __ 'Description', wxLIST_FORMAT_LEFT, 180 );
+    $list->add_column( __ 'Project',     wxLIST_FORMAT_LEFT, 100, 'project'  );
+    $list->add_column( __ 'Database',    wxLIST_FORMAT_LEFT, 100, 'database' );
+    $list->add_column( __ 'Default',     wxLIST_FORMAT_LEFT,  60, 'default'  );
+    $list->add_column( __ 'Description', wxLIST_FORMAT_LEFT, 320, 'description' );
 
     return $list;
 }
