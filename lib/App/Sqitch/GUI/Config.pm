@@ -6,6 +6,7 @@ use namespace::autoclean;
 use Path::Class;
 use List::Util qw(first);
 use App::Sqitch::X qw(hurl);
+use MooseX::AttributeHelpers;
 
 extends 'App::Sqitch::Config';
 
@@ -31,14 +32,14 @@ has repo_default_path => (
     }
 );
 
-override load_dirs => sub {
+sub local_file {
     my $self = shift;
-    my $conf = file( $self->repo_default_path, $self->local_file );
-    print "Loading configurations from: ", $conf, "\n";
-    $self->load_file($conf);# if -f $conf;
+    return $self->repo_default_path
+        ? file( $self->repo_default_path, $self->confname )
+        : file( $self->confname );
 };
 
-has repo_conf_list => (
+has _repo_conf_list => (
     is      => 'ro',
     isa     => 'Maybe[HashRef]',
     lazy    => 1,
@@ -53,22 +54,15 @@ has repo_list => (
     lazy_build => 1,
 );
 
-# has 'config_file' => (
-#     is      => 'rw',
-#     isa     => 'Maybe[Path::Class::File]',
-#     lazy    => 1,
-#     default => sub {
-#         my $self = shift;
-#         file($self->user_dir, $self->local_file); },
-# );
-
-has 'engines' => (
-    is       => 'ro',
-    isa      => 'HashRef',
-    required => 1,
-    lazy     => 1,
-    default => sub {
-        return {
+has 'engine_list' => (
+    metaclass => 'Collection::Hash',
+    is        => 'ro',
+    isa       => 'HashRef[Str]',
+    required  => 1,
+    lazy      => 1,
+    default   => sub {
+        {
+            unknown  => 'Unknown',
             pg       => 'PostgreSQL',
             mysql    => 'MySQL',
             sqlite   => 'SQLite',
@@ -77,12 +71,19 @@ has 'engines' => (
             firebird => 'Firebird',
         };
     },
+    provides => { 'get' => 'get_engine_name', }
 );
+
+sub get_engine_from_name {
+    my ($self, $engine) = @_;
+    my %engines = reverse %{ $self->engine_list };
+    return $engines{$engine};
+}
 
 sub _build_repo_list {
     my $self = shift;
 
-    my $repo_cfg_lst = $self->repo_conf_list;
+    my $repo_cfg_lst = $self->_repo_conf_list;
 
     my $repo_list = {};
     while ( my ( $key, $path ) = each( %{$repo_cfg_lst} ) ) {
@@ -109,7 +110,17 @@ sub has_repo_path {
     return 0;
 }
 
-sub reload { shift->load; }
+sub reload {
+    my ( $self, $path ) = @_;
+    my $file = file $path, $self->confname;
+    print "Reloading $file...\n";
+    $self->load($file);
+}
+
+sub repo_list_cnt {
+    my $self = shift;
+    return scalar keys %{ $self->repo_list };
+}
 
 __PACKAGE__->meta->make_immutable;
 
