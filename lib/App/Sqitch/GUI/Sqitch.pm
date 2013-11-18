@@ -20,6 +20,16 @@ has +top_dir => (
         },
 );
 
+override 'trace' => sub {
+    my $self = shift;
+    $self->emit();
+};
+
+override 'trace_literal' => sub {
+    my $self = shift;
+    $self->emit_literal(@_);
+};
+
 override 'emit' => sub {
     shift;
     Wx::LogMessage(@_);
