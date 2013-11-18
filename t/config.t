@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 6;
+use Test::More tests => 9;
 use Path::Class;
 
 use App::Sqitch::GUI;
@@ -47,5 +47,6 @@ ok( $ctrl->config_set_default($name), 'Set test repo as default' );
 # $config->reload('t/home/.sqitch');
 
 #p $config;
+
 # Cleanup
-# ok( $ctrl->config_remove_repo( $name, $path, 1 ), 'Remove repo and default' );
+ok( $ctrl->config_remove_repo( $name, $path, 1 ), 'Remove repo and default' );
