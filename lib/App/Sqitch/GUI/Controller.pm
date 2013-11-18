@@ -41,16 +41,7 @@ has config => (
     is      => 'ro',
     isa     => 'App::Sqitch::GUI::Config',
     lazy    => 1,
-    default => sub {
-        my $config;
-        try {
-            $config = App::Sqitch::GUI::Config->new;
-        }
-        catch {
-            print "Config error: $_\n";
-        };
-        return $config;
-    },
+    builder => 'init_config',
 );
 
 has sqitch => (
@@ -69,7 +60,7 @@ has status => (
     }
 );
 
-has dia_status => (
+has dlg_status => (
     is      => 'rw',
     isa     => 'App::Sqitch::GUI::View::Dialog::Status',
     lazy    => 1,
@@ -88,6 +79,46 @@ sub _build_app {
     my $self = shift;
     my $app = App::Sqitch::GUI::WxApp->new( config => $self->config );
     return $app;
+}
+
+sub init_config {
+    my $self = shift;
+
+    my $config;
+    try {
+        $config = App::Sqitch::GUI::Config->new;
+    }
+    catch {
+        print "Config error: $_\n";
+    };
+
+    # TODO:
+    # Has a repo list?
+    # + yes
+    #   + has a default repo?
+    #     + yes => load it
+    #     - no  => show dialog to set default
+    # - no
+    #   - show dialog to add new repo
+
+    # Are any repositories configured?
+    return $config if $config->repo_list_cnt == 0;
+
+    # Load the local configuration file
+    if ( $config->repo_default_name ) {
+        my $repo_config = $config->repo_default_path;
+        if ($repo_config) {
+            $config->reload($repo_config);
+        }
+        else {
+            print "No default path is configured.\n";
+        }
+    }
+
+    print 'c: user_file:  ', $config->user_file, "\n";
+    print 'c: local_file: ', $config->local_file, "\n";
+
+    return $config;
 }
 
 sub init_sqitch {
@@ -226,7 +257,18 @@ sub load_projects {
     my $repo_path = $config->repo_default_path;
     $self->view->dirpicker_write($repo_path );
     my $driver = $config->get( key => 'core.engine' );
-    $self->view->combobox_write($driver);
+    if ($driver) {
+        my $name   = $self->app->config->get_engine_name($driver);
+        if ($name) {
+            $self->view->combobox_write($name);
+        }
+        else {
+            $self->log_message("Error: Can't find the driver name!");
+        }
+    }
+    else {
+        $self->log_message("Error: Can't find the driver!");
+    }
 
     return;
 }
@@ -367,16 +409,20 @@ sub on_admin {
         parent   => undef,                   # for dialogs
     );
 
-    $self->dia_status->add_observer(
+    $self->dlg_status->add_observer(
         App::Sqitch::GUI::View::Dialog::Refresh->new( dialog => $dialog ) );
 
+    $self->dlg_status->set_state('sele');
+
     if ( $dialog->ShowModal == wxID_OK ) {
-        $self->dia_status->remove_all_observers;
+        $self->dlg_status->remove_all_observers;
         return;
     }
     else {
         hurl __ 'This should NOT happen!';
     }
+
+    return;
 }
 
 sub config_reload {
@@ -402,24 +448,28 @@ sub config_set_default {
     my ($self, $name) = @_;
     my @cmd = qw(config --user);
     $self->execute_command(@cmd, "repository.default", $name);
-#    $self->config_reload;
     return 1;
 }
 
-sub config_add_repo {
+sub config_edit_repo {
     my ($self, $name, $path) = @_;
     my @cmd = qw(config --user);
     $self->execute_command(@cmd, "repository.${name}.path", $path);
-#    $self->config_reload;
     return 1;
 }
 
 sub config_remove_repo {
-    my ($self, $name, $path, $is_default) = @_;
+    my ( $self, $name, $path, $is_default ) = @_;
     my @cmd = qw(config --user --remove-section);
     $self->execute_command(@cmd, "repository.${name}");
     $self->execute_command(@cmd, "repository") if $is_default;
-#    $self->config_reload;
+    return 1;
+}
+
+sub config_save_local {
+    my ( $self, $engine, $database ) = @_;
+    my @cmd = qw(config --local);
+    $self->execute_command(@cmd, "core.${engine}.db_name", $database);
     return 1;
 }
 
