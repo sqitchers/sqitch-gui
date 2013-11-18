@@ -568,14 +568,28 @@ sub _load_item {
     $self->_control_write_e('txt_name', $name);
     my $path = $self->list_ctrl->get_list_item_text($item, 2);
     $self->_control_write_p('dpc_path', $path);
-    my $engine = $self->config->get( key => 'core.engine' );
+
+    # Load the local config
+
+    my $item_cfg_file = file $path, $self->config->confname;
+    my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
+
+    my $engine = $item_cfg_href->{'core.engine'};
+
     my $engine_name = $self->config->get_engine_name($engine);
     if ($engine_name) {
         $self->_control_write_c('cbx_engine', $engine_name);
     }
-    my $database = $self->config->get( key => "core.${engine}.db_name" );
+    else {
+        print "No engine name for $engine\n";
+    }
+
+    my $database = $item_cfg_href->{"core.${engine}.db_name"};
     if ($database) {
         $self->_control_write_e('txt_db', $database);
+    }
+    else {
+        print "No DATABASE\n";
     }
 
     # Store the selected id, name and path
