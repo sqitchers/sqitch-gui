@@ -4,6 +4,7 @@ use utf8;
 use Moose;
 use namespace::autoclean;
 use Path::Class;
+use Try::Tiny;
 use List::Util qw(first);
 use App::Sqitch::X qw(hurl);
 use MooseX::AttributeHelpers;
@@ -66,7 +67,6 @@ has 'engine_list' => (
             pg       => 'PostgreSQL',
             mysql    => 'MySQL',
             sqlite   => 'SQLite',
-            cubrid   => 'CUBRID',
             oracle   => 'Oracle',
             firebird => 'Firebird',
         };
@@ -98,6 +98,8 @@ sub has_repo_name {
     my ($self, $name) = @_;
     hurl 'Wrong arguments passed to has_repo_name()'
         unless $name;
+    p $self->repo_list;
+    p $name;
     return 1 if first { $name eq $_ } keys %{$self->repo_list};
     return 0;
 }
@@ -106,7 +108,7 @@ sub has_repo_path {
     my ($self, $path) = @_;
     hurl 'Wrong arguments passed to has_repo_path()'
         unless $path;
-    return 1 if first { $path eq $_ } values %{$self->repo_list};
+    return 1 if first { $path->stringify eq $_ } values %{$self->repo_list};
     return 0;
 }
 
@@ -114,7 +116,7 @@ sub reload {
     my ( $self, $path ) = @_;
     my $file = file $path, $self->confname;
     print "Reloading $file...\n";
-    $self->load($file);
+    try { $self->load($file) } catch { print "Reload config error: $_\n" };
 }
 
 sub repo_list_cnt {
