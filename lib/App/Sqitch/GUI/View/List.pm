@@ -6,10 +6,11 @@ use namespace::autoclean;
 use Wx qw(:everything);
 use Wx::Event qw();
 use Wx::Perl::ListCtrl;
-
 with 'App::Sqitch::GUI::Roles::Element';
 
 use MooseX::NonMoose::InsideOut;
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
+use App::Sqitch::X qw(hurl);
 
 extends 'Wx::Perl::ListCtrl';
 
@@ -90,32 +91,47 @@ sub list_max_index {
 
 sub get_list_item_text {
     my ($self, $item, $col) = @_;
-    die unless defined $item and defined $col;
+
+    hurl __ 'Wrong arguments passed to get_list_item_text()'
+        unless defined $item and defined $col;
+
     return $self->GetItemText($item, $col);
 }
 
 sub set_list_item_text {
     my ($self, $item, $col, $text) = @_;
-    die unless defined $item and defined $col and defined $text;
+
+    hurl __ 'Wrong arguments passed to set_list_item_text()'
+        unless defined $item and defined $col and defined $text;
+
     return $self->SetItemText($item, $col, $text);
 }
 
 sub get_list_item_data {
     my ($self, $item) = @_;
-    die unless defined $item;
+
+    hurl __ 'Wrong arguments passed to get_list_item_data()'
+        unless defined $item;
+
     return $self->GetItemData( $item );
 }
 
 sub set_list_item_data {
     my ($self, $item, $data) = @_;
-    die unless defined $item and ref $data;
+
+    hurl __ 'Wrong arguments passed to set_list_item_data()'
+        unless defined $item and ref $data;
+
     return $self->SetItemData( $item, $data );
 }
 
 sub select_item {
-    my ($self, $item) = @_;
-    die unless defined $item;
-    $self->Select( $item, 1 );
+    my ( $self, $item ) = @_;
+
+    hurl __ 'Wrong arguments passed to select_item()'
+        unless defined $item;
+
+    $self->Select( $item, 1 );    # 1|0 = select|deselect
     $self->EnsureVisible($item);
     return;
 }
