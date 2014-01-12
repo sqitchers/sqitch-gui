@@ -18,8 +18,6 @@ use App::Sqitch::GUI::View::Panel::Change;
 use App::Sqitch::GUI::View::Panel::Project;
 use App::Sqitch::GUI::View::Panel::Plan;
 
-#use Data::Printer;
-
 # Main window
 has 'position' => (
     is            => 'rw',
@@ -118,7 +116,7 @@ sub BUILD {
     $self->frame->SetSizer($self->main_sizer);
 
     $self->change->panel->Show; # Gtk-WARNINGs if default is not Change
-                                # later set to Project pragmatically ;)
+                                # later set to Project...  ;)
 
     $self->frame->Show;
 
@@ -331,16 +329,6 @@ sub control_write_e {
 
     $control->Clear;
     $control->SetValue($value) if defined $value;
-
-    return;
-}
-
-sub dirpicker_write {
-    my ( $self, $path ) = @_;
-
-    die "Wrong path: $path!" unless -d $path;
-
-    $self->project->dpc_path->SetPath($path);
 
     return;
 }

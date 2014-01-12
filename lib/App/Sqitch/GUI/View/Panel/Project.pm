@@ -40,7 +40,7 @@ has 'lbl_created_at'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 
 has 'lbl_creator_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'lbl_creator_email' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 has 'lbl_path' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_driver'   => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'lbl_engine'   => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
 
 has 'txt_project'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_database' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
@@ -49,8 +49,8 @@ has 'txt_uri'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_created_at'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_creator_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 has 'txt_creator_email' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'dpc_path'  => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
-has 'cbx_driver' => ( is => 'rw', isa => 'Wx::ComboBox',      lazy_build => 1 );
+has 'txt_path'   => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'txt_engine' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
 
 sub BUILD {
     my $self = shift;
@@ -68,8 +68,8 @@ sub BUILD {
 
     $self->form_fg_sz->Add( $self->lbl_project, 0, wxLEFT, 5 );
     $self->subform1_fg_sz->Add( $self->txt_project, 1, wxLEFT, 0 );
-    $self->subform1_fg_sz->Add( $self->lbl_driver, 0, wxLEFT, 50 );
-    $self->subform1_fg_sz->Add( $self->cbx_driver, 0, wxLEFT, 20 );
+    $self->subform1_fg_sz->Add( $self->lbl_engine, 0, wxLEFT, 50 );
+    $self->subform1_fg_sz->Add( $self->txt_engine, 0, wxLEFT, 20 );
     $self->form_fg_sz->Add( $self->subform1_fg_sz, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_database, 0, wxLEFT, 5 );
@@ -79,7 +79,7 @@ sub BUILD {
     $self->form_fg_sz->Add( $self->subform2_fg_sz, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_path, 0, wxLEFT, 5 );
-    $self->form_fg_sz->Add( $self->dpc_path, 1, wxEXPAND | wxLEFT, 0 );
+    $self->form_fg_sz->Add( $self->txt_path, 1, wxEXPAND | wxLEFT, 0 );
 
     $self->form_fg_sz->Add( $self->lbl_uri, 0, wxLEFT, 5 );
     $self->form_fg_sz->Add( $self->txt_uri, 1, wxEXPAND | wxLEFT, 0 );
@@ -201,9 +201,9 @@ sub _build_lbl_creator_email {
     return Wx::StaticText->new( $self->panel, -1, __ 'Creator email' );
 }
 
-sub _build_lbl_driver {
+sub _build_lbl_engine {
     my $self = shift;
-    return Wx::StaticText->new( $self->panel, -1, __ 'Driver' );
+    return Wx::StaticText->new( $self->panel, -1, __ 'Engine' );
 }
 
 sub _build_lbl_path {
@@ -248,30 +248,14 @@ sub _build_txt_creator_email {
     return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
-sub _build_dpc_path {
+sub _build_txt_path {
     my $self = shift;
-
-    return Wx::DirPickerCtrl->new(
-        $self->panel, -1, q{},
-        __ 'Choose a directory',
-        [ -1, -1 ],
-        [ -1, -1 ],
-        wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL | wxDIRP_CHANGE_DIR,
-    );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
-sub _build_cbx_driver {
+sub _build_txt_engine {
     my $self = shift;
-    my @engines = values %{$self->app->config->engine_list;};
-    return Wx::ComboBox->new(
-        $self->panel,
-        -1,
-        q{},
-        [ -1,  -1 ],
-        [ 170, -1 ],
-        \@engines,
-        wxCB_SORT | wxCB_READONLY,
-    );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
 }
 
 #-  List and buttons

@@ -3,7 +3,6 @@ package App::Sqitch::GUI::View::Dialog::Repo;
 use Moose;
 use namespace::autoclean;
 
-use Try::Tiny;
 use Path::Class;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
@@ -19,8 +18,6 @@ use MooseX::NonMoose::InsideOut;
 extends 'Wx::Dialog';
 
 use App::Sqitch::GUI::View::List;
-
-use Data::Printer;
 
 has 'sizer'      => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
 has 'vbox_sizer' => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
@@ -144,9 +141,9 @@ sub BUILD {
 
     $self->SetSizer( $self->sizer );
 
-    $self->_init();
+    $self->_init;
 
-    $self->list_ctrl->SetFocus();
+    $self->list_ctrl->SetFocus;
 
     return $self;
 }
@@ -160,6 +157,11 @@ sub set_status {
     }
 
     return;
+}
+
+sub get_state {
+    my $self = shift;
+    return $self->ancestor->dlg_status->get_state;
 }
 
 sub _build_vbox_sizer {
@@ -526,7 +528,6 @@ sub _control_read_c {
 
 sub _init_form {
     my $self = shift;
-    print "Init form\n";
     $self->_control_write_e('txt_name', undef);
     $self->_control_write_e('txt_db', undef);
     $self->_control_write_c('cbx_engine', 'unknown');
@@ -535,7 +536,6 @@ sub _init_form {
 
 sub _clear_form {
     my $self = shift;
-    print "Clear form\n";
     $self->_control_write_p('dpc_path', '');
     $self->_init_form;
     return;
@@ -544,6 +544,10 @@ sub _clear_form {
 sub _on_item_selected {
     my ($self, $var, $event) =  @_;
     my $item = $event->GetIndex;
+
+    return unless $self->get_state eq 'sele';
+
+    $self->_clear_form;
     $self->_load_item($item);
     return;
 }
@@ -552,14 +556,20 @@ sub _on_dpc_change {
     my ($self, $frame, $event) = @_;
     print "Path changed\n";
     my $new_path = $event->GetEventObject->GetPath;
-    print "'$new_path' is the new path\n";
     $self->_init_form;
     $self->config->reload($new_path);
     my $engine = $self->config->get( key => 'core.engine' );
     print "Engine is $engine\n";
-    p $self->config;
     return;
 }
+
+=head2 _load_item
+
+Load info for the selected list item.  Can't use the current Sqitch
+configuration for this, for every item (repository) we have to load
+the local configuration file and get the required info from there.
+
+=cut
 
 sub _load_item {
     my ($self, $item) = @_;
@@ -577,20 +587,13 @@ sub _load_item {
     my $engine = $item_cfg_href->{'core.engine'};
 
     my $engine_name = $self->config->get_engine_name($engine);
-    if ($engine_name) {
-        $self->_control_write_c('cbx_engine', $engine_name);
-    }
-    else {
-        print "No engine name for $engine\n";
-    }
+    $self->_control_write_c('cbx_engine', $engine_name) if $engine_name;
 
-    my $database = $item_cfg_href->{"core.${engine}.db_name"};
-    if ($database) {
-        $self->_control_write_e('txt_db', $database);
-    }
-    else {
-        print "No DATABASE\n";
-    }
+    # Use target here
+    # my $database = $item_cfg_href->{"core.${engine}.db_name"};
+    # if ($database) {
+    #     $self->_control_write_e('txt_db', $database);
+    # }
 
     # Store the selected id, name and path
     $self->selected_item($item);
@@ -655,21 +658,22 @@ sub _get_default_item {
 sub config_new_repo {
     my $self = shift;
 
-    my $state = $self->ancestor->dlg_status->get_state;
+    my $state = $self->get_state;
 
     if ( $state eq 'sele' ) {
         print "Make state add\n";
         $self->_clear_form;
         $self->btn_new->SetLabel( __ 'C&ancel' );
         $self->ancestor->dlg_status->set_state('add');
-        $self->_new_list_item();
+        $self->list_ctrl->Enable(1);
+        $self->_new_list_item;
         $self->list_ctrl->Enable(0);
     }
     elsif ( $state eq 'add' ) {
         print "Canceled...\n";
         $self->btn_new->SetLabel( __ '&New' );
         $self->ancestor->dlg_status->set_state('sele');
-        $self->_remove_list_item();
+        $self->_remove_list_item;
         $self->list_ctrl->Enable(1);
     }
 
@@ -679,7 +683,7 @@ sub config_new_repo {
 sub config_edit_repo {
     my $self = shift;
 
-    my $state = $self->ancestor->dlg_status->get_state;
+    my $state = $self->get_state;
 
     if ( $state eq 'sele' ) {
         print "Make state edit\n";

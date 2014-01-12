@@ -100,10 +100,9 @@ sub _build_list_ctrl {
     );
 
     $list->add_column( 'Name',        wxLIST_FORMAT_LEFT, 100, 'name' );
-    $list->add_column( 'Dependends',  wxLIST_FORMAT_LEFT, 100, 'dependends' );
-    $list->add_column( 'Create time', wxLIST_FORMAT_LEFT, 100, 'create_time' );
-    $list->add_column( 'Creator',     wxLIST_FORMAT_LEFT, 100, 'creator' );
-    $list->add_column( 'Description', wxLIST_FORMAT_LEFT, 180, 'description' );
+    $list->add_column( 'Create time', wxLIST_FORMAT_LEFT, 150, 'create_time' );
+    $list->add_column( 'Creator',     wxLIST_FORMAT_LEFT, 150, 'creator' );
+    $list->add_column( 'Description', wxLIST_FORMAT_LEFT, 250, 'description' );
 
     return $list;
 }

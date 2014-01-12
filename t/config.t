@@ -7,8 +7,6 @@ use Path::Class;
 
 use App::Sqitch::GUI;
 
-use Data::Printer;
-
 $ENV{HOME} = 't/home';          # set HOME for testing
 
 ok( my $gui  = App::Sqitch::GUI->new, 'New GUI' );

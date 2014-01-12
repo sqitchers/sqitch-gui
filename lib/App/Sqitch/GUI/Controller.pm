@@ -23,8 +23,6 @@ use App::Sqitch::GUI::View::Dialog::Repo;
 use App::Sqitch::GUI::View::Dialog::Status;
 use App::Sqitch::GUI::View::Dialog::Refresh;
 
-use Data::Printer;
-
 has 'app' => (
     is         => 'ro',
     isa        => 'App::Sqitch::GUI::WxApp',
@@ -146,12 +144,12 @@ sub BUILD {
 
     $self->log_message('Welcome to Sqitch!');
 
-    $self->check_plan();
+    $self->load_sqitch_plan();
 
     return;
 }
 
-sub check_plan {
+sub load_sqitch_plan {
     my $self = shift;
 
     my $sqitch = $self->sqitch;
@@ -169,16 +167,15 @@ sub check_plan {
             $self->log_message(__ 'Sqitch is NOT initialized yet. Please set a valid repository path!');
             $self->status->set_state('init');
         } else {
-            $self->log_message(__ 'Sqitch is initialized.');
             $self->status->set_state('idle');
         }
     };
 
     if ( $self->status->is_state('idle') ) {
         try {
-            $self->load_change;
-            $self->load_projects;
-            $self->load_plan;
+            $self->populate_change;
+            $self->populate_project;
+            $self->populate_plan;
         }
         catch {
             $self->log_message(__ 'Error' . ': '. $_);
@@ -213,11 +210,6 @@ sub _setup_events {
         $self->view->right_side->btn_quit->GetId,
         sub { $self->on_quit(@_) };
 
-    EVT_DIRPICKER_CHANGED $self->view->frame,
-        $self->view->project->dpc_path->GetId, sub {
-        $self->on_dpc_change(@_);
-    };
-
     return;
 }
 
@@ -230,22 +222,21 @@ sub _init_observers {
     return;
 }
 
-sub load_projects {
+sub populate_project {
     my $self = shift;
 
     my $config = $self->config;
     my $sqitch = $self->sqitch;
+    my $engine = $sqitch->engine;
     my $plan   = $sqitch->plan;
-
-    # CUBRID has user not username
-    my $user = $sqitch->engine->can('username')
-        ? $sqitch->engine->username : $sqitch->engine->user;
 
     my %fields = (
         project       => $plan->project,
         uri           => $plan->uri,
-        database      => $sqitch->engine->db_name,
-        user          => $user,
+        database      => $engine->uri->dbname,
+        user          => $engine->uri->user // $ENV{USER},
+        path          => $config->repo_default_path,
+        engine        => $engine->uri->engine,
         created_at    => undef,
         creator_name  => undef,
         creator_email => undef,
@@ -254,26 +245,10 @@ sub load_projects {
         $self->load_form_for( 'project', $field, $value );
     }
 
-    my $repo_path = $config->repo_default_path;
-    $self->view->dirpicker_write($repo_path );
-    my $driver = $config->get( key => 'core.engine' );
-    if ($driver) {
-        my $name   = $self->app->config->get_engine_name($driver);
-        if ($name) {
-            $self->view->combobox_write($name);
-        }
-        else {
-            $self->log_message("Error: Can't find the driver name!");
-        }
-    }
-    else {
-        $self->log_message("Error: Can't find the driver!");
-    }
-
     return;
 }
 
-sub load_change {
+sub populate_change {
     my $self = shift;
 
     my $sqitch = $self->sqitch;
@@ -283,8 +258,8 @@ sub load_change {
     hurl "No change plan!"
         unless $change and $change->isa('App::Sqitch::Plan::Change');
 
-    my $name   = $change->name;
-    my $state  = $sqitch->engine->current_state( $plan->project );
+    my $name  = $change->name;
+    my $state = $sqitch->engine->current_state( $plan->project );
 
     my $planned_at
         = defined $state
@@ -317,25 +292,26 @@ sub load_change {
     return;
 }
 
-sub load_plan {
+sub populate_plan {
     my $self = shift;
 
     my $config = $self->config;
     my $sqitch = $self->sqitch;
     my $plan   = $sqitch->plan;
 
-    # use Data::Printer; p $plan->lines;
+    # Search the changes. (from ...Sqitch::Command::plan)
+    my $iter = $plan->search_changes();
+    my @recs;
+    while ( my $change = $iter->() ) {
+        push @recs, {
+            name        => $change->name,
+            description => $change->note,
+            create_time => $change->timestamp,
+            creator     => $change->planner_name,
+        };
+    }
 
-    # my $records = [
-    #     {   name        => 'Name',
-    #         dependends  => 'Dependends',
-    #         create_time => 'Create time',
-    #         creator     => 'Creator',
-    #         description => 'Description',
-    #     },
-    # ];
-
-    # $self->view->plan->list_ctrl->populate($records);
+    $self->view->plan->list_ctrl->populate(\@recs);
 
     return;
 }
@@ -367,6 +343,9 @@ sub execute_command {
 sub load_form_for {
     my ($self, $form, $field, $value) = @_;
 
+    hurl __ 'Wrong arguments passed to load_form_for()'
+        unless defined $field;
+
     my $ctrl_name = "txt_$field";
     my $ctrl = $self->view->$form->$ctrl_name;
     $self->view->control_write_e($ctrl, $value);
@@ -387,12 +366,12 @@ sub load_sql_for {
     return;
 }
 
-sub on_dpc_change {
-    my ($self, $frame, $event) = @_;
-    print "Path changed\n";
-    my $new_path = $event->GetEventObject->GetPath;
-    #$self->status->set_state('idle');
-}
+# sub on_dpc_change {
+#     my ($self, $frame, $event) = @_;
+#     print "Path changed\n";
+#     my $new_path = $event->GetEventObject->GetPath;
+#     #$self->status->set_state('idle');
+# }
 
 sub on_quit {
     my ($self, $frame, $event) = @_;
@@ -438,8 +417,8 @@ sub config_reload {
     # my $c_name = $self->config->repo_default_name;
     # my $c_path = $self->config->repo_default_path;
 
-    # $self->init_sqitch;
-    # $self->check_plan;
+    #$self->init_sqitch;
+    #$self->load_sqitch_plan;
 
     return;
 }
