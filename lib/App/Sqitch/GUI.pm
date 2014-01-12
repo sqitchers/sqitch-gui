@@ -53,6 +53,9 @@ https://github.com/tmtowtdi/LacunaWaX
 
 Copyright: Jonathan D. Barton 2012-2013
 
+The implementation of the localization code is based on the work of
+David E. Wheeler.
+
 Thank you!
 
 =head1 LICENSE AND COPYRIGHT
