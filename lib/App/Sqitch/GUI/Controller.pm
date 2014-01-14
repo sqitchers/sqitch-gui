@@ -23,6 +23,8 @@ use App::Sqitch::GUI::View::Dialog::Repo;
 use App::Sqitch::GUI::View::Dialog::Status;
 use App::Sqitch::GUI::View::Dialog::Refresh;
 
+use Data::Printer;
+
 has 'app' => (
     is         => 'ro',
     isa        => 'App::Sqitch::GUI::WxApp',
@@ -109,7 +111,7 @@ sub init_config {
             $config->reload($repo_config);
         }
         else {
-            print "No default path is configured.\n";
+            $self->log_message('No default path in config!');
         }
     }
 
@@ -153,6 +155,8 @@ sub load_sqitch_plan {
     my $self = shift;
 
     my $sqitch = $self->sqitch;
+
+    p $sqitch;
 
     # Do we have a valid configuration - plan?
     try {
