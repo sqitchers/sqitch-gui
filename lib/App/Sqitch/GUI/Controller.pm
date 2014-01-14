@@ -408,17 +408,18 @@ sub config_reload {
     my ($self, $name, $path) = @_;
 
     print "Reload config...\n";
+    print ": $name, $path\n";
 
     $self->config->reload;
 
-    # $self->config->repo_default_name($name);
-    # $self->config->repo_default_path($path);
+    $self->config->repo_default_name($name);
+    $self->config->repo_default_path($path);
 
-    # my $c_name = $self->config->repo_default_name;
-    # my $c_path = $self->config->repo_default_path;
+    my $c_name = $self->config->repo_default_name;
+    my $c_path = $self->config->repo_default_path;
 
-    #$self->init_sqitch;
-    #$self->load_sqitch_plan;
+    $self->init_sqitch;
+    $self->load_sqitch_plan;
 
     return;
 }

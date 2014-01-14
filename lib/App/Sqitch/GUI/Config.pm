@@ -45,7 +45,7 @@ has _repo_conf_list => (
     isa     => 'Maybe[HashRef]',
     lazy    => 1,
     default => sub {
-        shift->get_regexp( key => '^repository\..+\.path$' );
+        shift->get_regexp( key => qr/^repository[.][^.]+[.]path$/ );
     }
 );
 
@@ -87,7 +87,7 @@ sub _build_repo_list {
 
     my $repo_list = {};
     while ( my ( $key, $path ) = each( %{$repo_cfg_lst} ) ) {
-        my ($name) = $key =~ m{^repository\.(.+)\.path$}xmg;
+        my ($name) = $key =~ m{^repository[.](.+)[.]path$};
         $repo_list->{$name} = dir $path;
     }
 

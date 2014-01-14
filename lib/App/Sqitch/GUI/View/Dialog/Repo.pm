@@ -43,8 +43,6 @@ has 'list_ctrl' => (
     lazy_build => 1,
 );
 
-has 'mesg_ctrl' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-
 has 'btn_sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
 has 'btn_sizer_l' => ( is => 'rw', isa => 'Wx::GridSizer', lazy_build => 1 );
 has 'btn_sizer_r' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
@@ -84,6 +82,22 @@ has config => (
     },
 );
 
+has 'repo_list' => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    lazy    => 1,
+    traits  => ['Hash'],
+    default => sub {
+        my $self = shift;
+        return $self->config->repo_list;
+    },
+    handles   => {
+        get_repo   => 'get',
+        has_repo   => 'count',
+        repo_pairs => 'kv',
+    },
+);
+
 sub FOREIGNBUILDARGS {
     my $self = shift;
     my %args = @_;
@@ -107,7 +121,6 @@ sub BUILD {
     $self->sizer->Add( $self->vbox_sizer, 1, wxEXPAND | wxALL, 5 );
 
     $self->list_fg_sz->Add( $self->list_ctrl, 1, wxEXPAND | wxALL, 5 );
-    $self->list_fg_sz->Add( $self->mesg_ctrl, 1, wxEXPAND | wxALL, 5 );
 
     $self->list_fg_sz->Add( $self->h_line1,    1, wxEXPAND | wxALL, 5 );
     $self->list_fg_sz->Add( $self->form_fg_sz, 1, wxEXPAND | wxALL, 5 );
@@ -364,20 +377,6 @@ sub _build_list_ctrl {
     return $list;
 }
 
-sub _build_mesg_ctrl {
-    my $self = shift;
-    my $label = Wx::StaticText->new(
-        $self, -1,
-        q{This should be a centered blue text on a red background!},
-        [ -1, -1 ],
-        [ -1, -1 ],
-        wxST_NO_AUTORESIZE | wxALIGN_CENTRE | wxRAISED_BORDER, # ! doesn't work
-    );
-    $label->SetForegroundColour( Wx::Colour->new('blue') );
-    $label->SetBackgroundColour( Wx::Colour->new('red') ); # ! doesn't work
-    return $label;
-}
-
 #-- Lines
 
 sub _build_h_line1 {
@@ -451,14 +450,11 @@ sub _set_events {
 sub _init {
     my $self = shift;
 
-    my $repo_list = $self->config->repo_list;
-
-    # Prepare records
+    # Populate list
     my $records_ref = [];
-    while ( my ( $name, $path ) = each( %{$repo_list} ) ) {
-        push @{$records_ref}, { name => $name, path => $path };
+    for my $pair ( $self->repo_pairs ) {
+        push @{$records_ref}, { name => $pair->[0], path => $pair->[1] };
     }
-
     $self->list_ctrl->populate($records_ref);
 
     # Default from config
@@ -472,7 +468,8 @@ sub _init {
         }
         $self->_set_as_default($index);
         $self->list_ctrl->select_item($index);
-        $self->_load_item($index);
+        $self->_select_item($index);
+        $self->_load_selected_item($index);
     }
 
     $self->ancestor->dlg_status->set_state('init');
@@ -548,14 +545,25 @@ sub _on_item_selected {
     return unless $self->get_state eq 'sele';
 
     $self->_clear_form;
-    $self->_load_item($item);
+    $self->_select_item($item);
+    $self->_load_selected_item;
+
     return;
 }
 
 sub _on_dpc_change {
     my ($self, $frame, $event) = @_;
+
     print "Path changed\n";
+
     my $new_path = $event->GetEventObject->GetPath;
+    if ( $self->get_state ne 'sele' ) {
+        if ( $self->is_duplicate_path($new_path) ) {
+            $self->set_message( __ '*** Duplicate path! ***' );
+            return;
+        }
+    }
+
     $self->_init_form;
     $self->config->reload($new_path);
     my $engine = $self->config->get( key => 'core.engine' );
@@ -563,37 +571,14 @@ sub _on_dpc_change {
     return;
 }
 
-=head2 _load_item
-
-Load info for the selected list item.  Can't use the current Sqitch
-configuration for this, for every item (repository) we have to load
-the local configuration file and get the required info from there.
-
-=cut
-
-sub _load_item {
+sub _select_item {
     my ($self, $item) = @_;
 
     my $name = $self->list_ctrl->get_list_item_text($item, 1);
-    $self->_control_write_e('txt_name', $name);
     my $path = $self->list_ctrl->get_list_item_text($item, 2);
+
+    $self->_control_write_e('txt_name', $name);
     $self->_control_write_p('dpc_path', $path);
-
-    # Load the local config
-
-    my $item_cfg_file = file $path, $self->config->confname;
-    my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
-
-    my $engine = $item_cfg_href->{'core.engine'};
-
-    my $engine_name = $self->config->get_engine_name($engine);
-    $self->_control_write_c('cbx_engine', $engine_name) if $engine_name;
-
-    # Use target here
-    # my $database = $item_cfg_href->{"core.${engine}.db_name"};
-    # if ($database) {
-    #     $self->_control_write_e('txt_db', $database);
-    # }
 
     # Store the selected id, name and path
     $self->selected_item($item);
@@ -603,32 +588,63 @@ sub _load_item {
     return;
 }
 
+=head2 _load_selected_item
+
+Load info for the selected list item.  Can't use the current Sqitch
+configuration for this, for every item (repository) we have to load
+the local configuration file and get the required info from there.
+
+=cut
+
+sub _load_selected_item {
+    my $self = shift;
+
+    # Load the local config
+
+    my $item_cfg_file = file $self->selected_path, $self->config->confname;
+    my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
+
+    my $engine_code = $item_cfg_href->{'core.engine'};
+    my $engine_name = $self->config->get_engine_name($engine_code);
+    $self->_control_write_c('cbx_engine', $engine_name) if $engine_name;
+
+    # Use target here
+    # $self->config->reload($self->selected_path);
+    # my %targets = $self->config->get_regexp(key => qr/^target[.][^.]+[.]uri$/);
+    # p %targets;
+    # my $engine = $self->ancestor->sqitch->engine_for_target('flipr_test');
+    # my $database = $engine->uri->dbname;
+    # if ($database) {
+    #     $self->_control_write_e('txt_db', $database);
+    # }
+
+    return;
+}
+
 sub _set_as_default {
     my ($self, $item) = @_;
-
     $self->_clear_default_mark;
     $item = $self->selected_item unless defined $item;
     $self->_set_default_mark($item) if defined $item;
-
     return;
 }
 
 sub set_message {
     my ($self, $mesg) = @_;
-    $self->mesg_ctrl->SetLabel('');          # clear
-    $self->mesg_ctrl->SetLabel($mesg) if $mesg;
+    my $busy = Wx::BusyInfo->new($mesg);
+    $self->app->Yield;          # no text without this
+    Wx::Sleep(3);               # not very nice...
+    $busy = undef;
     return;
 }
 
 sub _clear_default_mark {
     my $self = shift;
-
     my $max_index = $self->list_ctrl->list_max_index;
     for my $item (0..$max_index) {
         $self->list_ctrl->set_list_item_data( $item, { default => 0 } );
         $self->list_ctrl->set_list_item_text( $item, 3, q{} );
     }
-
     return;
 }
 
@@ -638,7 +654,6 @@ sub _set_default_mark {
         unless defined $item;
     $self->list_ctrl->set_list_item_data( $item, { default => 1 } );
     $self->list_ctrl->set_list_item_text($item, 3, __ 'Yes');
-
     return;
 }
 
@@ -666,7 +681,8 @@ sub config_new_repo {
         $self->btn_new->SetLabel( __ 'C&ancel' );
         $self->ancestor->dlg_status->set_state('add');
         $self->list_ctrl->Enable(1);
-        $self->_new_list_item;
+        my $item = $self->_new_list_item;
+        $self->selected_item($item);
         $self->list_ctrl->Enable(0);
     }
     elsif ( $state eq 'add' ) {
@@ -705,15 +721,25 @@ sub record_is_duplicate {
     my ($self, $name, $path) = @_;
 
     unless ($name and $path) {
-        $self->set_message('Add a repository Path and a Name, please.');
-        return;
+        $self->set_message('Add a repository path and a name, please.');
+        return 1;
     }
 
-    if (   $self->is_duplicate( 'name', $name )
-        or $self->is_duplicate( 'path', $path ) )
-    {
-        $self->set_message(__ 'Duplicate! To add a new repository, select a new path and add a name for it.');
+    my $dup_name = $self->is_duplicate_name($name);
+    my $dup_path = $self->is_duplicate_path($path);
+    if ($dup_name and $dup_path) {
+        $self->set_message(__ 'Duplicate name and path!');
         return 1;
+    }
+    else {
+        if ($dup_name) {
+            $self->set_message(__ 'Duplicate name!');
+            return 1;
+        }
+        if ($dup_path) {
+            $self->set_message(__ 'Duplicate path!');
+            return 1;
+        }
     }
 
     return;
@@ -721,13 +747,11 @@ sub record_is_duplicate {
 
 sub _new_list_item {
     my $self = shift;
-
     my $list_item = [ { name => '', path => '' } ];
     my $new_index = $self->list_ctrl->list_max_index + 1;
     $self->list_ctrl->populate($list_item, $new_index);
     $self->list_ctrl->select_item($new_index);
-
-    return;
+    return $new_index;
 }
 
 sub _remove_list_item {
@@ -737,6 +761,13 @@ sub _remove_list_item {
         $self->list_ctrl->DeleteItem($item);
         $self->list_ctrl->select_item(0);
     }
+    return;
+}
+
+sub _edit_list_item {
+    my ($self, $item, $name, $path) = @_;
+    $self->list_ctrl->set_list_item_text($item, 1, $name);
+    $self->list_ctrl->set_list_item_text($item, 2, $path);
     return;
 }
 
@@ -756,18 +787,23 @@ sub config_remove_repo {
 
     $self->ancestor->config_remove_repo($name, $path, $is_default);
 
+    $self->_remove_list_item;
+
     return;
 }
 
 sub config_save_repo {
     my $self = shift;
 
-    # Save in user config
     my $name = $self->_control_read_e('txt_name');
     my $path = $self->_control_read_p('dpc_path');
-    unless ( $self->record_is_duplicate( $name, $path ) ) {
-        $self->ancestor->config_edit_repo( $name, $path );
-    }
+
+    return if $self->record_is_duplicate( $name, $path );
+
+    print " Saving...\n";
+
+    # Save in user config
+    $self->ancestor->config_edit_repo( $name, $path );
 
     # Save in local config
     my $engine_name = $self->_control_read_c('cbx_engine');
@@ -779,6 +815,8 @@ sub config_save_repo {
     $self->btn_new->SetLabel( __ '&New' );
     $self->btn_edit->SetLabel( __ '&Edit' );
     $self->ancestor->dlg_status->set_state('sele');
+
+    $self->_edit_list_item($self->selected_item, $name, $path);
 
     return;
 }
@@ -809,19 +847,30 @@ sub config_set_default {
     return;
 }
 
-sub is_duplicate {
-    my ($self, $field, $name) = @_;
-    my $proc = "selected_$field";
-    return 1 if $self->$proc eq $name;
-    return 0;
+sub is_duplicate_name {
+    my ($self, $name) = @_;
+    my $curr_name = $self->selected_name;
+    for my $pair ( $self->repo_pairs ) {
+        next if $name eq $curr_name;
+        return 1 if $pair->[0] eq $name;
+    }
+    return;
+}
+
+sub is_duplicate_path {
+    my ($self, $path) = @_;
+    my $curr_path = $self->selected_path;
+    for my $pair ( $self->repo_pairs ) {
+        next if $path eq $curr_path;
+        return 1 if $pair->[1] eq $path;
+    }
+    return;
 }
 
 sub OnClose {
     my ($self, $dialog, $event) = @_;
-
     $self->EndModal(wxID_OK);
     $self->Destroy;
-
     return;
 }
 
