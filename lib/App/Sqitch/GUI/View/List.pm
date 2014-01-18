@@ -15,10 +15,14 @@ use App::Sqitch::X qw(hurl);
 extends 'Wx::Perl::ListCtrl';
 
 has 'column_map' => (
-    is       => 'rw',
-    isa      => 'Maybe[HashRef]',
-    required => 1,
-    default  => sub { {} },
+    traits  => ['Hash'],
+    is      => 'rw',
+    isa     => 'HashRef[Str]',
+    default => sub { {} },
+    handles => {
+        get_column => 'get',
+        set_column => 'set',
+    },
 );
 
 has column_count => (
@@ -76,9 +80,9 @@ sub add_column {
 
     my $field = $attr[-1];
     my $index = $self->column_count;
-    $self->column_map->{$field} = $index;    # Store {field_name => index}
-    pop @attr;                               # remove field_name
-    unshift @attr, $index;                   # add the index
+    $self->set_column($field, $index);   # Store {field_name => index}
+    pop @attr;                           # remove field_name
+    unshift @attr, $index;               # add the index
     $self->InsertColumn(@attr);
     $self->inc_counter;
 
@@ -145,7 +149,7 @@ sub populate {
         $rec->{count_row} = $row + 1 if $has_count_col;
         $self->InsertStringItem( $row, 'dummy' );
         while ( my ( $field, $value ) = each( %{$rec} ) ) {
-            my $col = $self->column_map->{$field};
+            my $col = $self->get_column($field);
             $self->set_list_item_text( $row, $col, $value );
         }
         $row++;
