@@ -30,3 +30,4 @@ Cava/Linux/release/
 *.db
 TAGS
 *.mo
+.perl-version
