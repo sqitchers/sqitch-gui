@@ -98,8 +98,8 @@ sub has_repo_name {
     my ($self, $name) = @_;
     hurl 'Wrong arguments passed to has_repo_name()'
         unless $name;
-    p $self->repo_list;
-    p $name;
+    # p $self->repo_list;
+    # p $name;
     return 1 if first { $name eq $_ } keys %{$self->repo_list};
     return 0;
 }

@@ -14,6 +14,7 @@ use Try::Tiny;
 use App::Sqitch::X qw(hurl);
 
 use App::Sqitch::GUI::Sqitch;
+use App::Sqitch::GUI::Target;
 use App::Sqitch::GUI::WxApp;
 use App::Sqitch::GUI::Config;
 use App::Sqitch::GUI::Status;
@@ -115,8 +116,14 @@ sub init_config {
         }
     }
 
-    print 'c: user_file:  ', $config->user_file, "\n";
-    print 'c: local_file: ', $config->local_file, "\n";
+    print 'cfg: user_file:  ', $config->user_file, "\n";
+    print 'cfg: local_file: ', $config->local_file, "\n";
+
+    print "\nCONFIG:\n";
+    print "---\n";
+    print scalar $config->dump;
+    print "---\n";
+    print "\n";
 
     return $config;
 }
@@ -125,14 +132,15 @@ sub init_sqitch {
     my $self = shift;
 
     my $opts = {};
-    $opts->{config} = $self->config;
-
     my $sqitch;
     try {
-        $sqitch = App::Sqitch::GUI::Sqitch->new($opts);
+        $sqitch = App::Sqitch::GUI::Sqitch->new( {
+            options => $opts,
+            config  => $self->config,
+        } );
     }
     catch {
-        print "Error on init: $_\n";
+        print "Error on Sqitch initialization: $_\n";
     };
 
     return $sqitch;
@@ -156,11 +164,11 @@ sub load_sqitch_plan {
 
     my $sqitch = $self->sqitch;
 
-    p $sqitch;
-
     # Do we have a valid configuration - plan?
+    my $target;
     try {
-        App::Sqitch::Plan->new(sqitch => $sqitch)->load;
+        # App::Sqitch::Plan->new( sqitch => $sqitch )->load;
+        $target = App::Sqitch::GUI::Target->new( sqitch => $sqitch );
     }
     catch {
         my $msg = "ERROR: $_";
@@ -177,9 +185,9 @@ sub load_sqitch_plan {
 
     if ( $self->status->is_state('idle') ) {
         try {
-            $self->populate_change;
-            $self->populate_project;
-            $self->populate_plan;
+            # $self->populate_change($target);
+            $self->populate_project($target);
+            # $self->populate_plan;
         }
         catch {
             $self->log_message(__ 'Error' . ': '. $_);
@@ -227,12 +235,12 @@ sub _init_observers {
 }
 
 sub populate_project {
-    my $self = shift;
+    my ($self, $target) = @_;
 
     my $config = $self->config;
     my $sqitch = $self->sqitch;
-    my $engine = $sqitch->engine;
-    my $plan   = $sqitch->plan;
+    my $engine = $target->engine;
+    my $plan   = $target->plan;
 
     my %fields = (
         project       => $plan->project,
@@ -253,10 +261,10 @@ sub populate_project {
 }
 
 sub populate_change {
-    my $self = shift;
+    my ($self, $target) = @_;
 
     my $sqitch = $self->sqitch;
-    my $plan   = $sqitch->plan;
+    my $plan   = $target->plan;
     my $change = $plan->last;
 
     hurl "No change plan!"
