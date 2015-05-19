@@ -7,7 +7,7 @@ use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw<:everything>;
 use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU EVT_DIRPICKER_CHANGED>;
 
-use Path::Class;
+use Path::Tiny;
 use File::Slurp;
 use Try::Tiny;
 
@@ -176,7 +176,7 @@ sub load_sqitch_plan {
     }
     finally {
         if (@_) {
-            $self->log_message(__ 'Sqitch is NOT initialized yet. Please set a valid repository path!');
+            $self->log_message(__ 'Sqitch is NOT initialized yet. Please add a project path using the Admin menu.');
             $self->status->set_state('init');
         } else {
             $self->status->set_state('idle');
@@ -185,8 +185,8 @@ sub load_sqitch_plan {
 
     if ( $self->status->is_state('idle') ) {
         try {
-            # $self->populate_change($target);
             $self->populate_project($target);
+            # $self->populate_change($target);
             # $self->populate_plan;
         }
         catch {
@@ -242,18 +242,22 @@ sub populate_project {
     my $engine = $target->engine;
     my $plan   = $target->plan;
 
-    my %fields = (
-        project       => $plan->project,
-        uri           => $plan->uri,
-        database      => $engine->uri->dbname,
-        user          => $engine->uri->user // $ENV{USER},
-        path          => $config->repo_default_path,
-        engine        => $engine->uri->engine,
+    hurl "No plan?" unless $plan and $plan->isa('App::Sqitch::Plan');
+
+    my $dbname = $engine->uri->dbname;
+
+    my $fields = {
+        project  => $plan->project             // 'unknown',
+        uri      => $plan->uri                 // 'unknown',
+        database => $dbname,
+        user     => $engine->uri->user         // 'unknown',
+        path     => $config->repo_default_path // 'unknown',
+        engine   => $engine->uri->engine       // 'unknown',
         created_at    => undef,
         creator_name  => undef,
         creator_email => undef,
-    );
-    while ( my ( $field, $value ) = each(%fields) ) {
+    };
+    while ( my ( $field, $value ) = each %{$fields} ) {
         $self->load_form_for( 'project', $field, $value );
     }
 
@@ -369,7 +373,7 @@ sub load_sql_for {
     my ($self, $command, $name) = @_;
 
     my $repo_path = $self->config->repo_default_path;
-    my $sql_file  = file($repo_path, $command, "$name.sql");
+    my $sql_file  = path $repo_path, $command, "$name.sql";
     my $text = read_file($sql_file);
     my $ctrl_name = "edit_$command";
     my $ctrl = $self->view->change->$ctrl_name;
@@ -439,22 +443,22 @@ sub config_reload {
 sub config_set_default {
     my ($self, $name) = @_;
     my @cmd = qw(config --user);
-    $self->execute_command(@cmd, "repository.default", $name);
+    $self->execute_command(@cmd, "project.default", $name);
     return 1;
 }
 
 sub config_edit_repo {
     my ($self, $name, $path) = @_;
     my @cmd = qw(config --user);
-    $self->execute_command(@cmd, "repository.${name}.path", $path);
+    $self->execute_command(@cmd, "project.${name}.path", $path);
     return 1;
 }
 
 sub config_remove_repo {
     my ( $self, $name, $path, $is_default ) = @_;
     my @cmd = qw(config --user --remove-section);
-    $self->execute_command(@cmd, "repository.${name}");
-    $self->execute_command(@cmd, "repository") if $is_default;
+    $self->execute_command(@cmd, "project.${name}");
+    $self->execute_command(@cmd, "project") if $is_default;
     return 1;
 }
 

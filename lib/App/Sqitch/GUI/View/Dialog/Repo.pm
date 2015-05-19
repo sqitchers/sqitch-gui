@@ -3,7 +3,7 @@ package App::Sqitch::GUI::View::Dialog::Repo;
 use Moose;
 use namespace::autoclean;
 
-use Path::Class;
+use Path::Tiny;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
 
@@ -18,6 +18,8 @@ use MooseX::NonMoose::InsideOut;
 extends 'Wx::Dialog';
 
 use App::Sqitch::GUI::View::List;
+
+use Data::Printer;
 
 has 'sizer'      => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
 has 'vbox_sizer' => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
@@ -69,7 +71,7 @@ has 'selected_name' => (
 
 has 'selected_path' => (
     is      => 'rw',
-    isa     => 'Maybe[Path::Class::Dir]',
+    isa     => 'Maybe[Path::Tiny]',
     default => sub { undef },
 );
 
@@ -104,7 +106,7 @@ sub FOREIGNBUILDARGS {
     return (
         $args{parent},
         -1,
-        __ 'Repository List',
+        __ 'Project List',
         [-1, -1],
         [-1, -1],
         wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE,
@@ -217,7 +219,7 @@ sub _build_txt_name {
 
 sub _build_lbl_path {
     my $self = shift;
-    return Wx::StaticText->new( $self, -1, __ 'Repository' );
+    return Wx::StaticText->new( $self, -1, __ 'Project' );
 }
 
 sub _build_dpc_path {
@@ -466,7 +468,7 @@ sub _init {
             last if $repo_default eq $rec->{name};
             $index++;
         }
-        $self->_set_as_default($index);
+        $self->_mark_as_default($index);
         $self->list_ctrl->select_item($index);
         $self->_select_item($index);
         $self->_load_selected_item($index);
@@ -568,6 +570,11 @@ sub _on_dpc_change {
     $self->config->reload($new_path);
     my $engine = $self->config->get( key => 'core.engine' );
     print "Engine is $engine\n";
+
+    # Default project name: the dir name
+    my $name = path($new_path)->basename;
+    $self->_control_write_e('txt_name', $name);
+
     return;
 }
 
@@ -583,7 +590,7 @@ sub _select_item {
     # Store the selected id, name and path
     $self->selected_item($item);
     $self->selected_name($name);
-    $self->selected_path( dir $path );
+    $self->selected_path( path $path ) if $path;
 
     return;
 }
@@ -591,7 +598,7 @@ sub _select_item {
 =head2 _load_selected_item
 
 Load info for the selected list item.  Can't use the current Sqitch
-configuration for this, for every item (repository) we have to load
+configuration for this, for every item (project) we have to load
 the local configuration file and get the required info from there.
 
 =cut
@@ -601,7 +608,7 @@ sub _load_selected_item {
 
     # Load the local config
 
-    my $item_cfg_file = file $self->selected_path, $self->config->confname;
+    my $item_cfg_file = path $self->selected_path, $self->config->confname;
     my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
 
     my $engine_code = $item_cfg_href->{'core.engine'};
@@ -621,7 +628,7 @@ sub _load_selected_item {
     return;
 }
 
-sub _set_as_default {
+sub _mark_as_default {
     my ($self, $item) = @_;
     $self->_clear_default_mark;
     $item = $self->selected_item unless defined $item;
@@ -721,7 +728,7 @@ sub record_is_duplicate {
     my ($self, $name, $path) = @_;
 
     unless ($name and $path) {
-        $self->set_message('Add a repository path and a name, please.');
+        $self->set_message(__ 'Add a project path, please.');
         return 1;
     }
 
@@ -778,7 +785,7 @@ sub config_remove_repo {
     my $path = $self->_control_read_p('dpc_path');
 
     unless ($name and $path) {
-        $self->set_message(__ 'Select a repository item, please.');
+        $self->set_message(__ 'Select a project item, please.');
         return;
     }
 
@@ -824,12 +831,14 @@ sub config_save_repo {
 sub config_set_default {
     my $self = shift;
 
-    $self->_set_as_default;
+    my $index = $self->list_ctrl->GetSelection();
+    print "Select item no $index\n";
+    $self->_select_item($index);
 
     my $name = $self->selected_name;
     my $path = $self->selected_path;
     unless ( $name and $path ) {
-        $self->set_message(__ 'Select a repository item, please.');
+        $self->set_message(__ 'Select a project item, please.');
         return;
     }
 
@@ -843,6 +852,8 @@ sub config_set_default {
     # p $self->config;
     print 'r: user_file:   ', $self->config->user_file, "\n";
     print 'r: local_file:  ', $self->config->local_file, "\n";
+
+    $self->_mark_as_default;
 
     return;
 }

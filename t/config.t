@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Test::More tests => 9;
-use Path::Class;
+use Path::Tiny;
 
 use App::Sqitch::GUI;
 
@@ -16,7 +16,7 @@ my $config = $ctrl->config;
 
 is($config->user_file, 't/home/.sqitch/sqitch.conf', 'Test user_file');
 
-is_deeply( $config->repo_list, {}, 'No repository list' );
+is_deeply( $config->repo_list, {}, 'No project list' );
 is( $config->repo_default_name, undef, 'No default repo name' );
 is( $config->repo_default_path, undef, 'No default repo path' );
 
@@ -31,13 +31,13 @@ ok( $ctrl->config_set_default($name), 'Set test repo as default' );
 
 # Also set as default in the config object
 # ok( $config->repo_default_name($name),      'Set default repo name' );
-# ok( $config->repo_default_path( dir $path), 'Set default repo path' );
+# ok( $config->repo_default_path( path $path), 'Set default repo path' );
 
 # is( $config->repo_default_name, $name, 'Check default repo name' );
 # is( $config->repo_default_path, $path, 'Check default repo path' );
 
-# my $conf_list = { "repository.${name}.path" => $path };
-# is_deeply($config->repo_list, $conf_list, 'Repository list');
+# my $conf_list = { "project.${name}.path" => $path };
+# is_deeply($config->repo_list, $conf_list, 'Project list');
 
 # Local config file
 

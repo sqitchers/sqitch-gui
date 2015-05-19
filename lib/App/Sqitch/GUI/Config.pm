@@ -3,7 +3,7 @@ package App::Sqitch::GUI::Config;
 use utf8;
 use Moose;
 use namespace::autoclean;
-use Path::Class;
+use Path::Tiny;
 use Try::Tiny;
 use List::Util qw(first);
 use App::Sqitch::X qw(hurl);
@@ -16,19 +16,19 @@ has repo_default_name => (
     isa     => 'Maybe[Str]',
     lazy    => 1,
     default => sub {
-        shift->get(key => 'repository.default');
+        shift->get(key => 'project.default');
     }
 );
 
 has repo_default_path => (
     is      => 'rw',
-    isa     => 'Maybe[Path::Class::Dir]',
+    isa     => 'Maybe[Path::Tiny]',
     lazy    => 1,
     default => sub {
         my $self    = shift;
         my $default = $self->repo_default_name;
         return $default
-            ? dir $self->get( key => "repository.${default}.path" )
+            ? path $self->get( key => "project.${default}.path" )
             : undef;
     }
 );
@@ -36,8 +36,8 @@ has repo_default_path => (
 sub local_file {
     my $self = shift;
     return $self->repo_default_path
-        ? file( $self->repo_default_path, $self->confname )
-        : file( $self->confname );
+        ? path( $self->repo_default_path, $self->confname )
+        : path( $self->confname );
 };
 
 has _repo_conf_list => (
@@ -45,7 +45,7 @@ has _repo_conf_list => (
     isa     => 'Maybe[HashRef]',
     lazy    => 1,
     default => sub {
-        shift->get_regexp( key => qr/^repository[.][^.]+[.]path$/ );
+        shift->get_regexp( key => qr/^project[.][^.]+[.]path$/ );
     }
 );
 
@@ -87,8 +87,8 @@ sub _build_repo_list {
 
     my $repo_list = {};
     while ( my ( $key, $path ) = each( %{$repo_cfg_lst} ) ) {
-        my ($name) = $key =~ m{^repository[.](.+)[.]path$};
-        $repo_list->{$name} = dir $path;
+        my ($name) = $key =~ m{^project[.](.+)[.]path$};
+        $repo_list->{$name} = path $path;
     }
 
     return $repo_list;
@@ -114,7 +114,7 @@ sub has_repo_path {
 
 sub reload {
     my ( $self, $path ) = @_;
-    my $file = file $path, $self->confname;
+    my $file = path $path, $self->confname;
     print "Reloading $file...\n";
     try { $self->load($file) } catch { print "Reload config error: $_\n" };
 }
@@ -130,14 +130,14 @@ __PACKAGE__->meta->make_immutable;
 
 Additions to the user configuration file C<sqitch.conf>:
 
-  [repository]
+  [project]
       default = FliprPg
-  [repository "FliprPg"]
+  [project "FliprPg"]
       path = /home/user/sqitch/flipr-pg
-  [repository "FliprCubrid"]
+  [project "FliprCubrid"]
       path = /home/user/sqitch/flipr-cubrid
 
-The list of repository names and paths and a default repository name.
+The list of project names and paths and a default project name.
 
 =cut
 
