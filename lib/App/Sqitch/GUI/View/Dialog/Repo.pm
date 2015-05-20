@@ -3,7 +3,7 @@ package App::Sqitch::GUI::View::Dialog::Repo;
 use Moose;
 use namespace::autoclean;
 
-use Path::Tiny;
+use Path::Class;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
 
@@ -71,7 +71,7 @@ has 'selected_name' => (
 
 has 'selected_path' => (
     is      => 'rw',
-    isa     => 'Maybe[Path::Tiny]',
+    isa     => 'Maybe[Path::Class::Dir]',
     default => sub { undef },
 );
 
@@ -572,7 +572,7 @@ sub _on_dpc_change {
     print "Engine is $engine\n";
 
     # Default project name: the dir name
-    my $name = path($new_path)->basename;
+    my $name = file($new_path)->basename;
     $self->_control_write_e('txt_name', $name);
 
     return;
@@ -590,7 +590,7 @@ sub _select_item {
     # Store the selected id, name and path
     $self->selected_item($item);
     $self->selected_name($name);
-    $self->selected_path( path $path ) if $path;
+    $self->selected_path( dir $path ) if $path;
 
     return;
 }
@@ -608,7 +608,7 @@ sub _load_selected_item {
 
     # Load the local config
 
-    my $item_cfg_file = path $self->selected_path, $self->config->confname;
+    my $item_cfg_file = file $self->selected_path, $self->config->confname;
     my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
 
     my $engine_code = $item_cfg_href->{'core.engine'};

@@ -3,7 +3,7 @@ package App::Sqitch::GUI::Config;
 use utf8;
 use Moose;
 use namespace::autoclean;
-use Path::Tiny;
+use Path::Class;
 use Try::Tiny;
 use List::Util qw(first);
 use App::Sqitch::X qw(hurl);
@@ -22,13 +22,13 @@ has repo_default_name => (
 
 has repo_default_path => (
     is      => 'rw',
-    isa     => 'Maybe[Path::Tiny]',
+    isa     => 'Maybe[Path::Class::Dir]',
     lazy    => 1,
     default => sub {
         my $self    = shift;
         my $default = $self->repo_default_name;
         return $default
-            ? path $self->get( key => "project.${default}.path" )
+            ? dir $self->get( key => "project.${default}.path" )
             : undef;
     }
 );
@@ -36,8 +36,8 @@ has repo_default_path => (
 sub local_file {
     my $self = shift;
     return $self->repo_default_path
-        ? path( $self->repo_default_path, $self->confname )
-        : path( $self->confname );
+        ? file( $self->repo_default_path, $self->confname )
+        : file( $self->confname );
 };
 
 has _repo_conf_list => (
@@ -88,7 +88,7 @@ sub _build_repo_list {
     my $repo_list = {};
     while ( my ( $key, $path ) = each( %{$repo_cfg_lst} ) ) {
         my ($name) = $key =~ m{^project[.](.+)[.]path$};
-        $repo_list->{$name} = path $path;
+        $repo_list->{$name} = dir $path;
     }
 
     return $repo_list;
@@ -114,7 +114,7 @@ sub has_repo_path {
 
 sub reload {
     my ( $self, $path ) = @_;
-    my $file = path $path, $self->confname;
+    my $file = file $path, $self->confname;
     print "Reloading $file...\n";
     try { $self->load($file) } catch { print "Reload config error: $_\n" };
 }

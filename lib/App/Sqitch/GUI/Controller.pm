@@ -7,7 +7,7 @@ use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw<:everything>;
 use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU EVT_DIRPICKER_CHANGED>;
 
-use Path::Tiny;
+use Path::Class;
 use File::Slurp;
 use Try::Tiny;
 
@@ -373,7 +373,7 @@ sub load_sql_for {
     my ($self, $command, $name) = @_;
 
     my $repo_path = $self->config->repo_default_path;
-    my $sql_file  = path $repo_path, $command, "$name.sql";
+    my $sql_file  = file $repo_path, $command, "$name.sql";
     my $text = read_file($sql_file);
     my $ctrl_name = "edit_$command";
     my $ctrl = $self->view->change->$ctrl_name;

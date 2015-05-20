@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Test::More tests => 9;
-use Path::Tiny;
+use Path::Class;
 
 use App::Sqitch::GUI;
 
@@ -31,7 +31,7 @@ ok( $ctrl->config_set_default($name), 'Set test repo as default' );
 
 # Also set as default in the config object
 # ok( $config->repo_default_name($name),      'Set default repo name' );
-# ok( $config->repo_default_path( path $path), 'Set default repo path' );
+# ok( $config->repo_default_path( dir $path), 'Set default repo path' );
 
 # is( $config->repo_default_name, $name, 'Check default repo name' );
 # is( $config->repo_default_path, $path, 'Check default repo path' );
