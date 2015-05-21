@@ -17,7 +17,9 @@ use MooseX::NonMoose::InsideOut;
 
 extends 'Wx::Dialog';
 
-use App::Sqitch::GUI::View::List;
+#use App::Sqitch::GUI::View::List;
+use App::Sqitch::GUI::ListDataTable;
+use App::Sqitch::GUI::ListCtrl;
 
 use Data::Printer;
 
@@ -40,9 +42,11 @@ has 'lbl_db'   => ( is => 'rw', isa => 'Wx::StaticText',    lazy_build => 1 );
 has 'txt_db'   => ( is => 'rw', isa => 'Wx::TextCtrl',      lazy_build => 1 );
 
 has 'list_ctrl' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::View::List',
-    lazy_build => 1,
+    is       => 'rw',
+    isa      => 'App::Sqitch::GUI::ListCtrl',
+    required => 1,
+    lazy     => 1,
+    builder  => '_build_list_ctrl',
 );
 
 has 'btn_sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
@@ -97,6 +101,13 @@ has 'repo_list' => (
         get_repo   => 'get',
         has_repo   => 'count',
         repo_pairs => 'kv',
+    },
+);
+
+has 'list_data' => (
+    is      => 'ro',
+    default => sub {
+        return App::Sqitch::GUI::ListDataTable->new;
     },
 );
 
@@ -366,15 +377,14 @@ sub _build_btn_close {
 sub _build_list_ctrl {
     my $self = shift;
 
-    my $list = App::Sqitch::GUI::View::List->new(
+    my $list = App::Sqitch::GUI::ListCtrl->new(
         app       => $self->app,
         parent    => $self,
-        count_col => 1,                      # add a count column
-    );
+        list_data => $self->list_data,
+        meta_data => $self->list_meta_data,
 
-    $list->add_column( __ 'Name',    wxLIST_FORMAT_LEFT, 100, 'name' );
-    $list->add_column( __ 'Path',    wxLIST_FORMAT_LEFT, 250, 'path' );
-    $list->add_column( __ 'Default', wxLIST_FORMAT_CENTER,    'default' );
+        # count_col => 1,                      # add a count column XXX
+    );
 
     return $list;
 }
@@ -457,7 +467,7 @@ sub _init {
     for my $pair ( $self->repo_pairs ) {
         push @{$records_ref}, { name => $pair->[0], path => $pair->[1] };
     }
-    $self->list_ctrl->populate($records_ref);
+    $self->populate($records_ref);
 
     # Default from config
     my $repo_default = $self->config->repo_default_name;
@@ -469,13 +479,36 @@ sub _init {
             $index++;
         }
         $self->_mark_as_default($index);
-        $self->list_ctrl->select_item($index);
+        $self->list_ctrl->set_selection($index);
         $self->_select_item($index);
         $self->_load_selected_item($index);
     }
 
     $self->ancestor->dlg_status->set_state('init');
 
+    return;
+}
+
+sub populate {
+    my ($self, $record_ref) = @_;
+
+    my $data_table = $self->list_data;
+    my $cols_meta  = $self->list_meta_data;
+    my $row        = ( $data_table->get_item_count // 1 ) - 1;
+    foreach my $rec ( @{$record_ref} ) {
+        my $col = 0;
+        foreach my $meta ( @{$cols_meta} ) {
+            my $field = $meta->{field};
+            my $value
+                = $field eq q{}     ? q{}
+                : $field eq 'recno' ? ( $row + 1 )
+                :                     ( $rec->{$field} // q{} );
+            $data_table->set_value( $row, $col, $value );
+            $col++;
+        }
+        $self->list_ctrl->RefreshList;
+        $row++;
+    }
     return;
 }
 
@@ -581,8 +614,11 @@ sub _on_dpc_change {
 sub _select_item {
     my ($self, $item) = @_;
 
-    my $name = $self->list_ctrl->get_list_item_text($item, 1);
-    my $path = $self->list_ctrl->get_list_item_text($item, 2);
+    ###my $sel = $self->list_ctrl->get_selection;
+    #p $sel;
+
+    my $name = $self->list_data->get_value($item, 1);
+    my $path = $self->list_data->get_value($item, 2);
 
     $self->_control_write_e('txt_name', $name);
     $self->_control_write_p('dpc_path', $path);
@@ -647,10 +683,10 @@ sub set_message {
 
 sub _clear_default_mark {
     my $self = shift;
-    my $max_index = $self->list_ctrl->list_max_index;
+    my $max_index = $self->list_data->get_item_count;
     for my $item (0..$max_index) {
-        $self->list_ctrl->set_list_item_data( $item, { default => 0 } );
-        $self->list_ctrl->set_list_item_text( $item, 3, q{} );
+        # $self->list_ctrl->set_list_item_data( $item, { default => 0 } ); XXX
+        # $self->list_ctrl->set_list_item_text( $item, 3, q{} );
     }
     return;
 }
@@ -659,8 +695,8 @@ sub _set_default_mark {
     my ($self, $item) = @_;
     hurl __ 'Wrong arguments passed to _set_default_mark()'
         unless defined $item;
-    $self->list_ctrl->set_list_item_data( $item, { default => 1 } );
-    $self->list_ctrl->set_list_item_text($item, 3, __ 'Yes');
+    # $self->list_ctrl->set_list_item_data( $item, { default => 1 } ); XXX
+    # $self->list_ctrl->set_list_item_text($item, 3, __ 'Yes');
     return;
 }
 
@@ -883,6 +919,35 @@ sub OnClose {
     $self->EndModal(wxID_OK);
     $self->Destroy;
     return;
+}
+
+sub list_meta_data {
+    return [
+        {   field => 'recno',
+            label => '#',
+            align => 'center',
+            width => 25,
+            type  => 'int',
+        },
+        {   field => 'name',
+            label => __ 'Name',
+            align => 'left',
+            width => 100,
+            type  => 'str',
+        },
+        {   field => 'path',
+            label => __ 'Path',
+            align => 'left',
+            width => 266,
+            type  => 'bool',
+        },
+        {   field => 'default',
+            label => __ 'Default',
+            align => 'center',
+            width => 60,
+            type  => 'bool',
+        },
+    ];
 }
 
 __PACKAGE__->meta->make_immutable;
