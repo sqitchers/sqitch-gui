@@ -1,35 +1,44 @@
 package App::Sqitch::GUI::View::StatusBar;
 
-use Moose;
-use namespace::autoclean;
-
+use 5.010;
+use strict;
+use warnings;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    Str
+    WxStatusBar
+);
 use Wx qw(:everything);
 use Wx::Event qw(EVT_SIZE);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
 has 'status_bar' => (
-    is         => 'rw',
-    isa        => 'Wx::StatusBar',
-    lazy_build => 1,
+    is      => 'rw',
+    isa     => WxStatusBar,
+    lazy    => 1,
+    builder => '_build_status_bar',
 );
 
 has 'caption_msg' => (
-    is         => 'rw',
-    isa        => 'Str',
-    lazy_build => 1,
+    is      => 'rw',
+    isa     => Str,
+    lazy    => 1,
+    builder => '_build_caption_msg',
 );
 
 has 'caption_state' => (
-    is         => 'rw',
-    isa        => 'Str',
-    lazy_build => 1,
+    is      => 'rw',
+    isa     => Str,
+    lazy    => 1,
+    builder => '_build_caption_state',
 );
 
 has 'caption_proj' => (
-    is         => 'rw',
-    isa        => 'Str',
-    lazy_build => 1,
+    is      => 'rw',
+    isa     => Str,
+    lazy    => 1,
+    builder => '_build_caption_proj',
 );
 
 sub BUILD {
@@ -93,8 +102,6 @@ sub OnResize {
     my($self, $status_bar, $event) = @_;
     return 1;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

@@ -1,18 +1,48 @@
 package App::Sqitch::GUI::View::Panel::Bottom;
 
+use 5.010;
+use strict;
+use warnings;
 use utf8;
-use Moose;
-use namespace::autoclean;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    ArrayRef
+    Maybe
+    Object
+    WxPanel
+    WxSizer
+    WxTextCtrl
+);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'panel' => (
+    is      => 'rw',
+    isa     => WxPanel,
+    lazy    => 1,
+    builder => '_build_panel',
+);
 
-has 'log_ctrl' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'old_log'  => ( is => 'rw', isa => 'Maybe[Object]' );
+has 'sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sizer',
+);
+
+has 'log_ctrl' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_log_ctrl',
+);
+
+has 'old_log' => (
+    is  => 'rw',
+    isa => Maybe[Object],
+);
 
 sub BUILD {
     my $self = shift;
@@ -72,8 +102,6 @@ sub _build_log_ctrl {
 }
 
 sub _set_events { }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

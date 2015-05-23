@@ -1,21 +1,28 @@
 package App::Sqitch::GUI::View::MenuBar::App;
 
-use Moose;
-use namespace::autoclean;
-
+use 5.010;
+use strict;
+use warnings;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    WxMenuItem
+);
 use Wx qw(:everything);
 use Wx::Event qw(EVT_MENU);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-use MooseX::NonMoose::InsideOut;
-
 extends 'Wx::Menu';
 
-has 'itm_quit' => (is => 'rw', isa => 'Wx::MenuItem', lazy_build => 1);
+has 'itm_quit' => (
+    is      => 'rw',
+    isa     => WxMenuItem,
+    lazy    => 1,
+    builder => '_build_itm_quit',
+);
 
 sub FOREIGNBUILDARGS {
-    return;                       # Wx::Menu->new() takes no arguments
+    return ();                    # Wx::Menu->new() takes no arguments
 }
 
 sub BUILD {
@@ -40,8 +47,6 @@ sub _set_events {
     my $self = shift;
     return 1;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

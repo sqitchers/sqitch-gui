@@ -1,8 +1,16 @@
 package App::Sqitch::GUI::Config;
 
+use 5.010;
+use strict;
 use utf8;
-use Moose;
-use namespace::autoclean;
+use warnings;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    Dir
+    Str
+    Maybe
+    HashRef
+);
 use Path::Class;
 use Try::Tiny;
 use List::Util qw(first);
@@ -13,16 +21,16 @@ extends 'App::Sqitch::Config';
 
 has repo_default_name => (
     is      => 'rw',
-    isa     => 'Maybe[Str]',
+    isa     => Maybe[Str],
     lazy    => 1,
     default => sub {
-        shift->get(key => 'project.default');
+        shift->get(key => 'core.project');
     }
 );
 
 has repo_default_path => (
     is      => 'rw',
-    isa     => 'Maybe[Path::Class::Dir]',
+    isa     => Maybe[Dir],
     lazy    => 1,
     default => sub {
         my $self    = shift;
@@ -42,23 +50,24 @@ sub local_file {
 
 has _repo_conf_list => (
     is      => 'ro',
-    isa     => 'Maybe[HashRef]',
+    isa     => Maybe[HashRef],
     lazy    => 1,
     default => sub {
         shift->get_regexp( key => qr/^project[.][^.]+[.]path$/ );
     }
 );
 
-has repo_list => (
+has project_list => (
     is      => 'ro',
-    isa     => 'Maybe[HashRef]',
-    lazy_build => 1,
+    isa     => Maybe[HashRef],
+    lazy    => 1,
+    builder => '_build_project_list',
 );
 
 has 'engine_list' => (
     metaclass => 'Collection::Hash',
     is        => 'ro',
-    isa       => 'HashRef[Str]',
+    isa       => HashRef[Str],
     required  => 1,
     lazy      => 1,
     default   => sub {
@@ -80,27 +89,27 @@ sub get_engine_from_name {
     return $engines{$engine};
 }
 
-sub _build_repo_list {
+sub _build_project_list {
     my $self = shift;
 
     my $repo_cfg_lst = $self->_repo_conf_list;
 
-    my $repo_list = {};
+    my $project_list = {};
     while ( my ( $key, $path ) = each( %{$repo_cfg_lst} ) ) {
         my ($name) = $key =~ m{^project[.](.+)[.]path$};
-        $repo_list->{$name} = dir $path;
+        $project_list->{$name} = dir $path;
     }
 
-    return $repo_list;
+    return $project_list;
 }
 
 sub has_repo_name {
     my ($self, $name) = @_;
     hurl 'Wrong arguments passed to has_repo_name()'
         unless $name;
-    # p $self->repo_list;
+    # p $self->project_list;
     # p $name;
-    return 1 if first { $name eq $_ } keys %{$self->repo_list};
+    return 1 if first { $name eq $_ } keys %{$self->project_list};
     return 0;
 }
 
@@ -108,7 +117,7 @@ sub has_repo_path {
     my ($self, $path) = @_;
     hurl 'Wrong arguments passed to has_repo_path()'
         unless $path;
-    return 1 if first { $path->stringify eq $_ } values %{$self->repo_list};
+    return 1 if first { $path->stringify eq $_ } values %{$self->project_list};
     return 0;
 }
 
@@ -119,23 +128,22 @@ sub reload {
     try { $self->load($file) } catch { print "Reload config error: $_\n" };
 }
 
-sub repo_list_cnt {
+sub project_list_cnt {
     my $self = shift;
-    return scalar keys %{ $self->repo_list };
+    return scalar keys %{ $self->project_list };
 }
-
-__PACKAGE__->meta->make_immutable;
 
 =pod
 
 Additions to the user configuration file C<sqitch.conf>:
 
-  [project]
-      default = FliprPg
-  [project "FliprPg"]
-      path = /home/user/sqitch/flipr-pg
-  [project "FliprCubrid"]
-      path = /home/user/sqitch/flipr-cubrid
+[core]
+    engine = pg
+    project = flipr
+[project "flipr"]
+    path = /home/user/sqitch/flipr
+[project "widgets"]
+    path = /home/user/sqitch/widgets
 
 The list of project names and paths and a default project name.
 

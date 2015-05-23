@@ -14,9 +14,10 @@ has 'dialog' => (
 );
 
 has 'rules' => (
-    is         => 'ro',
-    isa        => 'App::Sqitch::GUI::View::Dialog::Rules',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => 'App::Sqitch::GUI::View::Dialog::Rules',
+    lazy    => 1,
+    builder => '_build_rules',
 );
 
 sub _build_rules {

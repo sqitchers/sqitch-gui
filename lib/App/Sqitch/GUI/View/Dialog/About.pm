@@ -1,11 +1,19 @@
 package App::Sqitch::GUI::View::Dialog::About;
 
-use Moose;
-use namespace::autoclean;
+use 5.010;
+use strict;
+use warnings;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    WxAboutDialogInfo
+);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-has 'info'  => (is => 'rw', isa => 'Wx::AboutDialogInfo');
+has 'info' => (
+    is  => 'rw',
+    isa => WxAboutDialogInfo,
+);
 
 sub BUILD {
     my $self = shift;
@@ -33,8 +41,6 @@ sub show {
     Wx::AboutBox($self->info);
     return;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

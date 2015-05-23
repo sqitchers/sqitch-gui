@@ -1,29 +1,31 @@
 package App::Sqitch::GUI::Roles::Element;
 
-use Moose::Role;
-use Wx qw(:everything);
+use Moo::Role;
+use App::Sqitch::GUI::Types qw(
+    HashRef
+    Maybe
+    Object
+    SqitchGUIWxApp
+    WxWindow
+);
 
 has 'app' => (
-    is          => 'rw',
-    isa         => 'App::Sqitch::GUI::WxApp',
-    required    => 1,
-    weak_ref    => 1,
-    handles => {
-        # get_view       => 'view',
-        # has_view       => 'has_view',
-        # menu           => 'menu_bar',
-        # get_left_pane  => 'left_pane',
-        # get_right_pane => 'right_pane',
-    }
+    is       => 'rw',
+    isa      => SqitchGUIWxApp,
+    required => 1,
+    weak_ref => 1,
 );
-has 'ancestor'  => (is => 'rw', isa => 'Object', weak_ref => 1 );
-has 'parent'    => (is => 'rw', isa => 'Maybe[Wx::Window]' );
-# has 'sizer_debug' => (is => 'rw', isa => 'Int',  lazy => 1, default => 0,
-#         documentation => q{
-#             draws boxes with titles around all sizers if true.
-#         }
-#     );
-has 'sizers' => (is => 'rw', isa => 'HashRef', lazy => 1, default => sub{ {} });
+
+has 'ancestor' => (
+    is       => 'rw',
+    isa      => Object,
+    weak_ref => 1,
+);
+
+has 'parent' => (
+    is  => 'rw',
+    isa => Maybe[WxWindow],
+);
 
 requires '_set_events';
 
@@ -32,8 +34,6 @@ after BUILD => sub {
     $self->_set_events;
     return 1;
 };
-
-no Moose::Role;
 
 =head1 AUTHOR
 

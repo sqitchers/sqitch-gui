@@ -1,72 +1,94 @@
 package App::Sqitch::GUI::Controller;
 
-use Moose;
-use namespace::autoclean;
-
+use 5.010;
+use strict;
+use warnings;
+use utf8;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    HashRef
+    Maybe
+    Object
+    Sqitch
+    SqitchGUIWxApp
+    SqitchGUIConfig
+    SqitchGUIStatus
+    SqitchGUIDialogStatus
+    SqitchGUIView
+    WxWindow
+);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw<:everything>;
-use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU EVT_DIRPICKER_CHANGED>;
-
+use Wx::Event qw(
+    EVT_BUTTON
+    EVT_CLOSE
+    EVT_MENU
+);
 use Path::Class;
 use File::Slurp;
 use Try::Tiny;
-
 use App::Sqitch::X qw(hurl);
 
+use App::Sqitch::GUI::WxApp;
 use App::Sqitch::GUI::Sqitch;
 use App::Sqitch::GUI::Target;
-use App::Sqitch::GUI::WxApp;
 use App::Sqitch::GUI::Config;
 use App::Sqitch::GUI::Status;
 use App::Sqitch::GUI::Refresh;
 
-use App::Sqitch::GUI::View::Dialog::Repo;
 use App::Sqitch::GUI::View::Dialog::Status;
 use App::Sqitch::GUI::View::Dialog::Refresh;
-
-use Data::Printer;
+use App::Sqitch::GUI::View::Dialog::Projects;
 
 has 'app' => (
-    is         => 'ro',
-    isa        => 'App::Sqitch::GUI::WxApp',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => SqitchGUIWxApp,
+    lazy    => 1,
+    builder => '_build_app',
 );
+
+sub _build_app {
+    my $self = shift;
+    say "_build_app";
+    my $app  = App::Sqitch::GUI::WxApp->new( config => $self->config );
+    return $app;
+}
 
 has 'view' => (
     is      => 'ro',
-    isa     => 'App::Sqitch::GUI::View',
+    isa     => SqitchGUIView,
     default => sub { shift->app->view },
 );
 
 has config => (
     is      => 'ro',
-    isa     => 'App::Sqitch::GUI::Config',
+    isa     => SqitchGUIConfig,
     lazy    => 1,
     builder => 'init_config',
 );
 
 has sqitch => (
     is      => 'rw',
-    isa     => 'Maybe[App::Sqitch]',
+    isa     => Maybe[Sqitch],
     lazy    => 1,
     builder => 'init_sqitch',
 );
 
 has status => (
     is      => 'rw',
-    isa     => 'App::Sqitch::GUI::Status',
+    isa     => SqitchGUIStatus,
     lazy    => 1,
     default => sub {
-        App::Sqitch::GUI::Status->new;
+        return App::Sqitch::GUI::Status->new;
     }
 );
 
 has dlg_status => (
     is      => 'rw',
-    isa     => 'App::Sqitch::GUI::View::Dialog::Status',
+    isa     => SqitchGUIDialogStatus,
     lazy    => 1,
     default => sub {
-        App::Sqitch::GUI::View::Dialog::Status->new;
+        return App::Sqitch::GUI::View::Dialog::Status->new;
     }
 );
 
@@ -74,12 +96,6 @@ sub log_message {
     my ($self, $msg) = @_;
     #? This should clear the control first
     Wx::LogMessage($msg);
-}
-
-sub _build_app {
-    my $self = shift;
-    my $app = App::Sqitch::GUI::WxApp->new( config => $self->config );
-    return $app;
 }
 
 sub init_config {
@@ -103,7 +119,7 @@ sub init_config {
     #   - show dialog to add new repo
 
     # Are any repositories configured?
-    return $config if $config->repo_list_cnt == 0;
+    return $config if $config->project_list_cnt == 0;
 
     # Load the local configuration file
     if ( $config->repo_default_name ) {
@@ -130,7 +146,7 @@ sub init_config {
 
 sub init_sqitch {
     my $self = shift;
-
+say "INIT_sqitch";
     my $opts = {};
     my $sqitch;
     try {
@@ -185,7 +201,7 @@ sub load_sqitch_plan {
 
     if ( $self->status->is_state('idle') ) {
         try {
-            $self->populate_project($target);
+            # $self->populate_project($target);
             # $self->populate_change($target);
             # $self->populate_plan;
         }
@@ -200,13 +216,13 @@ sub load_sqitch_plan {
 sub _setup_events {
     my $self = shift;
 
-    EVT_MENU $self->view->frame,
-        $self->view->menu_bar->menu_admin->itm_admin->GetId,
-        sub { $self->on_admin(@_) };
+    # EVT_MENU $self->view->frame,
+    #     $self->view->menu_bar->menu_admin->itm_admin->GetId,
+    #     sub { $self->on_admin(@_) };
 
-    EVT_MENU $self->view->frame,
-        $self->view->menu_bar->menu_app->itm_quit->GetId,
-        sub { $self->on_quit(@_) };
+    # EVT_MENU $self->view->frame,
+    #     $self->view->menu_bar->menu_app->itm_quit->GetId,
+    #     sub { $self->on_quit(@_) };
 
     # Set events for some of the commands
     # 'Revert' needs confirmation - can't use it, yet
@@ -398,7 +414,7 @@ sub on_quit {
 sub on_admin {
     my ($self, $frame, $event) = @_;
 
-    my $dialog = App::Sqitch::GUI::View::Dialog::Repo->new(
+    my $dialog = App::Sqitch::GUI::View::Dialog::Projects->new(
         app      => $self->app,
         ancestor => $self,
         parent   => undef,                   # for dialogs
@@ -443,7 +459,7 @@ sub config_reload {
 sub config_set_default {
     my ($self, $name) = @_;
     my @cmd = qw(config --user);
-    $self->execute_command(@cmd, "project.default", $name);
+    $self->execute_command(@cmd, "core.project", $name);
     return 1;
 }
 
@@ -468,7 +484,5 @@ sub config_save_local {
     $self->execute_command(@cmd, "core.${engine}.db_name", $database);
     return 1;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 1;

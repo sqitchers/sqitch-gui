@@ -16,7 +16,7 @@ my $config = $ctrl->config;
 
 is($config->user_file, 't/home/.sqitch/sqitch.conf', 'Test user_file');
 
-is_deeply( $config->repo_list, {}, 'No project list' );
+is_deeply( $config->project_list, {}, 'No project list' );
 is( $config->repo_default_name, undef, 'No default repo name' );
 is( $config->repo_default_path, undef, 'No default repo path' );
 
@@ -37,7 +37,7 @@ ok( $ctrl->config_set_default($name), 'Set test repo as default' );
 # is( $config->repo_default_path, $path, 'Check default repo path' );
 
 # my $conf_list = { "project.${name}.path" => $path };
-# is_deeply($config->repo_list, $conf_list, 'Project list');
+# is_deeply($config->project_list, $conf_list, 'Project list');
 
 # Local config file
 

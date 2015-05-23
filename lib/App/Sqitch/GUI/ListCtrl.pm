@@ -5,6 +5,8 @@ package App::Sqitch::GUI::ListCtrl;
 use 5.010;
 use strict;
 use warnings;
+use Moo;
+use Types::Standard qw(ArrayRef);
 use Wx qw(
     wxLC_REPORT
     wxLC_SINGLE_SEL
@@ -14,9 +16,6 @@ use Wx qw(
     wxLIST_FORMAT_RIGHT
 );
 use Wx qw(:listctrl);
-use Moo;
-use MooX::InsideOut;
-use Types::Standard qw(ArrayRef);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
 
@@ -44,9 +43,7 @@ sub FOREIGNBUILDARGS {
 
 sub BUILD {
     my $self = shift;
-
     $self->add_columns( $self->meta_data );
-
     return $self;
 }
 

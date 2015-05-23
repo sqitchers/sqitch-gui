@@ -1,21 +1,20 @@
 package App::Sqitch::GUI::View::Editor;
 
-use Moose;
-use namespace::autoclean;
+use 5.010;
+use strict;
+use warnings;
+use Moo;
 use Wx qw(:everything);
 use Wx::STC;
 use Wx::Event qw();
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-use MooseX::NonMoose::InsideOut;
 extends 'Wx::StyledTextCtrl';
 
 sub FOREIGNBUILDARGS {
     my $self = shift;
-
     my %args = @_;
-
     return (
         $args{parent},
         -1,
@@ -82,8 +81,6 @@ transaction union upper user where with year} );
 sub _set_events {
     return 1;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

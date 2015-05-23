@@ -1,26 +1,52 @@
 package App::Sqitch::GUI::View::Notebook;
 
-use Moose;
-use namespace::autoclean;
+use 5.010;
+use strict;
+use warnings;
+use utf8;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    WxPanel
+    WxSizer
+    WxCollapsiblePane
+    WxStaticText
+    WxTextCtrl
+    SqitchGUIViewNotebook
+	SqitchGUIViewEditor
+);
 use Wx qw(:everything);
 use Wx::Event qw();
 use Wx::AUI;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-use MooseX::NonMoose::InsideOut;
-
 extends 'Wx::AuiNotebook';
 
-has 'page_deploy' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'page_revert' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'page_verify' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
+has 'page_deploy' => (
+    is      => 'rw',
+    isa     => WxPanel,
+    lazy    => 1,
+    builder => '_build_page_deploy',
+);
+
+has 'page_revert' => (
+    is      => 'rw',
+    isa     => WxPanel,
+    lazy    => 1,
+    builder => '_build_page_revert',
+);
+
+has 'page_verify' => (
+    is      => 'rw',
+    isa     => WxPanel,
+    lazy    => 1,
+    builder => '_build_page_verify',
+);
+
 
 sub FOREIGNBUILDARGS {
     my $self = shift;
-
     my %args = @_;
-
     return (
         $args{parent},
         -1,
@@ -37,34 +63,26 @@ sub BUILD {
 
 sub _build_page_deploy {
     my $self = shift;
-
     my $page = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
     $self->AddPage( $page, 'Deploy' );
-
     return $page;
 }
 
 sub _build_page_revert {
     my $self = shift;
-
     my $page = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
     $self->AddPage( $page, 'Revert' );
-
     return $page;
 }
 
 sub _build_page_verify {
     my $self = shift;
-
     my $page = Wx::Panel->new( $self->parent, -1, [-1, -1], [-1, -1] );
     $self->AddPage( $page, 'Verify' );
-
     return $page;
 }
 
 sub _set_events { }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

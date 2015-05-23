@@ -1,106 +1,261 @@
-package App::Sqitch::GUI::View::Dialog::Repo;
+package App::Sqitch::GUI::View::Dialog::Projects;
 
-use Moose;
-use namespace::autoclean;
-
+use 5.010;
+use strict;
+use warnings;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    Dir
+    HashRef
+    Int
+    Maybe
+    Object
+    SqitchGUIConfig
+    SqitchGUIListCtrl
+    SqitchGUIWxApp
+    Str
+    WxButton
+    WxComboBox
+    WxDirPickerCtrl
+    WxGridSizer
+    WxSizer
+    WxStaticLine
+    WxStaticText
+    WxTextCtrl
+    WxWindow
+);
 use Path::Class;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
-use App::Sqitch::X qw(hurl);
-
 use Wx qw(:everything);
-use Wx::Event qw(EVT_CLOSE EVT_BUTTON EVT_LIST_ITEM_SELECTED
-                 EVT_DIRPICKER_CHANGED);
-
-with 'App::Sqitch::GUI::Roles::Element';
-
-use MooseX::NonMoose::InsideOut;
+use Wx::Event qw(
+    EVT_CLOSE
+    EVT_BUTTON
+    EVT_LIST_ITEM_SELECTED
+    EVT_DIRPICKER_CHANGED
+);
+use App::Sqitch::X qw(hurl);
 
 extends 'Wx::Dialog';
 
-#use App::Sqitch::GUI::View::List;
+with 'App::Sqitch::GUI::Roles::Element';
+
 use App::Sqitch::GUI::ListDataTable;
 use App::Sqitch::GUI::ListCtrl;
 
-use Data::Printer;
+has 'sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sizer',
+);
 
-has 'sizer'      => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
-has 'vbox_sizer' => ( is => 'rw', isa => 'Wx::Sizer',  lazy_build => 1 );
+sub _build_sizer {
+    return Wx::BoxSizer->new(wxVERTICAL);
+}
 
-has 'h_line1' => ( is => 'rw', isa => 'Wx::StaticLine',  lazy_build => 1 );
-has 'h_line2' => ( is => 'rw', isa => 'Wx::StaticLine',  lazy_build => 1 );
+has 'vbox_sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_vbox_sizer',
+);
 
-has 'form_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'list_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'h_line1' => (
+    is      => 'rw',
+    isa     => WxStaticLine,
+    lazy    => 1,
+    builder => '_build_h_line1',
+);
 
-has 'lbl_name' => ( is => 'rw', isa => 'Wx::StaticText',    lazy_build => 1 );
-has 'txt_name' => ( is => 'rw', isa => 'Wx::TextCtrl',      lazy_build => 1 );
-has 'lbl_path' => ( is => 'rw', isa => 'Wx::StaticText',    lazy_build => 1 );
-has 'dpc_path' => ( is => 'rw', isa => 'Wx::DirPickerCtrl', lazy_build => 1 );
-has 'lbl_engine' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'cbx_engine' => ( is => 'rw', isa => 'Wx::ComboBox',   lazy_build => 1 );
-has 'lbl_db'   => ( is => 'rw', isa => 'Wx::StaticText',    lazy_build => 1 );
-has 'txt_db'   => ( is => 'rw', isa => 'Wx::TextCtrl',      lazy_build => 1 );
+has 'h_line2' => (
+    is      => 'rw',
+    isa     => WxStaticLine,
+    lazy    => 1,
+    builder => '_build_h_line2',
+);
+
+has 'form_fg_sz' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_form_fg_sz',
+);
+
+has 'list_fg_sz' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_list_fg_sz',
+);
+
+has 'lbl_name' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_name',
+);
+
+has 'txt_name' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_name',
+);
+
+has 'lbl_path' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_path',
+);
+
+has 'dpc_path' => (
+    is      => 'rw',
+    isa     => WxDirPickerCtrl,
+    lazy    => 1,
+    builder => '_build_dpc_path',
+);
+
+has 'lbl_engine' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_engine',
+);
+
+has 'cbx_engine' => (
+    is      => 'rw',
+    isa     => WxComboBox,
+    lazy    => 1,
+    builder => '_build_cbx_engine',
+);
+
+has 'lbl_db' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_db',
+);
+
+has 'txt_db' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_db',
+);
 
 has 'list_ctrl' => (
     is       => 'rw',
-    isa      => 'App::Sqitch::GUI::ListCtrl',
+    isa      => SqitchGUIListCtrl,
     required => 1,
     lazy     => 1,
     builder  => '_build_list_ctrl',
 );
 
-has 'btn_sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'btn_sizer_l' => ( is => 'rw', isa => 'Wx::GridSizer', lazy_build => 1 );
-has 'btn_sizer_r' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'btn_sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_btn_sizer',
+);
 
-has 'btn_new'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_edit'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_remove'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_load'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_default' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_close'   => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_save'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+has 'btn_sizer_l' => (
+    is      => 'rw',
+    isa     => WxGridSizer,
+    lazy    => 1,
+    builder => '_build_btn_sizer_l',
+);
+
+has 'btn_sizer_r' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_btn_sizer_r',
+);
+
+has 'btn_new' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_new',
+);
+
+has 'btn_edit' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_edit',
+);
+
+has 'btn_remove' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_remove',
+);
+
+has 'btn_load' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_load',
+);
+
+has 'btn_default' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_default',
+);
+
+has 'btn_close' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_close',
+);
+
+has 'btn_save' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_save',
+);
 
 has 'selected_item' => (
     is      => 'rw',
-    isa     => 'Maybe[Int]',
+    isa     => Maybe[Int],
     default => sub { undef },
 );
 
 has 'selected_name' => (
     is      => 'rw',
-    isa     => 'Maybe[Str]',
+    isa     => Maybe[Str],
     default => sub { undef },
 );
 
 has 'selected_path' => (
     is      => 'rw',
-    isa     => 'Maybe[Path::Class::Dir]',
+    isa     => Maybe[Dir],
     default => sub { undef },
 );
 
 has config => (
     is      => 'ro',
-    isa     => 'App::Sqitch::GUI::Config',
+    isa     => SqitchGUIConfig,
     lazy    => 1,
     default => sub {
         shift->ancestor->config;
     },
 );
 
-has 'repo_list' => (
+has 'project_list' => (
     is      => 'ro',
-    isa     => 'HashRef',
+    isa     => HashRef,
     lazy    => 1,
-    traits  => ['Hash'],
-    default => sub {
+     default => sub {
         my $self = shift;
-        return $self->config->repo_list;
-    },
-    handles   => {
-        get_repo   => 'get',
-        has_repo   => 'count',
-        repo_pairs => 'kv',
+        return $self->config->project_list;
     },
 );
 
@@ -130,9 +285,9 @@ sub BUILD {
     $self->SetMinSize([500, 500]);
 
     #-- List and buttons
-
+print "building\n";
     $self->sizer->Add( $self->vbox_sizer, 1, wxEXPAND | wxALL, 5 );
-
+print "ok sizer\n";
     $self->list_fg_sz->Add( $self->list_ctrl, 1, wxEXPAND | wxALL, 5 );
 
     $self->list_fg_sz->Add( $self->h_line1,    1, wxEXPAND | wxALL, 5 );
@@ -191,10 +346,6 @@ sub get_state {
 }
 
 sub _build_vbox_sizer {
-    return Wx::BoxSizer->new(wxVERTICAL);
-}
-
-sub _build_sizer {
     return Wx::BoxSizer->new(wxVERTICAL);
 }
 
@@ -867,7 +1018,7 @@ sub config_save_repo {
 sub config_set_default {
     my $self = shift;
 
-    my $index = $self->list_ctrl->GetSelection();
+    my $index = $self->list_ctrl->get_selection;
     print "Select item no $index\n";
     $self->_select_item($index);
 
@@ -949,7 +1100,5 @@ sub list_meta_data {
         },
     ];
 }
-
-__PACKAGE__->meta->make_immutable;
 
 1;

@@ -1,31 +1,78 @@
 package App::Sqitch::GUI::View::Panel::Plan;
 
+use 5.010;
+use strict;
+use warnings;
 use utf8;
-use Moose;
-use namespace::autoclean;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    WxPanel
+    WxSizer
+    SqitchGUIListCtrl
+);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
-#use Locale::Messages qw(bind_textdomain_filter);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 
-use App::Sqitch::GUI::View::List;
+use App::Sqitch::GUI::ListDataTable;
+use App::Sqitch::GUI::ListCtrl;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'panel' => (
+    is      => 'rw',
+    isa     => WxPanel,
+    lazy    => 1,
+    builder => '_build_panel',
+);
 
-has 'btn_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sizer',
+);
 
-has 'sb_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'btn_sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_btn_sizer',
+);
 
-has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'list_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'sb_sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sb_sizer',
+);
+
+has 'main_fg_sz' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_main_fg_sz',
+);
+
+has 'list_fg_sz' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_list_fg_sz',
+);
 
 has 'list_ctrl' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::View::List',
-    lazy_build => 1,
+    is      => 'rw',
+    isa     => SqitchGUIListCtrl,
+    lazy    => 1,
+    builder => '_build_list_ctrl',
+);
+
+has 'list_data' => (
+    is      => 'ro',
+    default => sub {
+        return App::Sqitch::GUI::ListDataTable->new;
+    },
 );
 
 sub BUILD {
@@ -91,20 +138,13 @@ sub _build_sb_sizer {
 
 sub _build_list_ctrl {
     my $self = shift;
-
-    my $list = App::Sqitch::GUI::View::List->new(
+    my $list_ctrl = App::Sqitch::GUI::ListCtrl->new(
         app       => $self->app,
         parent    => $self->panel,
-        ancestor  => $self,
-        count_col => 1,                      # add a count column
+        list_data => $self->list_data,
+        meta_data => $self->list_meta_data,
     );
-
-    $list->add_column( 'Change',      wxLIST_FORMAT_LEFT, 100, 'name' );
-    $list->add_column( 'Create time', wxLIST_FORMAT_LEFT, 150, 'create_time' );
-    $list->add_column( 'Creator',     wxLIST_FORMAT_LEFT, 110, 'creator' );
-    $list->add_column( 'Description', wxLIST_FORMAT_LEFT, 250, 'description' );
-
-    return $list;
+    return $list_ctrl;
 }
 
 sub _set_events { }
@@ -113,7 +153,40 @@ sub OnClose {
     my ($self, $event) = @_;
 }
 
-__PACKAGE__->meta->make_immutable;
+sub list_meta_data {
+    return [
+        {   field => 'recno',
+            label => '#',
+            align => 'center',
+            width => 25,
+            type  => 'int',
+        },
+        {   field => 'namr',
+            label => __ 'Name',
+            align => 'left',
+            width => 100,
+            type  => 'str',
+        },
+        {   field => 'create_time',
+            label => __ 'Create time',
+            align => 'left',
+            width => 150,
+            type  => 'str',
+        },
+        {   field => 'creator',
+            label => __ 'Creator',
+            align => 'center',
+            width => 110,
+            type  => 'str',
+        },
+        {   field => 'description',
+            label => __ 'Description',
+            align => 'left',
+            width => 225,
+            type  => 'str',
+        },
+    ];
+}
 
 =head1 AUTHOR
 

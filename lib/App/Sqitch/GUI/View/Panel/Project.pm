@@ -1,56 +1,258 @@
 package App::Sqitch::GUI::View::Panel::Project;
 
+use 5.010;
+use strict;
+use warnings;
 use utf8;
-use Moose;
-use namespace::autoclean;
-
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    WxButton
+    WxPanel
+    WxSizer
+    WxStaticLine
+    WxTextCtrl
+    WxStaticText
+    SqitchGUIListCtrl
+);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
-use App::Sqitch::GUI::View::List;
+
+use App::Sqitch::GUI::ListDataTable;
+use App::Sqitch::GUI::ListCtrl;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'panel' => (
+    is      => 'rw',
+    isa     => WxPanel,
+    lazy    => 1,
+    builder => '_build_panel',
+);
 
-has 'btn_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sizer',
+);
 
-has 'sb_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'btn_sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_btn_sizer',
+);
 
-has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'list_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'form_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'subform1_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'subform2_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'sb_sizer' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sb_sizer',
+);
 
-has 'list' => ( is => 'rw', isa => 'Wx::Perl::ListCtrl', lazy_build => 1 );
+has 'main_fg_sz' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_main_fg_sz',
+);
 
-has 'h_line1' => ( is => 'rw', isa => 'Wx::StaticLine',  lazy_build => 1 );
+has 'list_fg_sz' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_list_fg_sz',
+);
 
-has 'btn_load'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_default' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+has 'form_fg_sz' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_form_fg_sz',
+);
 
-has 'lbl_project'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_database' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_user'     => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_uri'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_created_at'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_creator_name'  => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_creator_email' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_path' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_engine'   => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'subform1_fg_sz' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_subform1_fg_sz',
+);
 
-has 'txt_project'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_database' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_user'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_uri'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_created_at'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_creator_name'  => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_creator_email' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_path'   => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_engine' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'subform2_fg_sz' => (
+    is      => 'rw',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_subform2_fg_sz',
+);
+
+has 'list_ctrl' => (
+    is      => 'rw',
+    isa     => SqitchGUIListCtrl,
+    lazy    => 1,
+    builder => '_build_list_ctrl',
+);
+
+has 'list_data' => (
+    is      => 'ro',
+    default => sub {
+        return App::Sqitch::GUI::ListDataTable->new;
+    },
+);
+
+has 'h_line1' => (
+    is      => 'rw',
+    isa     => WxStaticLine,
+    lazy    => 1,
+    builder => '_build_h_line1',
+);
+
+has 'btn_load' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_load',
+);
+
+has 'btn_default' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_default',
+);
+
+has 'btn_add' => (
+    is      => 'rw',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_add',
+);
+
+has 'lbl_project' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_project',
+);
+
+has 'lbl_database' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_database',
+);
+
+has 'lbl_user' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_user',
+);
+
+has 'lbl_uri' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_uri',
+);
+
+has 'lbl_created_at' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_created_at',
+);
+
+has 'lbl_creator_name' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_creator_name',
+);
+
+has 'lbl_creator_email' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_creator_email',
+);
+
+has 'lbl_path' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_path',
+);
+
+has 'lbl_engine' => (
+    is      => 'rw',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_engine',
+);
+
+has 'txt_project' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_project',
+);
+
+has 'txt_database' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_database',
+);
+
+has 'txt_user' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_user',
+);
+
+has 'txt_uri' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_uri',
+);
+
+has 'txt_created_at' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_created_at',
+);
+
+has 'txt_creator_name' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_creator_name',
+);
+
+has 'txt_creator_email' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_creator_email',
+);
+
+has 'txt_path' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_path',
+);
+
+has 'txt_engine' => (
+    is      => 'rw',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_engine',
+);
 
 sub BUILD {
     my $self = shift;
@@ -95,7 +297,7 @@ sub BUILD {
 
     #-- List and buttons
 
-    $self->list_fg_sz->Add( $self->list, 1, wxEXPAND, 3 );
+    $self->list_fg_sz->Add( $self->list_ctrl, 1, wxEXPAND, 3 );
 
     $self->list_fg_sz->Add( $self->h_line1, 1, wxEXPAND | wxTOP | wxBOTTOM,
         10 );
@@ -331,21 +533,15 @@ sub _build_btn_add {
     return $button;
 }
 
-sub _build_list {
+sub _build_list_ctrl {
     my $self = shift;
-
-    my $list = App::Sqitch::GUI::View::List->new(
+    my $list_ctrl = App::Sqitch::GUI::ListCtrl->new(
         app       => $self->app,
         parent    => $self->panel,
-        count_col => 1,                      # add a count column
+        list_data => $self->list_data,
+        meta_data => $self->list_meta_data,
     );
-
-    $list->add_column( __ 'Project',     wxLIST_FORMAT_LEFT, 100, 'project'  );
-    $list->add_column( __ 'Database',    wxLIST_FORMAT_LEFT, 100, 'database' );
-    $list->add_column( __ 'Default',     wxLIST_FORMAT_LEFT,  60, 'default'  );
-    $list->add_column( __ 'Description', wxLIST_FORMAT_LEFT, 320, 'description' );
-
-    return $list;
+    return $list_ctrl;
 }
 
 sub _set_events {
@@ -357,7 +553,40 @@ sub OnClose {
     my ($self, $event) = @_;
 }
 
-__PACKAGE__->meta->make_immutable;
+sub list_meta_data {
+    return [
+        {   field => 'recno',
+            label => '#',
+            align => 'center',
+            width => 25,
+            type  => 'int',
+        },
+        {   field => 'project',
+            label => __ 'Project',
+            align => 'left',
+            width => 100,
+            type  => 'str',
+        },
+        {   field => 'database',
+            label => __ 'Database',
+            align => 'left',
+            width => 60,
+            type  => 'str',
+        },
+        {   field => 'default',
+            label => __ 'Default',
+            align => 'center',
+            width => 60,
+            type  => 'bool',
+        },
+        {   field => 'description',
+            label => __ 'Description',
+            align => 'left',
+            width => 320,
+            type  => 'str',
+        },
+    ];
+}
 
 =head1 AUTHOR
 

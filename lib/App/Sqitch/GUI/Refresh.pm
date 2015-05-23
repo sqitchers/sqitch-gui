@@ -14,9 +14,10 @@ has 'view' => (
 );
 
 has 'rules' => (
-    is         => 'ro',
-    isa        => 'App::Sqitch::GUI::Rules',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => 'App::Sqitch::GUI::Rules',
+    lazy    => 1,
+    builder => '_build_rules',
 );
 
 sub _build_rules {

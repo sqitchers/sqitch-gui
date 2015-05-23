@@ -1,8 +1,12 @@
 package App::Sqitch::GUI::View::MenuBar::Help;
 
-use Moose;
-use namespace::autoclean;
-
+use 5.010;
+use strict;
+use warnings;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    WxMenuItem
+);
 use Wx qw(:everything);
 use Wx::Event qw(EVT_MENU);
 
@@ -11,15 +15,24 @@ with 'App::Sqitch::GUI::Roles::Element';
 use App::Sqitch::GUI::View::Dialog::Help;
 use App::Sqitch::GUI::View::Dialog::About;
 
-use MooseX::NonMoose::InsideOut;
-
 extends 'Wx::Menu';
 
-has 'itm_help'  => (is => 'rw', isa => 'Wx::MenuItem',  lazy_build => 1);
-has 'itm_about' => (is => 'rw', isa => 'Wx::MenuItem',  lazy_build => 1);
+has 'itm_help' => (
+    is      => 'rw',
+    isa     => WxMenuItem,
+    lazy    => 1,
+    builder => '_build_itm_help',
+);
+
+has 'itm_about' => (
+    is      => 'rw',
+    isa     => WxMenuItem,
+    lazy    => 1,
+    builder => '_build_itm_about',
+);
 
 sub FOREIGNBUILDARGS {
-    return;                       # Wx::Menu->new() takes no arguments
+    return ();                    # Wx::Menu->new() takes no arguments
 }
 
 sub BUILD {
@@ -84,8 +97,6 @@ sub OnHelp {
     );
     return 1;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

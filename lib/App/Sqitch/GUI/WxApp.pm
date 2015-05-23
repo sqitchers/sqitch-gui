@@ -1,27 +1,34 @@
 package App::Sqitch::GUI::WxApp;
 
-use Moose;
-use namespace::autoclean;
-
+use 5.010;
+use strict;
+use warnings;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    SqitchGUIConfig
+    SqitchGUIView
+);
 use Wx;
 use Wx::Event qw(EVT_CLOSE);
 
-use MooseX::NonMoose;
 extends 'Wx::App';
 
-use App::Sqitch::GUI::View;
 use App::Sqitch::GUI::Config;
-
-has 'view' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::View',
-    lazy_build => 1,
-    handles    => { menu_bar => 'menu_bar' },
-);
+use App::Sqitch::GUI::View;
 
 has config => (
     is  => 'ro',
-    isa => 'App::Sqitch::GUI::Config',
+    isa => SqitchGUIConfig,
+);
+
+has 'view' => (
+    is      => 'rw',
+    isa     => SqitchGUIView,
+    lazy    => 1,
+    builder => '_build_view',
+    handles => {
+        menu_bar => 'menu_bar',
+    },
 );
 
 sub FOREIGNBUILDARGS {
@@ -31,7 +38,7 @@ sub FOREIGNBUILDARGS {
 sub BUILD {
     my $self = shift;
 
-    $self->SetTopWindow($self->view->frame);
+    $self->SetTopWindow( $self->view->frame );
     $self->view->frame->Show(1);
     $self->_set_events;
 
@@ -40,14 +47,13 @@ sub BUILD {
 
 sub _build_view {
     my $self = shift;
-
     my $args = {
         app    => $self,
         config => $self->config,
         title  => 'Sqitch::GUI',
     };
-
-    return App::Sqitch::GUI::View->new( $args );
+    my $view = App::Sqitch::GUI::View->new( $args );
+    return $view;
 }
 
 sub _set_events {
@@ -72,8 +78,6 @@ sub OnAssertFailure {
     my ( $self, $file, $line, $function, $condition, $msg ) = @_;
     print "AssertFailure: $file, $line, $function, $condition, $msg\n";
 }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 
