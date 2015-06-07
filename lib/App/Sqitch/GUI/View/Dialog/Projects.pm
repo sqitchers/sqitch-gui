@@ -4,6 +4,7 @@ use 5.010;
 use strict;
 use warnings;
 use Moo;
+use MooX::HandlesVia;
 use App::Sqitch::GUI::Types qw(
     Dir
     HashRef
@@ -11,7 +12,7 @@ use App::Sqitch::GUI::Types qw(
     Maybe
     Object
     SqitchGUIConfig
-    SqitchGUIListCtrl
+    SqitchGUIWxListctrl
     SqitchGUIWxApp
     Str
     WxButton
@@ -39,8 +40,8 @@ extends 'Wx::Dialog';
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-use App::Sqitch::GUI::ListDataTable;
-use App::Sqitch::GUI::ListCtrl;
+use App::Sqitch::GUI::Model::ListDataTable;
+use App::Sqitch::GUI::Wx::Listctrl;
 
 has 'sizer' => (
     is      => 'rw',
@@ -146,7 +147,7 @@ has 'txt_db' => (
 
 has 'list_ctrl' => (
     is       => 'rw',
-    isa      => SqitchGUIListCtrl,
+    isa      => SqitchGUIWxListctrl,
     required => 1,
     lazy     => 1,
     builder  => '_build_list_ctrl',
@@ -250,19 +251,24 @@ has config => (
 );
 
 has 'project_list' => (
-    is      => 'ro',
-    isa     => HashRef,
-    lazy    => 1,
-     default => sub {
+    is          => 'rw',
+    handles_via => 'Hash',
+    lazy        => 1,
+    default     => sub {
         my $self = shift;
         return $self->config->project_list;
     },
+    handles => {
+        get_repo   => 'get',
+        has_repo   => 'count',
+        repo_pairs => 'kv',
+    }
 );
 
 has 'list_data' => (
     is      => 'ro',
     default => sub {
-        return App::Sqitch::GUI::ListDataTable->new;
+        return App::Sqitch::GUI::Model::ListDataTable->new;
     },
 );
 
@@ -285,9 +291,9 @@ sub BUILD {
     $self->SetMinSize([500, 500]);
 
     #-- List and buttons
-print "building\n";
+
     $self->sizer->Add( $self->vbox_sizer, 1, wxEXPAND | wxALL, 5 );
-print "ok sizer\n";
+
     $self->list_fg_sz->Add( $self->list_ctrl, 1, wxEXPAND | wxALL, 5 );
 
     $self->list_fg_sz->Add( $self->h_line1,    1, wxEXPAND | wxALL, 5 );
@@ -528,7 +534,7 @@ sub _build_btn_close {
 sub _build_list_ctrl {
     my $self = shift;
 
-    my $list = App::Sqitch::GUI::ListCtrl->new(
+    my $list = App::Sqitch::GUI::Wx::Listctrl->new(
         app       => $self->app,
         parent    => $self,
         list_data => $self->list_data,

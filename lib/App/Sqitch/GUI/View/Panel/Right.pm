@@ -115,13 +115,6 @@ has 'btn_log' => (
     builder => '_build_btn_log',
 );
 
-has 'btn_quit' => (
-    is      => 'rw',
-    isa     => WxButton,
-    lazy    => 1,
-    builder => '_build_btn_quit',
-);
-
 has 'btn_project' => (
     is      => 'rw',
     isa     => WxButton,
@@ -195,7 +188,6 @@ sub BUILD {
     $self->commands_fgs->Add( $self->btn_revert,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_verify,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_log,      1, wxEXPAND,         0 );
-    $self->sizer_cmdbot->Add( $self->btn_quit,     1, wxALIGN_BOTTOM | wxALL, 5 );
 
     $self->panel->Show(1);
 
@@ -323,18 +315,6 @@ sub _build_btn_log {
         $self->panel,
         -1,
         q{Log},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-}
-
-sub _build_btn_quit {
-    my $self = shift;
-
-    return Wx::Button->new(
-        $self->panel,
-        -1,
-        __ '&Quit',
         [ -1, -1 ],
         [ -1, -1 ],
     );

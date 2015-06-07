@@ -10,16 +10,13 @@ use Type::Library 0.040 -base, -declare => qw(
     Sqitch
     SqitchGUIConfig
     SqitchGUIController
+    SqitchGUIDialogProject
     SqitchGUIDialogStatus
-    SqitchGUIListCtrl
+    SqitchGUIWxListctrl
+    SqitchGUIModel
     SqitchGUIStatus
+    SqitchGUITarget
     SqitchGUIView
-    SqitchGUIViewEditor
-    SqitchGUIViewMenuBar
-    SqitchGUIViewMenuBarAdmin
-    SqitchGUIViewMenuBarApp
-    SqitchGUIViewMenuBarHelp
-    SqitchGUIViewNotebook
     SqitchGUIViewPanelBottom
     SqitchGUIViewPanelChange
     SqitchGUIViewPanelLeft
@@ -27,16 +24,19 @@ use Type::Library 0.040 -base, -declare => qw(
     SqitchGUIViewPanelProject
     SqitchGUIViewPanelRight
     SqitchGUIViewPanelTop
-    SqitchGUIViewStatusBar
     SqitchGUIWxApp
+    SqitchGUIWxEditor
+    SqitchGUIWxNotebook
+    SqitchGUIWxStatusbar
+    SqitchGUIWxToolbar
     WxAboutDialogInfo
     WxButton
-	WxCollapsiblePane
+    WxCollapsiblePane
     WxComboBox
     WxDirPickerCtrl
     WxFrame
     WxGridSizer
-    WxMenuItem
+    WxMenuBar
     WxPanel
     WxPoint
     WxRadioButton
@@ -62,23 +62,17 @@ BEGIN { extends "Types::Standard" };
 class_type Sqitch,            { class => 'App::Sqitch' };
 class_type SqitchGUIWxApp,    { class => 'App::Sqitch::GUI::WxApp' };
 class_type SqitchGUIView,     { class => 'App::Sqitch::GUI::View' };
-class_type SqitchGUIListCtrl, { class => 'App::Sqitch::GUI::ListCtrl' };
+class_type SqitchGUIModel,    { class => 'App::Sqitch::GUI::Model' };
+class_type SqitchGUITarget,   { class => 'App::Sqitch::GUI::Target' };
+class_type SqitchGUIWxListctrl,  { class => 'App::Sqitch::GUI::Wx::Listctrl' };
 class_type SqitchGUIConfig,   { class => 'App::Sqitch::GUI::Config' };
 class_type SqitchGUIController,
     { class => 'App::Sqitch::GUI::Controller' };
 class_type SqitchGUIStatus,   { class => 'App::Sqitch::GUI::Status' };
 class_type SqitchGUIDialogStatus,
     { class => 'App::Sqitch::GUI::View::Dialog::Status' };
-class_type SqitchGUIViewMenuBarApp,
-    { class => 'App::Sqitch::GUI::View::MenuBar::App' };
-class_type SqitchGUIViewMenuBarAdmin,
-    { class => 'App::Sqitch::GUI::View::MenuBar::Admin' };
-class_type SqitchGUIViewMenuBarHelp,
-    { class => 'App::Sqitch::GUI::View::MenuBar::Help' };
-class_type SqitchGUIViewMenuBar,
-    { class => 'App::Sqitch::GUI::View::MenuBar' };
-class_type SqitchGUIViewStatusBar,
-    { class => 'App::Sqitch::GUI::View::StatusBar' };
+class_type SqitchGUIDialogProject,
+    { class => 'App::Sqitch::GUI::View::Dialog::Project' };
 class_type SqitchGUIViewPanelLeft,
     { class => 'App::Sqitch::GUI::View::Panel::Left' };
 class_type SqitchGUIViewPanelRight,
@@ -93,9 +87,14 @@ class_type SqitchGUIViewPanelChange,
     { class => 'App::Sqitch::GUI::View::Panel::Change' };
 class_type SqitchGUIViewPanelBottom,
     { class => 'App::Sqitch::GUI::View::Panel::Bottom' };
-class_type SqitchGUIViewNotebook,
-    { class => 'App::Sqitch::GUI::View::Notebook' };
-class_type SqitchGUIViewEditor, { class => 'App::Sqitch::GUI::View::Editor' };
+class_type SqitchGUIWxToolbar,
+    { class => 'App::Sqitch::GUI::Wx::Toolbar' };
+class_type SqitchGUIWxStatusbar,
+    { class => 'App::Sqitch::GUI::Wx::Statusbar' };
+class_type SqitchGUIWxNotebook,
+    { class => 'App::Sqitch::GUI::Wx::Notebook' };
+class_type SqitchGUIWxEditor,
+    { class => 'App::Sqitch::GUI::Wx::Editor' };
 
 # Wx
 class_type WxAboutDialogInfo, { class => 'Wx::AboutDialogInfo' };
@@ -105,7 +104,7 @@ class_type WxComboBox,        { class => 'Wx::ComboBox' };
 class_type WxCollapsiblePane, { class => 'Wx::CollapsiblePane' };
 class_type WxDirPickerCtrl,   { class => 'Wx::DirPickerCtrl' };
 class_type WxGridSizer,       { class => 'Wx::GridSizer' };
-class_type WxMenuItem,        { class => 'Wx::MenuItem' };
+class_type WxMenuBar,         { class => 'Wx::MenuBar' };
 class_type WxPanel,           { class => 'Wx::Panel' };
 class_type WxPoint,           { class => 'Wx::Point' };
 class_type WxSize,            { class => 'Wx::Size' };

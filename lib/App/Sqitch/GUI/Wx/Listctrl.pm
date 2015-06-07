@@ -1,4 +1,4 @@
-package App::Sqitch::GUI::ListCtrl;
+package App::Sqitch::GUI::Wx::Listctrl;
 
 # ABSTRACT: Virtual List View Control
 

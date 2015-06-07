@@ -1,4 +1,4 @@
-package App::Sqitch::GUI::ListDataTable;
+package App::Sqitch::GUI::Model::ListDataTable;
 
 use 5.010;
 use strict;

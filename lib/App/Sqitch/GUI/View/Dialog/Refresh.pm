@@ -10,7 +10,7 @@ use App::Sqitch::GUI::View::Dialog::Rules;
 
 has 'dialog' => (
     is   => 'ro',
-    isa  => 'App::Sqitch::GUI::View::Dialog::Repo',
+    isa  => 'App::Sqitch::GUI::View::Dialog::Projects',
 );
 
 has 'rules' => (

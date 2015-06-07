@@ -12,14 +12,14 @@ use App::Sqitch::GUI::Types qw(
     WxStaticLine
     WxTextCtrl
     WxStaticText
-    SqitchGUIListCtrl
+    SqitchGUIWxListctrl
 );
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 
-use App::Sqitch::GUI::ListDataTable;
-use App::Sqitch::GUI::ListCtrl;
+use App::Sqitch::GUI::Model::ListDataTable;
+use App::Sqitch::GUI::Wx::Listctrl;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
@@ -88,7 +88,7 @@ has 'subform2_fg_sz' => (
 
 has 'list_ctrl' => (
     is      => 'rw',
-    isa     => SqitchGUIListCtrl,
+    isa     => SqitchGUIWxListctrl,
     lazy    => 1,
     builder => '_build_list_ctrl',
 );
@@ -96,7 +96,7 @@ has 'list_ctrl' => (
 has 'list_data' => (
     is      => 'ro',
     default => sub {
-        return App::Sqitch::GUI::ListDataTable->new;
+        return App::Sqitch::GUI::Model::ListDataTable->new;
     },
 );
 
@@ -535,7 +535,7 @@ sub _build_btn_add {
 
 sub _build_list_ctrl {
     my $self = shift;
-    my $list_ctrl = App::Sqitch::GUI::ListCtrl->new(
+    my $list_ctrl = App::Sqitch::GUI::Wx::Listctrl->new(
         app       => $self->app,
         parent    => $self->panel,
         list_data => $self->list_data,
@@ -570,13 +570,13 @@ sub list_meta_data {
         {   field => 'database',
             label => __ 'Database',
             align => 'left',
-            width => 60,
+            width => 100,
             type  => 'str',
         },
         {   field => 'default',
             label => __ 'Default',
             align => 'center',
-            width => 60,
+            width => 70,
             type  => 'bool',
         },
         {   field => 'description',

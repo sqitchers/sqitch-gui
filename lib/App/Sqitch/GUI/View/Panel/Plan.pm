@@ -8,14 +8,14 @@ use Moo;
 use App::Sqitch::GUI::Types qw(
     WxPanel
     WxSizer
-    SqitchGUIListCtrl
+    SqitchGUIWxListctrl
 );
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 
-use App::Sqitch::GUI::ListDataTable;
-use App::Sqitch::GUI::ListCtrl;
+use App::Sqitch::GUI::Model::ListDataTable;
+use App::Sqitch::GUI::Wx::Listctrl;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
@@ -63,7 +63,7 @@ has 'list_fg_sz' => (
 
 has 'list_ctrl' => (
     is      => 'rw',
-    isa     => SqitchGUIListCtrl,
+    isa     => SqitchGUIWxListctrl,
     lazy    => 1,
     builder => '_build_list_ctrl',
 );
@@ -71,7 +71,7 @@ has 'list_ctrl' => (
 has 'list_data' => (
     is      => 'ro',
     default => sub {
-        return App::Sqitch::GUI::ListDataTable->new;
+        return App::Sqitch::GUI::Model::ListDataTable->new;
     },
 );
 
@@ -138,7 +138,7 @@ sub _build_sb_sizer {
 
 sub _build_list_ctrl {
     my $self = shift;
-    my $list_ctrl = App::Sqitch::GUI::ListCtrl->new(
+    my $list_ctrl = App::Sqitch::GUI::Wx::Listctrl->new(
         app       => $self->app,
         parent    => $self->panel,
         list_data => $self->list_data,
@@ -161,7 +161,7 @@ sub list_meta_data {
             width => 25,
             type  => 'int',
         },
-        {   field => 'namr',
+        {   field => 'name',
             label => __ 'Name',
             align => 'left',
             width => 100,
@@ -186,6 +186,29 @@ sub list_meta_data {
             type  => 'str',
         },
     ];
+}
+
+sub populate {
+    my ($self, $record_ref) = @_;
+
+    my $data_table = $self->list_data;
+    my $cols_meta  = $self->list_meta_data;
+    my $row        = ( $data_table->get_item_count // 1 ) - 1;
+    foreach my $rec ( @{$record_ref} ) {
+        my $col = 0;
+        foreach my $meta ( @{$cols_meta} ) {
+            my $field = $meta->{field};
+            my $value
+                = $field eq q{}     ? q{}
+                : $field eq 'recno' ? ( $row + 1 )
+                :                     ( $rec->{$field} // q{} );
+            $data_table->set_value( $row, $col, $value );
+            $col++;
+        }
+        $self->list_ctrl->RefreshList;
+        $row++;
+    }
+    return;
 }
 
 =head1 AUTHOR

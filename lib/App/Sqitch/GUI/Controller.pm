@@ -14,6 +14,7 @@ use App::Sqitch::GUI::Types qw(
     SqitchGUIConfig
     SqitchGUIStatus
     SqitchGUIDialogStatus
+    SqitchGUIModel
     SqitchGUIView
     WxWindow
 );
@@ -29,16 +30,17 @@ use File::Slurp;
 use Try::Tiny;
 use App::Sqitch::X qw(hurl);
 
+use App::Sqitch::GUI::Model;
 use App::Sqitch::GUI::WxApp;
-use App::Sqitch::GUI::Sqitch;
-use App::Sqitch::GUI::Target;
 use App::Sqitch::GUI::Config;
 use App::Sqitch::GUI::Status;
 use App::Sqitch::GUI::Refresh;
 
+use App::Sqitch::GUI::View::Dialog::Projects;
 use App::Sqitch::GUI::View::Dialog::Status;
 use App::Sqitch::GUI::View::Dialog::Refresh;
-use App::Sqitch::GUI::View::Dialog::Projects;
+
+use Data::Printer;
 
 has 'app' => (
     is      => 'ro',
@@ -49,9 +51,7 @@ has 'app' => (
 
 sub _build_app {
     my $self = shift;
-    say "_build_app";
-    my $app  = App::Sqitch::GUI::WxApp->new( config => $self->config );
-    return $app;
+    return App::Sqitch::GUI::WxApp->new( config => $self->config );
 }
 
 has 'view' => (
@@ -60,18 +60,20 @@ has 'view' => (
     default => sub { shift->app->view },
 );
 
+has 'model' => (
+    is      => 'ro',
+    isa     => SqitchGUIModel,
+    default => sub {
+        my $self = shift;
+        return App::Sqitch::GUI::Model->new( config => $self->config );
+    },
+);
+
 has config => (
     is      => 'ro',
     isa     => SqitchGUIConfig,
     lazy    => 1,
     builder => 'init_config',
-);
-
-has sqitch => (
-    is      => 'rw',
-    isa     => Maybe[Sqitch],
-    lazy    => 1,
-    builder => 'init_sqitch',
 );
 
 has status => (
@@ -144,24 +146,6 @@ sub init_config {
     return $config;
 }
 
-sub init_sqitch {
-    my $self = shift;
-say "INIT_sqitch";
-    my $opts = {};
-    my $sqitch;
-    try {
-        $sqitch = App::Sqitch::GUI::Sqitch->new( {
-            options => $opts,
-            config  => $self->config,
-        } );
-    }
-    catch {
-        print "Error on Sqitch initialization: $_\n";
-    };
-
-    return $sqitch;
-}
-
 sub BUILD {
     my $self = shift;
 
@@ -170,45 +154,17 @@ sub BUILD {
 
     $self->log_message('Welcome to Sqitch!');
 
-    $self->load_sqitch_plan();
+    $self->load_sqitch_project;
 
     return;
 }
 
-sub load_sqitch_plan {
+sub load_sqitch_project {
     my $self = shift;
-
-    my $sqitch = $self->sqitch;
-
-    # Do we have a valid configuration - plan?
-    my $target;
-    try {
-        # App::Sqitch::Plan->new( sqitch => $sqitch )->load;
-        $target = App::Sqitch::GUI::Target->new( sqitch => $sqitch );
-    }
-    catch {
-        my $msg = "ERROR: $_";
-        print "Catch: $msg\n";
-    }
-    finally {
-        if (@_) {
-            $self->log_message(__ 'Sqitch is NOT initialized yet. Please add a project path using the Admin menu.');
-            $self->status->set_state('init');
-        } else {
-            $self->status->set_state('idle');
-        }
-    };
-
-    if ( $self->status->is_state('idle') ) {
-        try {
-            # $self->populate_project($target);
-            # $self->populate_change($target);
-            # $self->populate_plan;
-        }
-        catch {
-            $self->log_message(__ 'Error' . ': '. $_);
-        };
-    }
+    $self->status->set_state('idle');
+    $self->populate_project;
+    $self->populate_plan;
+    $self->populate_change;
 
     return;
 }
@@ -234,9 +190,15 @@ sub _setup_events {
             };
     }
 
-    EVT_BUTTON $self->view->frame,
-        $self->view->right_side->btn_quit->GetId,
-        sub { $self->on_quit(@_) };
+    #-- Quit
+    $self->view->event_handler_for_tb_button( 'tb_qt',
+        sub { $self->on_quit(@_) },
+    );
+
+    #-- Projects
+    $self->view->event_handler_for_tb_button( 'tb_pj',
+        sub { $self->on_admin(@_) },
+    );
 
     return;
 }
@@ -251,21 +213,18 @@ sub _init_observers {
 }
 
 sub populate_project {
-    my ($self, $target) = @_;
+    my $self = shift;
 
     my $config = $self->config;
-    my $sqitch = $self->sqitch;
-    my $engine = $target->engine;
-    my $plan   = $target->plan;
-
-    hurl "No plan?" unless $plan and $plan->isa('App::Sqitch::Plan');
-
-    my $dbname = $engine->uri->dbname;
+    my $engine = $self->model->target->engine;
+    my $plan   = $self->model->target->plan;
+    # hurl "No plan?" unless $plan and $plan->isa('App::Sqitch::Plan');
+    # my $dbname = $engine->uri->dbname;
 
     my $fields = {
         project  => $plan->project             // 'unknown',
         uri      => $plan->uri                 // 'unknown',
-        database => $dbname,
+        database => $engine->uri->dbname       // 'unknown',
         user     => $engine->uri->user         // 'unknown',
         path     => $config->repo_default_path // 'unknown',
         engine   => $engine->uri->engine       // 'unknown',
@@ -281,17 +240,13 @@ sub populate_project {
 }
 
 sub populate_change {
-    my ($self, $target) = @_;
+    my $self = shift;
 
-    my $sqitch = $self->sqitch;
-    my $plan   = $target->plan;
+    my $engine = $self->model->target->engine;
+    my $plan   = $self->model->target->plan;
     my $change = $plan->last;
-
-    hurl "No change plan!"
-        unless $change and $change->isa('App::Sqitch::Plan::Change');
-
-    my $name  = $change->name;
-    my $state = $sqitch->engine->current_state( $plan->project );
+    my $name   = $change->name;
+    my $state  = $engine->current_state( $plan->project );
 
     my $planned_at
         = defined $state
@@ -327,9 +282,7 @@ sub populate_change {
 sub populate_plan {
     my $self = shift;
 
-    my $config = $self->config;
-    my $sqitch = $self->sqitch;
-    my $plan   = $sqitch->plan;
+    my $plan   = $self->model->target->plan;
 
     # Search the changes. (from ...Sqitch::Command::plan)
     my $iter = $plan->search_changes();
@@ -342,8 +295,7 @@ sub populate_plan {
             creator     => $change->planner_name,
         };
     }
-
-    $self->view->plan->list_ctrl->populate(\@recs);
+    $self->view->plan->populate(\@recs);
 
     return;
 }
@@ -397,13 +349,6 @@ sub load_sql_for {
 
     return;
 }
-
-# sub on_dpc_change {
-#     my ($self, $frame, $event) = @_;
-#     print "Path changed\n";
-#     my $new_path = $event->GetEventObject->GetPath;
-#     #$self->status->set_state('idle');
-# }
 
 sub on_quit {
     my ($self, $frame, $event) = @_;

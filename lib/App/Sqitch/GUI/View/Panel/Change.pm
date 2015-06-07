@@ -6,21 +6,21 @@ use warnings;
 use utf8;
 use Moo;
 use App::Sqitch::GUI::Types qw(
+    SqitchGUIWxEditor
+    SqitchGUIWxNotebook
+    WxCollapsiblePane
     WxPanel
     WxSizer
-    WxCollapsiblePane
     WxStaticText
     WxTextCtrl
-    SqitchGUIViewNotebook
-	SqitchGUIViewEditor
 );
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE EVT_COLLAPSIBLEPANE_CHANGED);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-use App::Sqitch::GUI::View::Notebook;
-use App::Sqitch::GUI::View::Editor;
+use App::Sqitch::GUI::Wx::Notebook;
+use App::Sqitch::GUI::Wx::Editor;
 
 has 'panel' => (
     is      => 'rw',
@@ -227,27 +227,27 @@ has 'revert_sz' => (
 
 has 'notebook' => (
     is      => 'rw',
-    isa     => SqitchGUIViewNotebook,
+    isa     => SqitchGUIWxNotebook,
     lazy    => 1,
     builder => '_build_notebook',
 );
 has 'edit_deploy' => (
     is      => 'rw',
-    isa     => SqitchGUIViewEditor,
+    isa     => SqitchGUIWxEditor,
     lazy    => 1,
     builder => '_build_edit_deploy',
 );
 
 has 'edit_revert' => (
     is      => 'rw',
-    isa     => SqitchGUIViewEditor,
+    isa     => SqitchGUIWxEditor,
     lazy    => 1,
     builder => '_build_edit_revert',
 );
 
 has 'edit_verify' => (
     is      => 'rw',
-    isa     => SqitchGUIViewEditor,
+    isa     => SqitchGUIWxEditor,
     lazy    => 1,
     builder => '_build_edit_verify',
 );
@@ -514,7 +514,7 @@ sub _build_sb_sizer {
 sub _build_notebook {
     my $self = shift;
 
-    return App::Sqitch::GUI::View::Notebook->new(
+    return App::Sqitch::GUI::Wx::Notebook->new(
         app      => $self->app,
         parent   => $self->panel,
         ancestor => $self,
@@ -524,7 +524,7 @@ sub _build_notebook {
 sub _build_edit_deploy {
     my $self = shift;
 
-    return App::Sqitch::GUI::View::Editor->new(
+    return App::Sqitch::GUI::Wx::Editor->new(
         app      => $self->app,
         parent   => $self->notebook->page_deploy,
         ancestor => $self,
@@ -534,7 +534,7 @@ sub _build_edit_deploy {
 sub _build_edit_revert {
     my $self = shift;
 
-    return App::Sqitch::GUI::View::Editor->new(
+    return App::Sqitch::GUI::Wx::Editor->new(
         app      => $self->app,
         parent   => $self->notebook->page_revert,
         ancestor => $self,
@@ -544,7 +544,7 @@ sub _build_edit_revert {
 sub _build_edit_verify {
     my $self = shift;
 
-    return App::Sqitch::GUI::View::Editor->new(
+    return App::Sqitch::GUI::Wx::Editor->new(
         app      => $self->app,
         parent   => $self->notebook->page_verify,
         ancestor => $self,

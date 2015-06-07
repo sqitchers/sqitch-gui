@@ -1,17 +1,10 @@
 package App::Sqitch::GUI::View;
 
-use 5.010;
-use strict;
-use warnings;
 use Moo;
 use App::Sqitch::GUI::Types qw(
     ArrayRef
     Int
     Maybe
-    SqitchGUIViewMenuBar
-    SqitchGUIViewMenuBarAdmin
-    SqitchGUIViewMenuBarApp
-    SqitchGUIViewMenuBarHelp
     SqitchGUIViewPanelBottom
     SqitchGUIViewPanelChange
     SqitchGUIViewPanelLeft
@@ -19,32 +12,32 @@ use App::Sqitch::GUI::Types qw(
     SqitchGUIViewPanelProject
     SqitchGUIViewPanelRight
     SqitchGUIViewPanelTop
-    SqitchGUIViewStatusBar
+    SqitchGUIWxStatusbar
+    SqitchGUIWxToolbar
     Str
     WxFrame
     WxPoint
     WxSize
     WxSizer
     WxSplitterWindow
-    WxStatusBar
 );
 use Wx qw(:everything);
-use Wx::Event qw(EVT_CLOSE EVT_BUTTON EVT_MENU EVT_RADIOBUTTON);
+use Wx::Event qw(EVT_CLOSE EVT_BUTTON EVT_MENU EVT_RADIOBUTTON EVT_TOOL);
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-use App::Sqitch::GUI::View::MenuBar;
-use App::Sqitch::GUI::View::StatusBar;
+use App::Sqitch::GUI::Config::Toolbar;
+use App::Sqitch::GUI::Wx::Menubar;
+use App::Sqitch::GUI::Wx::Toolbar;
+use App::Sqitch::GUI::Wx::Statusbar;
 use App::Sqitch::GUI::View::Panel::Left;
 use App::Sqitch::GUI::View::Panel::Right;
 use App::Sqitch::GUI::View::Panel::Top;
 use App::Sqitch::GUI::View::Panel::Bottom;
-
 use App::Sqitch::GUI::View::Panel::Change;
 use App::Sqitch::GUI::View::Panel::Project;
 use App::Sqitch::GUI::View::Panel::Plan;
-
-use Data::Printer;
 
 # Main window
 
@@ -82,16 +75,16 @@ has 'size' => (
     builder => '_build_size',
 );
 
-has 'menu_bar' => (
+has 'tool_bar' => (
     is      => 'rw',
-    isa     => SqitchGUIViewMenuBar,
+    isa     => SqitchGUIWxToolbar,
     lazy    => 1,
-    builder => '_build_menu_bar',
+    builder => '_build_tool_bar',
 );
 
 has 'status_bar' => (
     is      => 'rw',
-    isa     => SqitchGUIViewStatusBar,
+    isa     => SqitchGUIWxStatusbar,
     lazy    => 1,
     builder => '_build_status_bar',
 );
@@ -185,7 +178,24 @@ sub BUILD {
 
     $self->frame->Hide;
 
-    $self->frame->SetMenuBar($self->menu_bar);
+    # Menu Bar
+    my $menu = App::Sqitch::GUI::Wx::Menubar->new(
+        app       => $self->app,
+        ancestor  => $self,
+        parent    => $self->frame,
+    );
+    $self->frame->SetMenuBar( $menu->menu_bar );
+
+    # Tool Bar
+    my $conf     = App::Sqitch::GUI::Config::Toolbar->new;
+    my @toolbars = $conf->all_buttons;
+    my $tb = $self->tool_bar;
+    foreach my $name (@toolbars) {
+        my $attribs = $conf->get_tool($name);
+        $tb->make_toolbar_button( $name, $attribs );
+    }
+    $tb->set_initial_mode( \@toolbars );
+    $self->frame->SetToolBar($tb);
 
     $self->main_sizer->Add( $self->left_side->panel,  1, wxEXPAND | wxALL, 0 );
     $self->main_sizer->Add( $self->right_side->panel, 0, wxEXPAND | wxALL, 0 );
@@ -226,22 +236,20 @@ sub _build_frame {
     return $y;
 }
 
-sub _build_menu_bar {
+sub _build_tool_bar {
     my $self = shift;
-    p $self;
-    say "_build_menu_bar";
-    my $mb   = App::Sqitch::GUI::View::MenuBar->new(
-        app      => $self->app,
-        ancestor => $self,
-        parent   => $self->frame,
+    my $tb = App::Sqitch::GUI::Wx::Toolbar->new(
+        app       => $self->app,
+        ancestor  => $self,
+        parent    => $self->frame,
+        icon_path => $self->app->config->icon_path,
     );
-    say "done";
-    return $mb;
+    return $tb;
 }
 
 sub _build_status_bar {
     my $self = shift;
-    my $sb   = App::Sqitch::GUI::View::StatusBar->new(
+    my $sb   = App::Sqitch::GUI::Wx::Statusbar->new(
         app      => $self->app,
         ancestor => $self,
         parent   => $self->frame,
@@ -453,6 +461,18 @@ sub on_radio {
 sub OnClose {
     my ($self, $frame, $event) = @_;
     $event->Skip();
+    return;
+}
+
+sub get_toolbar_btn {
+    my ( $self, $name ) = @_;
+    return $self->tool_bar->get_toolbar_btn($name);
+}
+
+sub event_handler_for_tb_button {
+    my ( $self, $name, $calllback ) = @_;
+    my $tb_id = $self->get_toolbar_btn($name)->GetId;
+    EVT_TOOL $self->frame, $tb_id, $calllback;
     return;
 }
 

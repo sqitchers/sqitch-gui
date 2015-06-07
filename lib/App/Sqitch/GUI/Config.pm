@@ -5,13 +5,14 @@ use strict;
 use utf8;
 use warnings;
 use Moo;
+use MooX::HandlesVia;
 use App::Sqitch::GUI::Types qw(
     Dir
     Str
     Maybe
     HashRef
 );
-use Path::Class;
+use Path::Class qw(dir file);
 use Try::Tiny;
 use List::Util qw(first);
 use App::Sqitch::X qw(hurl);
@@ -65,14 +66,12 @@ has project_list => (
 );
 
 has 'engine_list' => (
-    metaclass => 'Collection::Hash',
-    is        => 'ro',
-    isa       => HashRef[Str],
-    required  => 1,
-    lazy      => 1,
-    default   => sub {
-        {
-            unknown  => 'Unknown',
+    handles_via => 'Hash',
+    is          => 'ro',
+    required    => 1,
+    lazy        => 1,
+    default     => sub {
+        {   unknown  => 'Unknown',
             pg       => 'PostgreSQL',
             mysql    => 'MySQL',
             sqlite   => 'SQLite',
@@ -80,7 +79,9 @@ has 'engine_list' => (
             firebird => 'Firebird',
         };
     },
-    provides => { 'get' => 'get_engine_name', }
+    handles => {
+        get_engine_name => 'get',
+    },
 );
 
 sub get_engine_from_name {
@@ -132,6 +133,15 @@ sub project_list_cnt {
     my $self = shift;
     return scalar keys %{ $self->project_list };
 }
+
+has 'icon_path' => (
+    is      => 'ro',
+    isa     => Dir,
+    default => sub {
+        my $self = shift;
+        return dir $self->user_dir, 'icons';
+    },
+);
 
 =pod
 
