@@ -3,10 +3,11 @@ package App::Sqitch::GUI::Wx::Listctrl;
 # ABSTRACT: Virtual List View Control
 
 use 5.010;
-use strict;
-use warnings;
 use Moo;
-use Types::Standard qw(ArrayRef);
+use Types::Standard qw(
+    ArrayRef
+    HashRef
+);
 use Wx qw(
     wxLC_REPORT
     wxLC_SINGLE_SEL
@@ -27,6 +28,7 @@ has 'list_data' => (
 
 has 'meta_data' => (
     is  => 'rw',
+    isa => ArrayRef,
 );
 
 sub FOREIGNBUILDARGS {
@@ -87,6 +89,7 @@ sub RefreshList {
 
 sub set_selection {
     my ( $self, $item ) = @_;
+    hurl 'Wrong argument passed to set_selection()' unless defined $item;
     $self->Select( $item, 1 );               # 1|0 <=> select|deselect
     return;
 }
@@ -94,6 +97,11 @@ sub set_selection {
 sub get_selection {
     my $self = shift;
     return $self->GetFirstSelected;
+}
+
+sub get_item_count {
+    my $self = shift;
+    return $self->GetItemCount;
 }
 
 sub _set_events { }
