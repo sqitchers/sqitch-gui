@@ -63,7 +63,7 @@ sub item_admin {
     my $self = shift;
     return Wx::MenuItem->new(
         undef,
-        -1,
+        2001,
         'Projects',
         'Projects',
         wxITEM_NORMAL,
