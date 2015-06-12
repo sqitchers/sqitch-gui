@@ -20,22 +20,23 @@ use MooseX::AttributeHelpers;
 
 extends 'App::Sqitch::Config';
 
-has repo_default_name => (
+has default_project_name => (
     is      => 'rw',
     isa     => Maybe[Str],
     lazy    => 1,
     default => sub {
-        shift->get(key => 'core.project');
+        my $self = shift;
+        return $self->get(key => 'core.project');
     }
 );
 
-has repo_default_path => (
+has default_project_path => (
     is      => 'rw',
     isa     => Maybe[Dir],
     lazy    => 1,
     default => sub {
         my $self    = shift;
-        my $default = $self->repo_default_name;
+        my $default = $self->default_project_name;
         return $default
             ? dir $self->get( key => "project.${default}.path" )
             : undef;
@@ -44,12 +45,12 @@ has repo_default_path => (
 
 sub local_file {
     my $self = shift;
-    return $self->repo_default_path
-        ? file( $self->repo_default_path, $self->confname )
+    return $self->default_project_path
+        ? file( $self->default_project_path, $self->confname )
         : file( $self->confname );
 };
 
-has _repo_conf_list => (
+has _conf_projects_list => (
     is      => 'ro',
     isa     => Maybe[HashRef],
     lazy    => 1,
@@ -59,11 +60,26 @@ has _repo_conf_list => (
 );
 
 has project_list => (
-    is      => 'ro',
-    isa     => Maybe[HashRef],
-    lazy    => 1,
-    builder => '_build_project_list',
+    is          => 'ro',
+    handles_via => 'Hash',
+    lazy        => 1,
+    builder     => '_build_project_list',
+    handles     => {
+        get_project => 'get',
+        has_project => 'count',
+        projects    => 'kv',
+    },
 );
+
+sub _build_project_list {
+    my $self = shift;
+    my $project_list = {};
+    while ( my ( $key, $path ) = each( %{ $self->_conf_projects_list } ) ) {
+        my ($name) = $key =~ m{^project[.](.+)[.]path$};
+        $project_list->{$name} = dir $path;
+    }
+    return $project_list;
+}
 
 has 'engine_list' => (
     handles_via => 'Hash',
@@ -90,26 +106,10 @@ sub get_engine_from_name {
     return $engines{$engine};
 }
 
-sub _build_project_list {
-    my $self = shift;
-
-    my $repo_cfg_lst = $self->_repo_conf_list;
-
-    my $project_list = {};
-    while ( my ( $key, $path ) = each( %{$repo_cfg_lst} ) ) {
-        my ($name) = $key =~ m{^project[.](.+)[.]path$};
-        $project_list->{$name} = dir $path;
-    }
-
-    return $project_list;
-}
-
 sub has_repo_name {
     my ($self, $name) = @_;
     hurl 'Wrong arguments passed to has_repo_name()'
         unless $name;
-    # p $self->project_list;
-    # p $name;
     return 1 if first { $name eq $_ } keys %{$self->project_list};
     return 0;
 }
@@ -124,6 +124,8 @@ sub has_repo_path {
 
 sub reload {
     my ( $self, $path ) = @_;
+    $self->default_project_path($path);
+    say 'local file:', $self->local_file;
     my $file = file $path, $self->confname;
     print "Reloading $file...\n";
     try { $self->load($file) } catch { print "Reload config error: $_\n" };
