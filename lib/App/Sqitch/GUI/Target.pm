@@ -14,7 +14,7 @@ has +top_dir => (
     lazy     => 1,
     default => sub {
         my $self = shift;
-        dir( $self->sqitch->config->repo_default_path,
+        dir( $self->sqitch->config->default_project_path,
             $self->sqitch->config->get( key => 'core.top_dir' ) )
             || ();
         },
