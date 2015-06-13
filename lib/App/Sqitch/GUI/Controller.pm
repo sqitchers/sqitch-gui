@@ -24,6 +24,7 @@ use Wx::Event qw(
     EVT_BUTTON
     EVT_CLOSE
     EVT_MENU
+    EVT_TIMER
 );
 use Path::Class;
 use File::Slurp;
@@ -57,26 +58,46 @@ sub _build_app {
 has 'view' => (
     is      => 'ro',
     isa     => SqitchGUIView,
-    default => sub { shift->app->view },
+    default => sub {
+        my $self = shift;
+        return $self->app->view;
+    },
 );
 
 has 'model' => (
     is      => 'ro',
     isa     => SqitchGUIModel,
-    default => sub {
-        my $self = shift;
-        return App::Sqitch::GUI::Model->new( config => $self->config );
-    },
+    builder => '_build_model',
 );
+
+sub _build_model {
+    my $self = shift;
+    return App::Sqitch::GUI::Model->new(
+        config => $self->config,
+        sqitch => $self->sqitch,
+    );
+}
 
 has config => (
     is      => 'ro',
     isa     => SqitchGUIConfig,
     lazy    => 1,
-    builder => 'init_config',
+    builder => '_build_config',
 );
 
-has status => (
+sub _build_config {
+    my $self = shift;
+    my $config;
+    try {
+        $config = App::Sqitch::GUI::Config->new;
+    }
+    catch {
+        __x '[EE] Configuration error: "{error}"', error => $_;
+    };
+    return $config;
+}
+
+has 'status' => (
     is      => 'rw',
     isa     => SqitchGUIStatus,
     lazy    => 1,
@@ -85,7 +106,7 @@ has status => (
     }
 );
 
-has dlg_status => (
+has 'dlg_status' => (
     is      => 'rw',
     isa     => SqitchGUIDialogStatus,
     lazy    => 1,
@@ -100,50 +121,22 @@ sub log_message {
     Wx::LogMessage($msg);
 }
 
-sub init_config {
+sub sqitch {
     my $self = shift;
 
-    my $config;
+    my $opts = {};
+    my $sqitch;
     try {
-        $config = App::Sqitch::GUI::Config->new;
+        $sqitch = App::Sqitch::GUI::Sqitch->new( {
+            options => $opts,
+            config  => $self->config,
+        } );
     }
     catch {
-        print "Config error: $_\n";
+        print "Error on Sqitch initialization: $_\n";
     };
 
-    # TODO:
-    # Has a repo list?
-    # + yes
-    #   + has a default repo?
-    #     + yes => load it
-    #     - no  => show dialog to set default
-    # - no
-    #   - show dialog to add new repo
-
-    # Are any repositories configured?
-    return $config if $config->project_list_cnt == 0;
-
-    # Load the local configuration file
-    if ( $config->repo_default_name ) {
-        my $repo_config = $config->repo_default_path;
-        if ($repo_config) {
-            $config->reload($repo_config);
-        }
-        else {
-            $self->log_message('No default path in config!');
-        }
-    }
-
-    print 'cfg: user_file:  ', $config->user_file, "\n";
-    print 'cfg: local_file: ', $config->local_file, "\n";
-
-    print "\nCONFIG:\n";
-    print "---\n";
-    print scalar $config->dump;
-    print "---\n";
-    print "\n";
-
-    return $config;
+    return $sqitch;
 }
 
 sub BUILD {
@@ -162,9 +155,92 @@ sub BUILD {
 sub load_sqitch_project {
     my $self = shift;
     $self->status->set_state('idle');
-    $self->populate_project;
-    $self->populate_plan;
-    $self->populate_change;
+
+    if ( my $proj_cnt = $self->config->has_project ) {
+        my ($name, $path) = $self->validate_projects_conf;
+        if ( $name and $path ) {
+            $self->config_reload( $name, $path );
+            $self->populate_project;
+            #$self->populate_plan;
+            #$self->populate_change;
+        }
+    }
+    else {
+        $self->log_message('Add a project...');
+        $self->log_message('Opening a dialog...');
+        my $timer = Wx::Timer->new( $self->view->frame, 1 );
+        $timer->Start( 2000, 1 );    # one shot
+        EVT_TIMER $self->view->frame, 1, sub {
+            $self->on_admin(@_);
+            #say "loyding: ", $self->model->selected_name;
+            # my $project_cfg = $self->model->get_project('sqitch-s2i2');
+            # $self->config_reload('sqitch-s2i2', $project_cfg);
+        };
+    }
+
+    return;
+}
+
+sub validate_projects_conf {
+    my $self = shift;
+    if ( my $proj_cnt = $self->config->has_project ) {
+        $self->log_message(
+            __nx 'Found a project', 'Found {count} projects',
+            $proj_cnt, count => $proj_cnt
+        );
+
+        # Do we have a valid config
+        my ( %seen_name, %seen_path );
+        foreach my $rec ( $self->config->projects ) {
+            my ( $name, $path ) = ( $rec->[0], $rec->[1] );
+            $seen_name{$name}++;
+            $self->log_message( __x 'Duplicate name found: "{name}"',
+                name => $name )
+                if defined $seen_name{$name} and $seen_name{$name} > 1;
+            $seen_path{$path}++;
+            $self->log_message( __x 'Duplicate path found: "{path}"',
+                path => $path )
+                if defined $seen_path{$path} and $seen_path{$path} > 1;
+        }
+
+        # Do we have a default project?
+        if ( my $name = $self->config->default_project_name ) {
+            if ( my $path = $self->config->default_project_path ) {
+                return ( $name, $path );
+            }
+            else {
+                $self->log_message(
+                    __x '[EE] The "{name}" project has no asociated path',
+                    name => $name );
+            }
+        }
+    }
+    return;
+}
+
+sub load_config {
+    my $self = shift;
+
+    # Load the local configuration file
+    if ( $self->config->default_project_name ) {
+        my $project_path = $self->config->default_project_path;
+        if ( $project_path ) {
+            $self->config->reload($project_path);
+        }
+        else {
+            $self->log_message('Wrong default path in config!');
+            return;
+        }
+    }
+
+    print 'cfg: user_file:  ', $self->config->user_file, "\n";
+    print 'cfg: local_file: ', $self->config->local_file, "\n";
+
+    print "\nCONFIG:\n";
+    print "---\n";
+    print scalar $self->config->dump;
+    print "---\n";
+    print "\n";
 
     return;
 }
@@ -172,13 +248,15 @@ sub load_sqitch_project {
 sub _setup_events {
     my $self = shift;
 
-    # EVT_MENU $self->view->frame,
-    #     $self->view->menu_bar->menu_admin->itm_admin->GetId,
-    #     sub { $self->on_admin(@_) };
+    my $menu_bar = $self->view->frame->GetMenuBar;
 
-    # EVT_MENU $self->view->frame,
-    #     $self->view->menu_bar->menu_app->itm_quit->GetId,
-    #     sub { $self->on_quit(@_) };
+    EVT_MENU $self->view->frame,
+        $menu_bar->FindItem(2001),
+        sub { $self->on_admin(@_) };        # 2001 -> GUI::Wx::Menubar
+
+    EVT_MENU $self->view->frame,
+        $menu_bar->FindItem(wxID_EXIT),
+        sub { $self->on_quit(@_) };
 
     # Set events for some of the commands
     # 'Revert' needs confirmation - can't use it, yet
@@ -222,12 +300,12 @@ sub populate_project {
     # my $dbname = $engine->uri->dbname;
 
     my $fields = {
-        project  => $plan->project             // 'unknown',
-        uri      => $plan->uri                 // 'unknown',
-        database => $engine->uri->dbname       // 'unknown',
-        user     => $engine->uri->user         // 'unknown',
-        path     => $config->repo_default_path // 'unknown',
-        engine   => $engine->uri->engine       // 'unknown',
+        project  => $plan->project                // 'unknown',
+        uri      => $plan->uri                    // 'unknown',
+        database => $engine->uri->dbname          // 'unknown',
+        user     => $engine->uri->user            // 'unknown',
+        path     => $config->default_project_path // 'unknown',
+        engine   => $engine->uri->engine          // 'unknown',
         created_at    => undef,
         creator_name  => undef,
         creator_email => undef,
@@ -305,7 +383,7 @@ sub execute_command {
 
     # Instantiate the command object.
     my $command = App::Sqitch::Command->load({
-        sqitch  => $self->sqitch,
+        sqitch  => $self->model->sqitch,
         command => $cmd,
         config  => $self->config,
         args    => \@cmd_args,
@@ -340,7 +418,7 @@ sub load_form_for {
 sub load_sql_for {
     my ($self, $command, $name) = @_;
 
-    my $repo_path = $self->config->repo_default_path;
+    my $repo_path = $self->config->default_project_path;
     my $sql_file  = file $repo_path, $command, "$name.sql";
     my $text = read_file($sql_file);
     my $ctrl_name = "edit_$command";
@@ -384,19 +462,30 @@ sub on_admin {
 sub config_reload {
     my ($self, $name, $path) = @_;
 
-    print "Reload config...\n";
-    print ": $name, $path\n";
+    $name //= $self->model->selected_name;
+    $path //= $self->model->selected_path;
 
-    $self->config->reload;
+    $self->log_message( __x 'Loading the "{name}" project', name => $name );
 
-    $self->config->repo_default_name($name);
-    $self->config->repo_default_path($path);
+    $self->config->reload($path);
 
-    my $c_name = $self->config->repo_default_name;
-    my $c_path = $self->config->repo_default_path;
+    print 'cfg: user_file:  ', $self->config->user_file, "\n";
+    print 'cfg: local_file: ', $self->config->local_file, "\n";
+    # print "\nCONFIG:\n";
+    # print "---\n";
+    # print scalar $self->config->dump;
+    # print "---\n";
+    # print "\n";
 
-    $self->init_sqitch;
-    $self->load_sqitch_plan;
+    $self->config->default_project_name($name);
+    $self->config->default_project_path($path);
+
+    my $c_name = $self->config->default_project_name;
+    my $c_path = $self->config->default_project_path;
+
+    say "Loading: $c_name $c_path";
+
+    $self->populate_project;
 
     return;
 }
@@ -408,14 +497,14 @@ sub config_set_default {
     return 1;
 }
 
-sub config_edit_repo {
+sub config_edit_project {
     my ($self, $name, $path) = @_;
     my @cmd = qw(config --user);
     $self->execute_command(@cmd, "project.${name}.path", $path);
     return 1;
 }
 
-sub config_remove_repo {
+sub config_remove_project {
     my ( $self, $name, $path, $is_default ) = @_;
     my @cmd = qw(config --user --remove-section);
     $self->execute_command(@cmd, "project.${name}");

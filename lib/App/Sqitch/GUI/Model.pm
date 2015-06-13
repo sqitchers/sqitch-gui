@@ -3,92 +3,78 @@ package App::Sqitch::GUI::Model;
 use 5.010;
 use Moo;
 use App::Sqitch::GUI::Types qw(
+    Dir
+    Int
     Maybe
-	Sqitch
-	SqitchGUIConfig
-	SqitchGUITarget
+    Sqitch
+    SqitchGUIConfig
+    SqitchGUITarget
+    Str
 );
 use Try::Tiny;
 
 use App::Sqitch::GUI::Sqitch;
 use App::Sqitch::GUI::Target;
 
-has config => (
-    is      => 'ro',
-    isa     => SqitchGUIConfig,
-    lazy    => 1,
+has 'config' => (
+    is   => 'ro',
+    isa  => SqitchGUIConfig,
+    lazy => 1,
 );
 
-has sqitch => (
+has 'sqitch' => (
     is      => 'rw',
     isa     => Maybe[Sqitch],
     lazy    => 1,
-    builder => '_build_sqitch',
 );
 
-has target => (
+has 'target' => (
     is      => 'ro',
     isa     => Maybe[SqitchGUITarget],
     lazy    => 1,
-	default => sub {
-		my $self = shift;
-		return App::Sqitch::GUI::Target->new( sqitch => $self->sqitch );
-	},
+    builder => '_build_target',
 );
 
-sub _build_sqitch {
+sub _build_target {
     my $self = shift;
-
-    my $opts = {};
-    my $sqitch;
     try {
-        $sqitch = App::Sqitch::GUI::Sqitch->new( {
-            options => $opts,
-            config  => $self->config,
-        } );
+        return App::Sqitch::GUI::Target->new( sqitch => $self->sqitch );
     }
     catch {
-        print "Error on Sqitch initialization: $_\n";
+        print "Catch ERROR: $_\n";
     };
-
-    return $sqitch;
 }
 
-sub load_sqitch_plan {
-    my $self = shift;
+has 'plan' => (
+    is      => 'ro',
+    isa     => Maybe[SqitchGUITarget],
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return App::Sqitch::GUI::Target->new( sqitch => $self->sqitch );
+    },
+);
 
-    # my $sqitch = $self->sqitch;
+#--
 
-    # # Do we have a valid configuration - plan?
-    # my $target;
-    # try {
-    #     $target = App::Sqitch::GUI::Target->new( sqitch => $sqitch );
-    # }
-    # catch {
-    #     my $msg = "ERROR: $_";
-    #     print "Catch: $msg\n";
-    # }
-    # finally {
-    #     if (@_) {
-    #         $self->log_message(__ 'Sqitch is NOT initialized yet. Please add a project path using the Admin menu.');
-    #         $self->status->set_state('init');
-    #     } else {
-    #         $self->status->set_state('idle');
-    #     }
-    # };
+has 'selected_item' => (
+    is      => 'rw',
+    isa     => Maybe[Int],
+    default => sub { undef },
+);
 
-    # if ( $self->status->is_state('idle') ) {
-    #     try {
-    #         $self->populate_project($target);
-    #         $self->populate_plan($target);
-    #         $self->populate_change($target);
-    #     }
-    #     catch {
-    #         $self->log_message(__ 'Error' . ': '. $_);
-    #     };
-    # }
+has 'selected_name' => (
+    is      => 'rw',
+    isa     => Maybe[Str],
+    default => sub { undef },
+);
 
-    return;
-}
+has 'selected_path' => (
+    is      => 'rw',
+    isa     => Maybe[Dir],
+    default => sub { undef },
+);
+
+#--
 
 1;
