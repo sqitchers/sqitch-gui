@@ -5,6 +5,7 @@ use strict;
 use warnings;
 use Moo;
 use App::Sqitch::GUI::Types qw(
+    Maybe
     SqitchGUIConfig
     SqitchGUIView
 );
@@ -18,7 +19,7 @@ use App::Sqitch::GUI::View;
 
 has config => (
     is  => 'ro',
-    isa => SqitchGUIConfig,
+    isa => Maybe[SqitchGUIConfig],
 );
 
 has 'view' => (
