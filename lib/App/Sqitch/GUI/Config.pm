@@ -116,18 +116,16 @@ sub has_repo_name {
 
 sub has_repo_path {
     my ($self, $path) = @_;
-    hurl 'Wrong arguments passed to has_repo_path()'
-        unless $path;
+    hurl 'Wrong arguments passed to has_repo_path()' unless $path;
     return 1 if first { $path->stringify eq $_ } values %{$self->project_list};
     return 0;
 }
 
 sub reload {
     my ( $self, $path ) = @_;
+    hurl 'Wrong arguments passed to reload()' unless $path;
     $self->default_project_path($path);
-    say 'local file:', $self->local_file;
     my $file = file $path, $self->confname;
-    print "Reloading $file...\n";
     try { $self->load($file) } catch { print "Reload config error: $_\n" };
 }
 
