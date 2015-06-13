@@ -12,7 +12,7 @@ use App::Sqitch::GUI::Types qw(
     Maybe
     Object
     SqitchGUIConfig
-	SqitchGUIModel
+    SqitchGUIModel
     SqitchGUIWxListctrl
     SqitchGUIWxApp
     Str
@@ -549,8 +549,8 @@ sub _set_events {
     };
 
     EVT_BUTTON $self, $self->btn_load->GetId, sub {
-        $self->ancestor->config_reload;
-		# $self->OnClose(@_);
+        $self->config_load_current_project;
+        # $self->OnClose(@_);
     };
 
     EVT_BUTTON $self, $self->btn_default->GetId, sub {
@@ -598,22 +598,21 @@ sub _init_dialog {
     }
     $self->populate($records_ref);
 
-    # # Default from config
-    # my $default_project = $self->config->default_project_name;
-    # my $index;
-    # if ($default_project) {
-    #     $index = 0;
-    #     foreach my $rec ( @{$records_ref} ) {
-    #         last if $default_project eq $rec->{name};
-    #         $index++;
-    #     }
-    #     $self->_mark_as_default($index);
-    #     $self->list_ctrl->set_selection($index);
-    #     $self->_select_item($index);
-    #     $self->_load_selected_item($index);
-    # }
+    # Default from config
+    my $default_project = $self->config->default_project_name;
+    my $index;
+    if ($default_project) {
+        $index = 0;
+        foreach my $rec ( @{$records_ref} ) {
+            last if $default_project eq $rec->{name};
+            $index++;
+        }
+        $self->_mark_as_default($index);
+        $self->_select_item($index);
+        $self->_load_item($index);
+    }
 
-    # $self->ancestor->dlg_status->set_state('init');
+    $self->ancestor->dlg_status->set_state('init');
 
     return;
 }
@@ -715,14 +714,15 @@ sub _on_item_selected {
 sub _select_item {
     my ($self, $item) = @_;
 
-	my $name = $self->list_data->get_value($item, 1);
+    my $name = $self->list_data->get_value($item, 1);
     my $path = $self->list_data->get_value($item, 2);
 
     # Store the selected id, name and path
-    say "S: $item, $name, $path";
-    $self->model->selected_item($item);
-    $self->model->selected_name($name);
-    $self->model->selected_path( dir $path );# if $path; ???
+    $self->model->selected_item($item)       if $item;
+    $self->model->selected_name($name)       if $name;
+    $self->model->selected_path( dir $path ) if $path;
+
+    $self->list_ctrl->set_selection($item);
 
     return;
 }
@@ -736,22 +736,26 @@ the local configuration file and get the required info from there.
 =cut
 
 sub _load_item {
-	my ($self, $item) = @_;
+    my ($self, $item) = @_;
 
-	my $name = $self->model->selected_name;
+    return unless defined $item;
+
+    my $name = $self->model->selected_name;
     my $path = $self->model->selected_path;
 
-    $self->_control_write_e('txt_name', $name);
-    $self->_control_write_p('dpc_path', $path);
+    if ( $name and $path ) {
+        $self->_control_write_e( 'txt_name', $name );
+        $self->_control_write_p( 'dpc_path', $path );
 
-    # Load the local config
+        # Load the local config
+        my $item_cfg_file = file $path, $self->config->confname;
+        my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
 
-    my $item_cfg_file = file $path, $self->config->confname;
-    my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
-
-    my $engine_code = $item_cfg_href->{'core.engine'};
-    my $engine_name = $self->config->get_engine_name($engine_code);
-    $self->_control_write_c('cbx_engine', $engine_name) if $engine_name;
+        my $engine_code = $item_cfg_href->{'core.engine'};
+        my $engine_name = $self->config->get_engine_name($engine_code);
+        $self->_control_write_c( 'cbx_engine', $engine_name )
+            if $engine_name;
+    }
 
     return;
 }
@@ -763,14 +767,13 @@ sub _on_dpc_change {
 
     my $new_path = $event->GetEventObject->GetPath;
     if ( $self->get_state ne 'sele' ) {
-        # if ( $self->is_duplicate_path($new_path) ) {
-        #     $self->set_message( __ '*** Duplicate path! ***' );
-        #     return;
-        # }
+        if ( $self->is_duplicate_path($new_path) ) {
+            $self->set_message( __ '*** Duplicate path! ***' );
+            return;
+        }
     }
 
     $self->_init_form;
-#    $self->config->reload($new_path);
     my $engine = $self->config->get( key => 'core.engine' );
     print "Engine is $engine\n";
 
@@ -851,6 +854,7 @@ sub config_add_project {
         $self->ancestor->dlg_status->set_state('sele');
         $self->_remove_list_item;
         $self->list_ctrl->Enable(1);
+        $self->_clear_form;
     }
 
     return;
@@ -915,9 +919,12 @@ sub _add_list_item {
 sub _remove_list_item {
     my $self = shift;
     my $item = $self->model->selected_item;
-    if ($item) {
+    if (defined $item) {
         $self->list_ctrl->DeleteItem($item);
         $self->list_ctrl->set_selection(0);
+    }
+    else {
+        say "No selected item to remove?";
     }
     return;
 }
@@ -933,12 +940,11 @@ sub config_remove_project {
         return;
     }
 
+    $self->_remove_list_item;
+
     my $default    = $self->config->default_project_name;
     my $is_default = $name eq $default ? 1 : 0;
-
     $self->ancestor->config_remove_project($name, $path, $is_default);
-
-    $self->_remove_list_item;
 
     return;
 }
@@ -971,6 +977,16 @@ sub config_save_project {
     return;
 }
 
+sub config_load_current_project {
+    my $self = shift;
+
+    my $index = $self->list_ctrl->get_selection;
+    print "Select item (config_load_current_project) #$index\n";
+    $self->_select_item($index);
+    $self->ancestor->config_reload;
+    return;
+}
+
 sub _edit_list_item {
     my ($self, $item, $name, $path) = @_;
     $item //= $self->list_ctrl->get_selection;
@@ -985,7 +1001,7 @@ sub config_set_default {
     my $self = shift;
 
     my $index = $self->list_ctrl->get_selection;
-    print "Select item no $index\n";
+    print "Select item no $index (config_set_default)\n";
     $self->_select_item($index);
 
     my $name = $self->model->selected_name;
@@ -1021,15 +1037,15 @@ sub config_set_default {
 #     return;
 # }
 
-# sub is_duplicate_path {
-#     my ($self, $path) = @_;
-#     my $curr_path = $self->model->selected_path;
-#     for my $rec ( $self->config->projects ) {
-#         next if $path eq $curr_path;
-#         return 1 if $rec->[1] eq $path;
-#     }
-#     return;
-# }
+sub is_duplicate_path {
+    my ($self, $path) = @_;
+    my $curr_path = $self->model->selected_path;
+    for my $rec ( $self->config->projects ) {
+        next if $path eq $curr_path;
+        return 1 if $rec->[1] eq $path;
+    }
+    return;
+}
 
 sub OnClose {
     my ($self, $dialog, $event) = @_;
