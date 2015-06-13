@@ -5,7 +5,11 @@ use strict;
 use warnings;
 use utf8;
 use Moo;
-use Types::Standard qw(ArrayRef Int);
+use Types::Standard qw(
+    ArrayRef
+    Int
+);
+use App::Sqitch::X qw(hurl);
 
 has 'list_data' => (
     is      => 'rw',
@@ -21,12 +25,15 @@ has 'default' => (
 
 sub set_value {
     my ($self, $row, $col, $value) = @_;
-    $self->list_data->[$row][$col] = $value;
-    return;
+    hurl 'Wrong arguments passed to set_value()'
+        unless defined $row and defined $col;
+    return $self->list_data->[$row][$col] = $value;
 }
 
 sub get_value {
     my ($self, $row, $col) = @_;
+    hurl 'Wrong arguments passed to get_value()'
+        unless defined $row and defined $col;
     return $self->list_data->[$row][$col];
 }
 
@@ -37,7 +44,11 @@ sub get_data {
 
 sub get_item_count {
     my $self = shift;
-    return scalar @{ $self->get_data };
+    my @table_data = @{ $self->get_data };
+    return 0
+        unless grep { defined $_->[0] }
+        @table_data;    # case of: [[]] when scalar @table_data == 1, not 0
+    return scalar @table_data;
 }
 
 1;
