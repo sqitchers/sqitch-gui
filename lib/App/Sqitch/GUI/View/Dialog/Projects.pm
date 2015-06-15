@@ -13,6 +13,7 @@ use App::Sqitch::GUI::Types qw(
     Object
     SqitchGUIConfig
     SqitchGUIModel
+    SqitchGUIModelListDataTable
     SqitchGUIWxListctrl
     SqitchGUIWxApp
     Str
@@ -39,12 +40,10 @@ use App::Sqitch::X qw(hurl);
 
 extends 'Wx::Dialog';
 
-with 'App::Sqitch::GUI::Roles::Element';
+with qw(App::Sqitch::GUI::Roles::Element
+        App::Sqitch::GUI::Roles::Panel);
 
-use App::Sqitch::GUI::Model::ListDataTable;
 use App::Sqitch::GUI::Wx::Listctrl;
-
-use Data::Printer;
 
 has 'sizer' => (
     is      => 'rw',
@@ -250,14 +249,12 @@ has 'list_ctrl' => (
 
 sub _build_list_ctrl {
     my $self = shift;
-
     my $list = App::Sqitch::GUI::Wx::Listctrl->new(
         app       => $self->app,
         parent    => $self,
         list_data => $self->list_data,
-        meta_data => $self->list_meta_data,
+        meta_data => $self->model->project_list_meta_data,
     );
-
     return $list;
 }
 
@@ -314,26 +311,6 @@ sub _build_btn_new {
     return $button;
 }
 
-has 'btn_edit' => (
-    is      => 'rw',
-    isa     => WxButton,
-    lazy    => 1,
-    builder => '_build_btn_edit',
-);
-
-sub _build_btn_edit {
-    my $self = shift;
-    my $button = Wx::Button->new(
-        $self,
-        -1,
-        __ '&Edit',
-        [ -1, -1 ],
-        [ -1, -1 ],
-        wxBU_EXACTFIT,
-    );
-    return $button;
-}
-
 has 'btn_remove' => (
     is      => 'rw',
     isa     => WxButton,
@@ -347,46 +324,6 @@ sub _build_btn_remove {
         $self,
         -1,
         __ '&Remove',
-        [ -1, -1 ],
-        [ -1, -1 ],
-        wxBU_EXACTFIT,
-    );
-    return $button;
-}
-
-has 'btn_load' => (
-    is      => 'rw',
-    isa     => WxButton,
-    lazy    => 1,
-    builder => '_build_btn_load',
-);
-
-sub _build_btn_load {
-    my $self = shift;
-    my $button = Wx::Button->new(
-        $self,
-        -1,
-        __ '&Load',
-        [ -1, -1 ],
-        [ -1, -1 ],
-        wxBU_EXACTFIT,
-    );
-    return $button;
-}
-
-has 'btn_default' => (
-    is      => 'rw',
-    isa     => WxButton,
-    lazy    => 1,
-    builder => '_build_btn_default',
-);
-
-sub _build_btn_default {
-    my $self = shift;
-    my $button = Wx::Button->new(
-        $self,
-        -1,
-        __ '&Default',
         [ -1, -1 ],
         [ -1, -1 ],
         wxBU_EXACTFIT,
@@ -433,7 +370,7 @@ sub _build_btn_save {
     return $button;
 }
 
-### End interface build
+#--  End interface definitions
 
 has 'config' => (
     is      => 'ro',
@@ -454,9 +391,12 @@ has 'model' => (
 );
 
 has 'list_data' => (
-    is      => 'ro',
+    is       => 'ro',
+    isa      => SqitchGUIModelListDataTable,
+    required => 1,
     default => sub {
-        return App::Sqitch::GUI::Model::ListDataTable->new;
+        my $self = shift;
+        $self->model->project_list_data,
     },
 );
 
@@ -506,19 +446,15 @@ sub BUILD {
     $self->btn_sizer->Add( $self->btn_sizer_r, 0, wxALL | wxALIGN_BOTTOM, 10 );
 
     $self->btn_sizer_l->Add( $self->btn_new,     1, wxEXPAND | wxALL, 5 );
-    $self->btn_sizer_l->Add( $self->btn_edit,    1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer_l->Add( $self->btn_remove,  1, wxEXPAND | wxALL, 5 );
-    $self->btn_sizer_l->Add( $self->btn_load,    1, wxEXPAND | wxALL, 5 );
-    $self->btn_sizer_l->Add( $self->btn_default, 1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer_l->Add( $self->btn_save,    1, wxEXPAND | wxALL, 5 );
 
     $self->btn_sizer_r->Add( $self->btn_close, 1, wxEXPAND | wxALL, 0 );
 
     $self->SetSizer( $self->sizer );
 
-    $self->_init_dialog;
-
     $self->list_ctrl->SetFocus;
+    $self->_init_dialog;
 
     return $self;
 }
@@ -537,8 +473,6 @@ sub get_state {
     return $self->ancestor->dlg_status->get_state;
 }
 
-#-- Form
-
 sub _set_events {
     my $self = shift;
 
@@ -548,21 +482,8 @@ sub _set_events {
         $self->OnClose(@_);
     };
 
-    EVT_BUTTON $self, $self->btn_load->GetId, sub {
-        $self->config_load_current_project;
-        # $self->OnClose(@_);
-    };
-
-    EVT_BUTTON $self, $self->btn_default->GetId, sub {
-        $self->config_set_default;
-    };
-
     EVT_BUTTON $self, $self->btn_new->GetId, sub {
         $self->config_add_project;
-    };
-
-    EVT_BUTTON $self, $self->btn_edit->GetId, sub {
-        $self->config_edit_project;
     };
 
     EVT_BUTTON $self, $self->btn_remove->GetId, sub {
@@ -584,150 +505,45 @@ sub _set_events {
     return;
 }
 
-#---
+#--  End interface build
 
 sub _init_dialog {
     my $self = shift;
-
-    return unless my $proj_cnt = $self->config->has_project;
-
-    # Populate list
-    my $records_ref = [];
-    for my $rec ( $self->config->projects ) {
-        push @{$records_ref}, { name => $rec->[0], path => $rec->[1] };
-    }
-    $self->populate($records_ref);
-
-    # Default from config
-    my $default_project = $self->config->default_project_name;
-    my $index;
-    if ($default_project) {
-        $index = 0;
-        foreach my $rec ( @{$records_ref} ) {
-            last if $default_project eq $rec->{name};
-            $index++;
-        }
-        $self->_mark_as_default($index);
-        $self->_select_item($index);
-        $self->_load_item($index);
-    }
-
     $self->ancestor->dlg_status->set_state('init');
-
+    $self->list_ctrl->set_selection(0)
+        if $self->list_ctrl->get_item_count > 0;
+    $self->list_ctrl->RefreshList;
     return;
 }
 
-sub populate {
-    my ($self, $record_ref) = @_;
-    my $row = $self->list_ctrl->get_item_count;
-    foreach my $rec ( @{$record_ref} ) {
-        my $col = 0;
-        foreach my $meta ( @{ $self->list_meta_data } ) {
-            my $field = $meta->{field};
-            my $value
-                = $field eq q{}     ? q{}
-                : $field eq 'recno' ? ( $row + 1 )
-                :                     ( $rec->{$field} // q{} );
-            $self->list_data->set_value( $row, $col, $value );
-            $col++;
-        }
-        $self->list_ctrl->RefreshList;
-        $row++;
-    }
-    return;
-}
-
-sub _control_write_p {
-    my ( $self, $name, $path ) = @_;
-    hurl 'Wrong arguments passed to _control_write_p()'
-        unless $name and defined $path;
-    $self->$name->SetPath($path);
-    return;
-}
-
-sub _control_write_e {
-    my ( $self, $name, $value ) = @_;
-    hurl 'Wrong arguments passed to _control_write_e()'
-        unless $name;
-    $self->$name->Clear;
-    $self->$name->SetValue($value) if defined $value;
-    return;
-}
-
-sub _control_write_c {
-    my ( $self, $name, $value ) = @_;
-    hurl 'Wrong arguments passed to _control_write_c()'
-        unless $name and defined $value;
-    $self->$name->SetValue($value);
-    return;
-}
-
-sub _control_read_e {
-    my ( $self, $name ) = @_;
-    hurl 'Wrong arguments passed to _control_read_e()'
-        unless $name;
-    return $self->$name->GetValue;
-}
-
-sub _control_read_p {
-    my ( $self, $name ) = @_;
-    hurl 'Wrong arguments passed to _control_read_p()'
-        unless $name;
-    return $self->$name->GetPath;
-}
-
-sub _control_read_c {
-    my ( $self, $name ) = @_;
-    hurl 'Wrong arguments passed to _control_read_p()'
-        unless $name;
-    return $self->$name->GetValue();
-}
-
-sub _init_form {
+sub init_form {
     my $self = shift;
-    $self->_control_write_e('txt_name', undef);
-    $self->_control_write_e('txt_db', undef);
-    $self->_control_write_c('cbx_engine', 'unknown');
+    $self->control_write_e( $self->txt_name, undef );
+    $self->control_write_e( $self->txt_db,   undef );
+    $self->control_write_c( $self->cbx_engine, 'unknown' );
     return;
 }
 
-sub _clear_form {
+sub clear_form {
     my $self = shift;
-    $self->_control_write_p('dpc_path', '');
-    $self->_init_form;
+    $self->control_write_p($self->dpc_path, '');
+    $self->init_form;
     return;
 }
 
 sub _on_item_selected {
     my ($self, $var, $event) =  @_;
-    my $item = $event->GetIndex;
-
     return unless $self->get_state eq 'sele';
 
-    $self->_clear_form;
-    $self->_select_item($item);
-    $self->_load_item($item);
-
-    return;
-}
-
-sub _select_item {
-    my ($self, $item) = @_;
-
+    my $item = $event->GetIndex;
     my $name = $self->list_data->get_value($item, 1);
     my $path = $self->list_data->get_value($item, 2);
-
-    # Store the selected id, name and path
-    $self->model->selected_item($item)       if $item;
-    $self->model->selected_name($name)       if $name;
-    $self->model->selected_path( dir $path ) if $path;
-
-    $self->list_ctrl->set_selection($item);
-
+    $self->clear_form;
+    $self->load_item_details($name, $path);
     return;
 }
 
-=head2 _load_item
+=head2 load_item_details
 
 Load info for the selected list item.  Can't use the current Sqitch
 configuration for this, for every item (project) we have to load
@@ -735,25 +551,21 @@ the local configuration file and get the required info from there.
 
 =cut
 
-sub _load_item {
-    my ($self, $item) = @_;
+sub load_item_details {
+    my ($self, $name, $path) = @_;
 
-    return unless defined $item;
+    return unless $name and $path;
 
-    my $name = $self->model->selected_name;
-    my $path = $self->model->selected_path;
+    $self->control_write_e( $self->txt_name, $name );
+    $self->control_write_p( $self->dpc_path, $path );
 
-    if ( $name and $path ) {
-        $self->_control_write_e( 'txt_name', $name );
-        $self->_control_write_p( 'dpc_path', $path );
-
-        # Load the local config
-        my $item_cfg_file = file $path, $self->config->confname;
+    # Load the local config
+    my $item_cfg_file = file $path, $self->config->confname;
+    if ( -f $item_cfg_file ) {
         my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
-
         my $engine_code = $item_cfg_href->{'core.engine'};
         my $engine_name = $self->config->get_engine_name($engine_code);
-        $self->_control_write_c( 'cbx_engine', $engine_name )
+        $self->control_write_c( $self->cbx_engine, $engine_name )
             if $engine_name;
     }
 
@@ -763,8 +575,6 @@ sub _load_item {
 sub _on_dpc_change {
     my ($self, $frame, $event) = @_;
 
-    print "Path changed\n";
-
     my $new_path = $event->GetEventObject->GetPath;
     if ( $self->get_state ne 'sele' ) {
         if ( $self->is_duplicate_path($new_path) ) {
@@ -773,22 +583,22 @@ sub _on_dpc_change {
         }
     }
 
-    $self->_init_form;
+    $self->init_form;
     my $engine = $self->config->get( key => 'core.engine' );
-    print "Engine is $engine\n";
+    $self->control_write_c( $self->cbx_engine, $engine ) if $engine;
 
     # Default project name: the dir name
     my $name = file($new_path)->basename;
-    $self->_control_write_e('txt_name', $name);
+    $self->control_write_e($self->txt_name, $name);
 
     return;
 }
 
-sub _mark_as_default {
-    my ($self, $item) = @_;
-    $self->_clear_default_mark;
-    $item = $self->model->selected_item unless defined $item;
-    $self->_set_default_mark($item) if defined $item;
+sub is_duplicate_path {
+    my ($self, $path) = @_;
+    for my $rec ( $self->config->projects ) {
+        return 1 if $rec->[1] eq $path;
+    }
     return;
 }
 
@@ -801,249 +611,85 @@ sub set_message {
     return;
 }
 
-sub _clear_default_mark {
-    my $self = shift;
-    my $max_index = $self->list_ctrl->get_item_count;
-    for my $item (0..$max_index) {
-        $self->list_data->set_value($item, 3, __ '');
-    }
-    return;
-}
-
-sub _set_default_mark {
-    my ($self, $item) = @_;
-    hurl 'Wrong arguments passed to _set_default_mark()'
-        unless defined $item;
-    $self->list_data->set_value($item, 3, __ 'Yes');
-    return;
-}
-
-sub _get_default_item {
-    my $self = shift;
-    my $max_index = $self->list_ctrl->list_max_index;
-    my $defa_item = 0;
-    for my $item (0..$max_index) {
-        my $data = $self->list_ctrl->get_list_item_data($item);
-        if (exists $data->{default} and $data->{default} == 1) {
-            $defa_item = $item;
-        }
-    }
-    return $defa_item;
-}
-
 sub config_add_project {
     my $self = shift;
-
     my $state = $self->get_state;
-
     if ( $state eq 'sele' ) {
-        print "Make state add\n";
-        $self->_clear_form;
+        $self->clear_form;
         $self->btn_new->SetLabel( __ 'C&ancel' );
         $self->ancestor->dlg_status->set_state('add');
         $self->list_ctrl->Enable(1);
-        $self->_add_list_item;
+        $self->add_empty_list_item;
         my $last_item = $self->list_ctrl->get_item_count - 1;
-        $self->model->selected_item($last_item);
         $self->list_ctrl->set_selection($last_item);
         $self->list_ctrl->Enable(0);
     }
     elsif ( $state eq 'add' ) {
-        print "Canceled...\n";
-        $self->btn_new->SetLabel( __ '&New' );
+        $self->btn_new->SetLabel( __ '&Add' );
         $self->ancestor->dlg_status->set_state('sele');
-        $self->_remove_list_item;
+        $self->list_ctrl->delete_current_item;
         $self->list_ctrl->Enable(1);
-        $self->_clear_form;
-    }
-
-    return;
-}
-
-sub config_edit_project {
-    my $self = shift;
-
-    my $state = $self->get_state;
-
-    if ( $state eq 'sele' ) {
-        print "Make state edit\n";
-        $self->ancestor->dlg_status->set_state('edit');
-        $self->list_ctrl->Enable(0);
-        $self->btn_edit->SetLabel( __ 'C&ancel' );
-    }
-    elsif ( $state eq 'edit' ) {
-        print "Canceled...\n";
-        $self->btn_edit->SetLabel( __ '&Edit' );
-        $self->ancestor->dlg_status->set_state('sele');
-        $self->list_ctrl->Enable(1);
-    }
-
-    return;
-}
-
-sub record_is_duplicate {
-    my ($self, $name, $path) = @_;
-
-    unless ($name and $path) {
-        $self->set_message(__ 'Add a project path, please.');
-        return 1;
-    }
-
-    # my $dup_name = $self->is_duplicate_name($name);
-    # my $dup_path = $self->is_duplicate_path($path);
-    # if ($dup_name and $dup_path) {
-    #     $self->set_message(__ 'Duplicate name and path!');
-    #     return 1;
-    # }
-    # else {
-    #     if ($dup_name) {
-    #         $self->set_message(__ 'Duplicate name!');
-    #         return 1;
-    #     }
-    #     if ($dup_path) {
-    #         $self->set_message(__ 'Duplicate path!');
-    #         return 1;
-    #     }
-    # }
-
-    return;
-}
-
-sub _add_list_item {
-    my $self = shift;
-    my $list_item = [ { name => '', path => '' } ];
-    $self->populate($list_item);
-    return;
-}
-
-sub _remove_list_item {
-    my $self = shift;
-    my $item = $self->model->selected_item;
-    if (defined $item) {
-        $self->list_ctrl->DeleteItem($item);
-        $self->list_ctrl->set_selection(0);
-    }
-    else {
-        say "No selected item to remove?";
+        $self->clear_form;
     }
     return;
 }
 
 sub config_remove_project {
     my $self = shift;
-
-    my $name = $self->_control_read_e('txt_name');
-    my $path = $self->_control_read_p('dpc_path');
-
-    unless ($name and $path) {
-        $self->set_message(__ 'Select a project item, please.');
+    my $item = $self->list_ctrl->get_selection;
+    my $name = $self->list_data->get_value($item, 1);
+    say "Removing $name";
+    unless ($name) {
+        $self->set_message(__ 'Select an item, please.');
         return;
     }
-
-    $self->_remove_list_item;
-
     my $default    = $self->config->default_project_name;
     my $is_default = $name eq $default ? 1 : 0;
-    $self->ancestor->config_remove_project($name, $path, $is_default);
-
+    $self->ancestor->config_remove_project($name, $is_default);
+    $self->list_ctrl->delete_current_item;
     return;
 }
 
 sub config_save_project {
     my $self = shift;
 
-    my $name = $self->_control_read_e('txt_name');
-    my $path = $self->_control_read_p('dpc_path');
-
-    # return if $self->record_is_duplicate( $name, $path );
-
-    print " Saving...\n";
+    my $name = $self->control_read_e($self->txt_name);
+    my $path = $self->control_read_p($self->dpc_path);
 
     # Save in user config
     $self->ancestor->config_edit_project( $name, $path );
 
     # Save in local config
-    my $engine_name = $self->_control_read_c('cbx_engine');
+    my $engine_name = $self->control_read_c($self->cbx_engine);
     my $engine      = $self->config->get_engine_from_name($engine_name);
-    my $database    = $self->_control_read_e('txt_db');
-    if( $engine and $database ) {
-        $self->ancestor->config_save_local( $engine, $database );
-    }
-    $self->btn_new->SetLabel( __ '&New' );
-    $self->btn_edit->SetLabel( __ '&Edit' );
+    my $database    = $self->control_read_e($self->txt_db);
+    # if( $engine and $database ) { # not yet, only when implementing New!
+    #     $self->ancestor->config_save_local( $engine, $database );
+    # }
+    $self->btn_new->SetLabel( __ '&Add' );
     $self->ancestor->dlg_status->set_state('sele');
 
-    $self->_edit_list_item($self->model->selected_item, $name, $path);
+    $self->_edit_list_item( $self->list_ctrl->get_selection, $name, $path );
+
     return;
 }
 
-sub config_load_current_project {
+sub add_empty_list_item {
     my $self = shift;
-
-    my $index = $self->list_ctrl->get_selection;
-    print "Select item (config_load_current_project) #$index\n";
-    $self->_select_item($index);
-    $self->ancestor->config_reload;
+    my $row_count = $self->list_ctrl->get_item_count;
+    $self->list_data->add_row($row_count + 1, 'name', 'path');
+    $self->list_ctrl->RefreshList;
     return;
 }
 
 sub _edit_list_item {
     my ($self, $item, $name, $path) = @_;
+    $self->list_ctrl->Enable(0);
     $item //= $self->list_ctrl->get_selection;
-    say "editing $item ($name -> $path)";
     $self->list_data->set_value( $item, 1, $name );
     $self->list_data->set_value( $item, 2, $path );
     $self->list_ctrl->RefreshList;
-    return;
-}
-
-sub config_set_default {
-    my $self = shift;
-
-    my $index = $self->list_ctrl->get_selection;
-    print "Select item no $index (config_set_default)\n";
-    $self->_select_item($index);
-
-    my $name = $self->model->selected_name;
-    my $path = $self->model->selected_path;
-    unless ( $name and $path ) {
-        $self->set_message(__ 'Select a project item, please.');
-        return;
-    }
-
-    $self->ancestor->config_set_default($name); # write to the config file
-    $self->config->default_project_name($name);    # set the new default
-    $self->config->default_project_path($path);
-
-    # my $user_file = $self->config->user_file;
-    # $self->config->reload($user_file);
-    # $self->config->reload($path);
-    # p $self->config;
-    print 'r: user_file:   ', $self->config->user_file, "\n";
-    print 'r: local_file:  ', $self->config->local_file, "\n";
-
-    $self->_mark_as_default;
-
-    return;
-}
-
-# sub is_duplicate_name {
-#     my ($self, $name) = @_;
-#     my $curr_name = $self->model->selected_name;
-#     for my $rec ( $self->config->projects ) {
-#         next if $name eq $curr_name;
-#         return 1 if $rec->[0] eq $name;
-#     }
-#     return;
-# }
-
-sub is_duplicate_path {
-    my ($self, $path) = @_;
-    my $curr_path = $self->model->selected_path;
-    for my $rec ( $self->config->projects ) {
-        next if $path eq $curr_path;
-        return 1 if $rec->[1] eq $path;
-    }
+    $self->list_ctrl->Enable(1);
     return;
 }
 
@@ -1052,35 +698,6 @@ sub OnClose {
     $self->EndModal(wxID_OK);
     $self->Destroy;
     return;
-}
-
-sub list_meta_data {
-    return [
-        {   field => 'recno',
-            label => '#',
-            align => 'center',
-            width => 25,
-            type  => 'int',
-        },
-        {   field => 'name',
-            label => __ 'Name',
-            align => 'left',
-            width => 100,
-            type  => 'str',
-        },
-        {   field => 'path',
-            label => __ 'Path',
-            align => 'left',
-            width => 266,
-            type  => 'bool',
-        },
-        {   field => 'default',
-            label => __ 'Default',
-            align => 'center',
-            width => 60,
-            type  => 'bool',
-        },
-    ];
 }
 
 1;
