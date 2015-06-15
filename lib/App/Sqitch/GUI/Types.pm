@@ -14,6 +14,8 @@ use Type::Library 0.040 -base, -declare => qw(
     SqitchGUIDialogStatus
     SqitchGUIWxListctrl
     SqitchGUIModel
+    SqitchGUIModelListDataTable
+    SqitchGUIModelProjectItem
     SqitchGUIStatus
     SqitchGUITarget
     SqitchGUIView
@@ -63,6 +65,10 @@ class_type Sqitch,            { class => 'App::Sqitch' };
 class_type SqitchGUIWxApp,    { class => 'App::Sqitch::GUI::WxApp' };
 class_type SqitchGUIView,     { class => 'App::Sqitch::GUI::View' };
 class_type SqitchGUIModel,    { class => 'App::Sqitch::GUI::Model' };
+class_type SqitchGUIModelListDataTable,
+    { class => 'App::Sqitch::GUI::Model::ListDataTable' };
+class_type SqitchGUIModelProjectItem,
+    { class => 'App::Sqitch::GUI::Model::ProjectItem' };
 class_type SqitchGUITarget,   { class => 'App::Sqitch::GUI::Target' };
 class_type SqitchGUIWxListctrl,  { class => 'App::Sqitch::GUI::Wx::Listctrl' };
 class_type SqitchGUIConfig,   { class => 'App::Sqitch::GUI::Config' };
