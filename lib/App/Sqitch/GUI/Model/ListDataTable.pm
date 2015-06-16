@@ -1,20 +1,20 @@
 package App::Sqitch::GUI::Model::ListDataTable;
 
 use 5.010;
-use strict;
-use warnings;
 use utf8;
 use Moo;
-use Types::Standard qw(
-    ArrayRef
+use App::Sqitch::GUI::Types qw(
     Int
 );
+
 use App::Sqitch::X qw(hurl);
+use App::Sqitch::GUI::Model::Grid;
 
 has 'list_data' => (
     is      => 'rw',
-    isa     => ArrayRef[ArrayRef],
-    default => sub { [ [] ] },
+    default => sub {
+        my $grid = App::Sqitch::GUI::Model::Grid->new( cells => [] );
+    },
 );
 
 has 'default' => (
@@ -24,31 +24,48 @@ has 'default' => (
 );
 
 sub set_value {
-    my ($self, $row, $col, $value) = @_;
+    my $self = shift;
+    my ($row, $col, $value) = @_;
     hurl 'Wrong arguments passed to set_value()'
         unless defined $row and defined $col;
-    return $self->list_data->[$row][$col] = $value;
+    $self->list_data->set_cell($row, $col, $value);
+    return 1;
 }
 
 sub get_value {
-    my ($self, $row, $col) = @_;
+    my $self = shift;
+    my ($row, $col) = @_;
     hurl 'Wrong arguments passed to get_value()'
         unless defined $row and defined $col;
-    return $self->list_data->[$row][$col];
+    #say "get: $row, $col";
+    return $self->list_data->get_cell($row, $col)->name;
 }
 
-sub get_data {
+sub get_data_as_string {
     my $self = shift;
-    return $self->list_data;
+    return $self->list_data->to_string;
+}
+
+sub remove_row {
+    my $self = shift;
+    my ($item) = @_;
+    return $self->list_data->remove_row($item, 1);
 }
 
 sub get_item_count {
     my $self = shift;
-    my @table_data = @{ $self->get_data };
-    return 0
-        unless grep { defined $_->[0] }
-        @table_data;    # case of: [[]] when scalar @table_data == 1, not 0
-    return scalar @table_data;
+    return $self->list_data->rows_no;
+}
+
+sub add_row {
+    my $self = shift;
+    $self->list_data->add_row(\@_);
+}
+
+sub set_col {
+    my $self = shift;
+    my ($col, $value) = @_;
+    return $self->list_data->set_col($col, $value);
 }
 
 1;
