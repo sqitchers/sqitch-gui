@@ -5,6 +5,7 @@ use App::Sqitch::GUI::Types qw(
     ArrayRef
     Int
     Maybe
+    SqitchGUIModel
     SqitchGUIViewPanelBottom
     SqitchGUIViewPanelChange
     SqitchGUIViewPanelLeft
@@ -24,8 +25,9 @@ use App::Sqitch::GUI::Types qw(
 use Wx qw(:everything);
 use Wx::Event qw(EVT_CLOSE EVT_BUTTON EVT_MENU EVT_RADIOBUTTON EVT_TOOL);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
+use App::Sqitch::X qw(hurl);
 
-with 'App::Sqitch::GUI::Roles::Element';
+with qw(App::Sqitch::GUI::Roles::Element);
 
 use App::Sqitch::GUI::Config::Toolbar;
 use App::Sqitch::GUI::Wx::Menubar;
@@ -169,6 +171,15 @@ has 'splitter_w' => (
     isa     => WxSplitterWindow,
     lazy    => 1,
     builder => '_build_splitter_w',
+);
+
+has 'model' => (
+    is      => 'ro',
+    isa     => SqitchGUIModel,
+    lazy    => 1,
+    default => sub {
+        shift->app->model;
+    },
 );
 
 sub BUILD {
@@ -333,9 +344,10 @@ sub _build_project {
 sub _build_plan {
     my $self = shift;
     return App::Sqitch::GUI::View::Panel::Plan->new(
-        app      => $self->app,
-        parent   => $self->top_side->panel,
-        ancestor => $self,
+        app       => $self->app,
+        parent    => $self->top_side->panel,
+        ancestor  => $self,
+        list_data => $self->model->plan_list_data,
     );
 }
 
@@ -411,34 +423,6 @@ sub show_panel {
     return;
 }
 
-sub control_write_s {
-    my ( $self, $control, $value, $is_append ) = @_;
-
-    $value ||= q{};                 # empty
-
-    $control->ClearAll unless $is_append;
-    $control->AppendText($value);
-    $control->AppendText("\n");
-    $control->Colourise( 0, $control->GetTextLength );
-
-    return;
-}
-
-sub control_write_e {
-    my ( $self, $control, $value ) = @_;
-
-    $control->Clear;
-    $control->SetValue($value) if defined $value;
-
-    return;
-}
-
-sub combobox_write {
-    my ( $self, $name ) = @_;
-    $self->project->cbx_driver->SetValue($name) if $name;
-    return;
-}
-
 sub set_status {
     my ($self, $state, $gui_rules) = @_;
 
@@ -474,6 +458,33 @@ sub event_handler_for_tb_button {
     my $tb_id = $self->get_toolbar_btn($name)->GetId;
     EVT_TOOL $self->frame, $tb_id, $calllback;
     return;
+}
+
+sub load_txt_form_for {
+    my ($self, $form, $field, $value) = @_;
+    hurl __ 'Wrong arguments passed to load_txt_form_for()'
+        unless defined $field;
+    my $name    = "txt_$field";
+    my $control = $self->$form->$name;
+    $self->$form->control_write_e($control, $value);
+    return;
+}
+
+sub load_sql_form_for {
+    my ($self, $form, $command, $value) = @_;
+    my $name    = "edit_$command";
+    my $control = $self->$form->$name;
+    $self->$form->control_write_stc($control, $value);
+}
+
+sub get_plan_list_ctrl {
+    my $self = shift;
+    return $self->plan->list_ctrl;
+}
+
+sub get_project_list_ctrl {
+    my $self = shift;
+    return $self->project->list_ctrl;
 }
 
 =head1 PANELS

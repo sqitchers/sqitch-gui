@@ -90,7 +90,13 @@ sub RefreshList {
 sub set_selection {
     my ( $self, $item ) = @_;
     hurl 'Wrong argument passed to set_selection()' unless defined $item;
-    $self->Select( $item, 1 );               # 1|0 <=> select|deselect
+    my $index
+        = $item eq q{}     ? 0
+        : $item eq 'first' ? 0
+        : $item eq 'last'  ? ( $self->get_item_count - 1 )
+        :                    $item;
+    $self->Select( $index, 1 );               # 1|0 <=> select|deselect
+    $self->EnsureVisible($index);
     return;
 }
 
@@ -102,6 +108,17 @@ sub get_selection {
 sub get_item_count {
     my $self = shift;
     return $self->GetItemCount;
+}
+
+sub delete_current_item {
+    my $self = shift;
+    return unless $self->get_item_count > 0;
+    my $sel = $self->get_selection;
+    return unless defined $sel and $sel >= 0;
+    $self->list_data->remove_row($sel);
+    $self->set_selection(0) if $self->get_item_count > 0;
+    $self->RefreshList;
+    return;
 }
 
 sub _set_events { }

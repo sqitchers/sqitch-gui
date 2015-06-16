@@ -17,7 +17,8 @@ use App::Sqitch::GUI::Types qw(
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE EVT_COLLAPSIBLEPANE_CHANGED);
 
-with 'App::Sqitch::GUI::Roles::Element';
+with qw(App::Sqitch::GUI::Roles::Element
+        App::Sqitch::GUI::Roles::Panel);
 
 use App::Sqitch::GUI::Wx::Notebook;
 use App::Sqitch::GUI::Wx::Editor;

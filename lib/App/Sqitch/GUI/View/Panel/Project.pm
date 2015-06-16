@@ -18,10 +18,10 @@ use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 
-use App::Sqitch::GUI::Model::ListDataTable;
 use App::Sqitch::GUI::Wx::Listctrl;
 
-with 'App::Sqitch::GUI::Roles::Element';
+with qw(App::Sqitch::GUI::Roles::Element
+        App::Sqitch::GUI::Roles::Panel);
 
 has 'panel' => (
     is      => 'rw',
@@ -91,13 +91,6 @@ has 'list_ctrl' => (
     isa     => SqitchGUIWxListctrl,
     lazy    => 1,
     builder => '_build_list_ctrl',
-);
-
-has 'list_data' => (
-    is      => 'ro',
-    default => sub {
-        return App::Sqitch::GUI::Model::ListDataTable->new;
-    },
 );
 
 has 'h_line1' => (
@@ -538,8 +531,8 @@ sub _build_list_ctrl {
     my $list_ctrl = App::Sqitch::GUI::Wx::Listctrl->new(
         app       => $self->app,
         parent    => $self->panel,
-        list_data => $self->list_data,
-        meta_data => $self->list_meta_data,
+        list_data => $self->app->model->project_list_data,
+        meta_data => $self->app->model->project_list_meta_data,
     );
     return $list_ctrl;
 }
@@ -551,41 +544,6 @@ sub _set_events {
 
 sub OnClose {
     my ($self, $event) = @_;
-}
-
-sub list_meta_data {
-    return [
-        {   field => 'recno',
-            label => '#',
-            align => 'center',
-            width => 25,
-            type  => 'int',
-        },
-        {   field => 'project',
-            label => __ 'Project',
-            align => 'left',
-            width => 100,
-            type  => 'str',
-        },
-        {   field => 'database',
-            label => __ 'Database',
-            align => 'left',
-            width => 100,
-            type  => 'str',
-        },
-        {   field => 'default',
-            label => __ 'Default',
-            align => 'center',
-            width => 70,
-            type  => 'bool',
-        },
-        {   field => 'description',
-            label => __ 'Description',
-            align => 'left',
-            width => 320,
-            type  => 'str',
-        },
-    ];
 }
 
 =head1 AUTHOR

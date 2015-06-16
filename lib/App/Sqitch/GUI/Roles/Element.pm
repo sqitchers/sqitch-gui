@@ -6,8 +6,10 @@ use App::Sqitch::GUI::Types qw(
     Maybe
     Object
     SqitchGUIWxApp
+	SqitchGUIModel
     WxWindow
 );
+use namespace::autoclean;
 
 has 'app' => (
     is       => 'rw',
@@ -17,7 +19,7 @@ has 'app' => (
 );
 
 has 'ancestor' => (
-    is       => 'rw',
+    is       => 'ro',
     isa      => Object,
     weak_ref => 1,
 );
@@ -34,6 +36,8 @@ after BUILD => sub {
     $self->_set_events;
     return 1;
 };
+
+1;
 
 =head1 AUTHOR
 
@@ -65,5 +69,3 @@ under the terms of either: the GNU General Public License as published
 by the Free Software Foundation.
 
 =cut
-
-1;    # End of App::Sqitch::GUI::Roles::Element

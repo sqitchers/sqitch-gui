@@ -1,5 +1,8 @@
 #!/bin/env perl
 
+# ABSTRACT: GUI for Sqitch
+# PODNAME: sqitch-gui
+
 use strict;
 use warnings;
 

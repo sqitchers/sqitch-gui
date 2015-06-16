@@ -9,12 +9,12 @@ use App::Sqitch::GUI::Types qw(
     HashRef
     Maybe
     Object
-    Sqitch
     SqitchGUIWxApp
     SqitchGUIConfig
     SqitchGUIStatus
     SqitchGUIDialogStatus
     SqitchGUIModel
+    SqitchGUIModelListDataTable
     SqitchGUIView
     WxWindow
 );
@@ -31,7 +31,6 @@ use File::Slurp;
 use Try::Tiny;
 use App::Sqitch::X qw(hurl);
 
-use App::Sqitch::GUI::Model;
 use App::Sqitch::GUI::WxApp;
 use App::Sqitch::GUI::Config;
 use App::Sqitch::GUI::Status;
@@ -40,29 +39,6 @@ use App::Sqitch::GUI::Refresh;
 use App::Sqitch::GUI::View::Dialog::Projects;
 use App::Sqitch::GUI::View::Dialog::Status;
 use App::Sqitch::GUI::View::Dialog::Refresh;
-
-use Data::Printer;
-
-has 'app' => (
-    is      => 'ro',
-    isa     => SqitchGUIWxApp,
-    lazy    => 1,
-    builder => '_build_app',
-);
-
-sub _build_app {
-    my $self = shift;
-    return App::Sqitch::GUI::WxApp->new( config => $self->config );
-}
-
-has 'view' => (
-    is      => 'ro',
-    isa     => SqitchGUIView,
-    default => sub {
-        my $self = shift;
-        return $self->app->view;
-    },
-);
 
 has 'model' => (
     is      => 'ro',
@@ -74,7 +50,6 @@ sub _build_model {
     my $self = shift;
     return App::Sqitch::GUI::Model->new(
         config => $self->config,
-        sqitch => $self->sqitch,
     );
 }
 
@@ -96,6 +71,31 @@ sub _build_config {
     };
     return $config;
 }
+
+has 'app' => (
+    is       => 'ro',
+    isa      => SqitchGUIWxApp,
+    lazy     => 1,
+    required => 1,
+    builder  => '_build_app',
+);
+
+sub _build_app {
+    my $self = shift;
+    return App::Sqitch::GUI::WxApp->new(
+        config => $self->config,
+        model  => $self->model,
+    );
+}
+
+has 'view' => (
+    is      => 'ro',
+    isa     => SqitchGUIView,
+    default => sub {
+        my $self = shift;
+        return $self->app->view;
+    },
+);
 
 has 'status' => (
     is      => 'rw',
@@ -121,34 +121,35 @@ sub log_message {
     Wx::LogMessage($msg);
 }
 
-sub sqitch {
-    my $self = shift;
-
-    my $opts = {};
-    my $sqitch;
-    try {
-        $sqitch = App::Sqitch::GUI::Sqitch->new( {
-            options => $opts,
-            config  => $self->config,
-        } );
-    }
-    catch {
-        print "Error on Sqitch initialization: $_\n";
-    };
-
-    return $sqitch;
-}
-
 sub BUILD {
     my $self = shift;
-
     $self->_setup_events;
     $self->_init_observers;
-
     $self->log_message('Welcome to Sqitch!');
-
     $self->load_sqitch_project;
+    return;
+}
 
+sub populate_list {
+    my ($self, $list_data, $list_meta_data, $record_ref) = @_;
+    my $row = 0;
+    foreach my $rec ( @{$record_ref} ) {
+        my @row_data = ();
+        foreach my $meta ( @{$list_meta_data} ) {
+            my $field = $meta->{field};
+            my $value
+                = $field eq q{}     ? q{}
+                : $field eq 'recno' ? ( $rec->{$field} // $row + 1 )
+                :                     ( $rec->{$field} // q{} );
+            $value = $value->stringify
+                if ref $value and $value->can('stringify');
+            $value = $value->as_string
+                if ref $value and $value->can('as_string');
+            push @row_data, $value;
+        }
+        $list_data->add_row(@row_data);
+        $row++;
+    }
     return;
 }
 
@@ -157,17 +158,20 @@ sub load_sqitch_project {
     $self->status->set_state('idle');
 
     if ( my $proj_cnt = $self->config->has_project ) {
-        my ($name, $path) = $self->validate_projects_conf;
-        if ( $name and $path ) {
-            $self->config_reload( $name, $path );
-            $self->populate_project;
-            #$self->populate_plan;
-            #$self->populate_change;
+        $self->populate_project_list;
+
+        # Configuration issues
+        foreach my $item ( $self->model->config_all_issues ) {
+            $self->log_message($item);
         }
+
+        $self->populate_project;
+        $self->populate_plan;
+        $self->populate_change;
     }
     else {
         $self->log_message('Add a project...');
-        $self->log_message('Opening a dialog...');
+        $self->log_message('Opening the dialog...');
         my $timer = Wx::Timer->new( $self->view->frame, 1 );
         $timer->Start( 2000, 1 );    # one shot
         EVT_TIMER $self->view->frame, 1, sub {
@@ -178,43 +182,6 @@ sub load_sqitch_project {
         };
     }
 
-    return;
-}
-
-sub validate_projects_conf {
-    my $self = shift;
-    if ( my $proj_cnt = $self->config->has_project ) {
-        $self->log_message(
-            __nx 'Found a project', 'Found {count} projects',
-            $proj_cnt, count => $proj_cnt
-        );
-
-        # Do we have a valid config
-        my ( %seen_name, %seen_path );
-        foreach my $rec ( $self->config->projects ) {
-            my ( $name, $path ) = ( $rec->[0], $rec->[1] );
-            $seen_name{$name}++;
-            $self->log_message( __x 'Duplicate name found: "{name}"',
-                name => $name )
-                if defined $seen_name{$name} and $seen_name{$name} > 1;
-            $seen_path{$path}++;
-            $self->log_message( __x 'Duplicate path found: "{path}"',
-                path => $path )
-                if defined $seen_path{$path} and $seen_path{$path} > 1;
-        }
-
-        # Do we have a default project?
-        if ( my $name = $self->config->default_project_name ) {
-            if ( my $path = $self->config->default_project_path ) {
-                return ( $name, $path );
-            }
-            else {
-                $self->log_message(
-                    __x '[EE] The "{name}" project has no asociated path',
-                    name => $name );
-            }
-        }
-    }
     return;
 }
 
@@ -290,6 +257,28 @@ sub _init_observers {
     return;
 }
 
+sub populate_project_list {
+    my $self = shift;
+    my @projects;
+    for my $rec ( $self->model->projects ) {
+        my ($name, $attrib) = @{$rec};
+        my $default_label = $name eq $attrib->{default} ? __('Yes') : q();
+        push @projects, {
+            name    => $name,
+            path    => $attrib->{path},
+            engine  => $attrib->{engine},
+            default => $default_label,
+        };
+    }
+    $self->populate_list(
+        $self->model->project_list_data,
+        $self->model->project_list_meta_data,
+        \@projects,
+    );
+    $self->view->get_project_list_ctrl->RefreshList;
+    $self->view->get_project_list_ctrl->set_selection('last');
+}
+
 sub populate_project {
     my $self = shift;
 
@@ -311,7 +300,7 @@ sub populate_project {
         creator_email => undef,
     };
     while ( my ( $field, $value ) = each %{$fields} ) {
-        $self->load_form_for( 'project', $field, $value );
+        $self->view->load_txt_form_for( 'project', $field, $value );
     }
 
     return;
@@ -323,9 +312,10 @@ sub populate_change {
     my $engine = $self->model->target->engine;
     my $plan   = $self->model->target->plan;
     my $change = $plan->last;
+    return unless $change;
+
     my $name   = $change->name;
     my $state  = $engine->current_state( $plan->project );
-
     my $planned_at
         = defined $state
         ? $state->{planned_at}->as_string
@@ -334,7 +324,6 @@ sub populate_change {
         = defined $state
         ? $state->{committed_at}->as_string
         : undef;
-
     my %fields = (
         change_id       => $change->id,
         name            => $change->name,
@@ -349,31 +338,44 @@ sub populate_change {
         committer_email => $state->{committer_email},
     );
     while ( my ( $field, $value ) = each(%fields) ) {
-        $self->load_form_for( 'change', $field, $value );
+        $self->view->load_txt_form_for( 'change', $field, $value );
     }
 
     $self->load_sql_for($_, $name) for qw(deploy revert verify);
+    return;
+}
 
+sub load_sql_for {
+    my ($self, $command, $name) = @_;
+    my $repo_path = $self->config->default_project_path;
+    my $sql_file  = file $repo_path, $command, "$name.sql";
+    my $text      = read_file($sql_file);
+    $self->view->load_sql_form_for( 'change', $command, $text );
     return;
 }
 
 sub populate_plan {
     my $self = shift;
-
-    my $plan   = $self->model->target->plan;
+    my $plan = $self->model->target->plan;
 
     # Search the changes. (from ...Sqitch::Command::plan)
     my $iter = $plan->search_changes();
-    my @recs;
+    my @plans;
     while ( my $change = $iter->() ) {
-        push @recs, {
+        push @plans, {
             name        => $change->name,
             description => $change->note,
             create_time => $change->timestamp,
             creator     => $change->planner_name,
         };
     }
-    $self->view->plan->populate(\@recs);
+    $self->populate_list(
+        $self->model->plan_list_data,
+        $self->model->plan_list_meta_data,
+        \@plans,
+    );
+    $self->view->get_plan_list_ctrl->RefreshList;
+    $self->view->get_plan_list_ctrl->set_selection('last');
 
     return;
 }
@@ -402,32 +404,6 @@ sub execute_command {
     return;
 }
 
-sub load_form_for {
-    my ($self, $form, $field, $value) = @_;
-
-    hurl __ 'Wrong arguments passed to load_form_for()'
-        unless defined $field;
-
-    my $ctrl_name = "txt_$field";
-    my $ctrl = $self->view->$form->$ctrl_name;
-    $self->view->control_write_e($ctrl, $value);
-
-    return;
-}
-
-sub load_sql_for {
-    my ($self, $command, $name) = @_;
-
-    my $repo_path = $self->config->default_project_path;
-    my $sql_file  = file $repo_path, $command, "$name.sql";
-    my $text = read_file($sql_file);
-    my $ctrl_name = "edit_$command";
-    my $ctrl = $self->view->change->$ctrl_name;
-    $self->view->control_write_s($ctrl, $text);
-
-    return;
-}
-
 sub on_quit {
     my ($self, $frame, $event) = @_;
     print "Normal exit.\n";
@@ -438,15 +414,17 @@ sub on_admin {
     my ($self, $frame, $event) = @_;
 
     my $dialog = App::Sqitch::GUI::View::Dialog::Projects->new(
-        app      => $self->app,
-        ancestor => $self,
-        parent   => undef,                   # for dialogs
+        app       => $self->app,
+        ancestor  => $self,
+        parent    => undef,                  # undef for dialogs
     );
 
     $self->dlg_status->add_observer(
         App::Sqitch::GUI::View::Dialog::Refresh->new( dialog => $dialog ) );
 
     $self->dlg_status->set_state('sele');
+    $dialog->list_ctrl->set_selection(0)
+        if $dialog->list_ctrl->get_item_count > 0;
 
     if ( $dialog->ShowModal == wxID_OK ) {
         $self->dlg_status->remove_all_observers;
@@ -485,8 +463,6 @@ sub config_reload {
 
     say "Loading: $c_name $c_path";
 
-    $self->populate_project;
-
     return;
 }
 
@@ -505,7 +481,7 @@ sub config_edit_project {
 }
 
 sub config_remove_project {
-    my ( $self, $name, $path, $is_default ) = @_;
+    my ( $self, $name, $is_default ) = @_;
     my @cmd = qw(config --user --remove-section);
     $self->execute_command(@cmd, "project.${name}");
     $self->execute_command(@cmd, "project") if $is_default;
@@ -518,5 +494,50 @@ sub config_save_local {
     $self->execute_command(@cmd, "core.${engine}.db_name", $database);
     return 1;
 }
+
+# sub config_set_default {
+#     my $self = shift;
+
+#     my $index = $self->list_ctrl->get_selection;
+#     print "Select item no $index (config_set_default)\n";
+#     $self->_select_item($index);
+
+#     my $name = $self->model->selected_name;
+#     my $path = $self->model->selected_path;
+#     unless ( $name and $path ) {
+#         $self->set_message(__ 'Select a project item, please.');
+#         return;
+#     }
+
+#     $self->ancestor->config_set_default($name);    # write to the config file
+#     $self->config->default_project_name($name);    # set the new default
+#     $self->config->default_project_path($path);
+
+#     # my $user_file = $self->config->user_file;
+#     # $self->config->reload($user_file);
+#     # $self->config->reload($path);
+#     # p $self->config;
+#     print 'r: user_file:   ', $self->config->user_file, "\n";
+#     print 'r: local_file:  ', $self->config->local_file, "\n";
+
+#     $self->_mark_as_default;
+
+#     return;
+# }
+
+# sub _clear_default_mark {
+#     my $self = shift;
+#     $self->list_data->set_col( 3, '' );
+#     return;
+# }
+
+# sub _mark_as_default {
+#     my ($self, $item) = @_;
+#     $item //= $self->list_ctrl->get_selection;
+#     $self->_clear_default_mark;
+#     $self->_set_default_mark($item) if defined $item;
+#     $self->list_ctrl->RefreshList;
+#     return;
+# }
 
 1;

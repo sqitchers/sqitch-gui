@@ -7,7 +7,7 @@ use Moo;
 use App::Sqitch::GUI::Types qw(
     Maybe
     SqitchGUIConfig
-	SqitchGUIModel
+    SqitchGUIModel
     SqitchGUIView
 );
 use Wx;
@@ -15,13 +15,14 @@ use Wx::Event qw(EVT_CLOSE);
 
 extends 'Wx::App';
 
-use App::Sqitch::GUI::Config;
 use App::Sqitch::GUI::Model;
 use App::Sqitch::GUI::View;
 
 has config => (
-    is  => 'ro',
-    isa => Maybe[SqitchGUIConfig],
+    is       => 'ro',
+    isa      => Maybe [SqitchGUIConfig],
+    lazy     => 1,
+    required => 1,
 );
 
 has 'view' => (
@@ -35,17 +36,11 @@ has 'view' => (
 );
 
 has 'model' => (
-    is      => 'ro',
-    isa     => SqitchGUIModel,
-    builder => '_build_model',
+    is       => 'ro',
+    isa      => SqitchGUIModel,
+    lazy     => 1,
+    required => 1,
 );
-
-sub _build_model {
-    my $self = shift;
-    return App::Sqitch::GUI::Model->new(
-        config => $self->config,
-    );
-}
 
 sub FOREIGNBUILDARGS {
     return ();                     # Wx::App->new() gets no arguments.

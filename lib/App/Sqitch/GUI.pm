@@ -13,8 +13,6 @@ use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Locale::Messages qw(bind_textdomain_filter);
 use App::Sqitch::GUI::Controller;
 
-our $VERSION = '0.003';
-
 BEGIN {
     # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
     $ENV{OUTPUT_CHARSET} = 'UTF-8';
@@ -35,6 +33,8 @@ sub _build_controller {
 sub run {
     shift->controller->app->MainLoop;
 }
+
+1;
 
 =head1 AUTHOR
 
@@ -69,5 +69,3 @@ under the terms of either: the GNU General Public License as published
 by the Free Software Foundation.
 
 =cut
-
-1;    # End of App::Sqitch::GUI

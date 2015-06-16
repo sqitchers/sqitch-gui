@@ -253,7 +253,7 @@ sub _build_list_ctrl {
         app       => $self->app,
         parent    => $self,
         list_data => $self->list_data,
-        meta_data => $self->model->project_list_meta_data,
+        meta_data => $self->model->project_dlg_list_meta_data,
     );
     return $list;
 }
@@ -406,7 +406,7 @@ sub FOREIGNBUILDARGS {
     return (
         $args{parent},
         -1,
-        __ 'Project List',
+        __ 'Manage Projects List',
         [-1, -1],
         [-1, -1],
         wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE,
@@ -510,8 +510,6 @@ sub _set_events {
 sub _init_dialog {
     my $self = shift;
     $self->ancestor->dlg_status->set_state('init');
-    $self->list_ctrl->set_selection(0)
-        if $self->list_ctrl->get_item_count > 0;
     $self->list_ctrl->RefreshList;
     return;
 }
@@ -539,7 +537,7 @@ sub _on_item_selected {
     my $name = $self->list_data->get_value($item, 1);
     my $path = $self->list_data->get_value($item, 2);
     $self->clear_form;
-    $self->load_item_details($name, $path);
+    $self->load_item_details($name);
     return;
 }
 
@@ -552,23 +550,12 @@ the local configuration file and get the required info from there.
 =cut
 
 sub load_item_details {
-    my ($self, $name, $path) = @_;
-
-    return unless $name and $path;
-
+    my ($self, $name) = @_;
+    return unless $name;
+    my $project = $self->model->get_project($name);
     $self->control_write_e( $self->txt_name, $name );
-    $self->control_write_p( $self->dpc_path, $path );
-
-    # Load the local config
-    my $item_cfg_file = file $path, $self->config->confname;
-    if ( -f $item_cfg_file ) {
-        my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
-        my $engine_code = $item_cfg_href->{'core.engine'};
-        my $engine_name = $self->config->get_engine_name($engine_code);
-        $self->control_write_c( $self->cbx_engine, $engine_name )
-            if $engine_name;
-    }
-
+    $self->control_write_p( $self->dpc_path, $project->{path} );
+    $self->control_write_c( $self->cbx_engine, $project->{engine} );
     return;
 }
 
