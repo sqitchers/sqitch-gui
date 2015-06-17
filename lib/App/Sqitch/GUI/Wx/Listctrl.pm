@@ -116,7 +116,7 @@ sub delete_current_item {
     my $sel = $self->get_selection;
     return unless defined $sel and $sel >= 0;
     $self->list_data->remove_row($sel);
-    $self->set_selection(0) if $self->get_item_count > 0;
+    $self->Select( 0, 1 );               # 1|0 <=> select|deselect
     $self->RefreshList;
     return;
 }

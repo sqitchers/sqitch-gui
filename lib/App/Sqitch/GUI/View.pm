@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::View;
 
+use 5.010;
+use utf8;
 use Moo;
 use App::Sqitch::GUI::Types qw(
     ArrayRef
@@ -23,11 +25,18 @@ use App::Sqitch::GUI::Types qw(
     WxSplitterWindow
 );
 use Wx qw(:everything);
-use Wx::Event qw(EVT_CLOSE EVT_BUTTON EVT_MENU EVT_RADIOBUTTON EVT_TOOL);
+use Wx::Event qw(
+    EVT_BUTTON
+    EVT_CLOSE
+    EVT_LIST_ITEM_SELECTED
+    EVT_MENU
+    EVT_RADIOBUTTON
+    EVT_TOOL
+);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
 
-with qw(App::Sqitch::GUI::Roles::Element);
+with 'App::Sqitch::GUI::Roles::Element';
 
 use App::Sqitch::GUI::Config::Toolbar;
 use App::Sqitch::GUI::Wx::Menubar;
@@ -269,7 +278,7 @@ sub _build_status_bar {
 }
 
 sub _build_size {
-    return Wx::Size->new(800, 650); # default window size
+    return Wx::Size->new(900, 700); # default window size
 }
 
 sub _build_style {
@@ -426,7 +435,7 @@ sub show_panel {
 sub set_status {
     my ($self, $state, $gui_rules) = @_;
 
-    $self->status_bar->change_caption($state, 1);
+    $self->status_bar->change_caption( $state, 1 );
     foreach my $btn ( keys %{$gui_rules} ) {
         my $enable = $gui_rules->{$btn};
         $self->right_side->$btn->Enable($enable);
@@ -457,6 +466,12 @@ sub event_handler_for_tb_button {
     my ( $self, $name, $calllback ) = @_;
     my $tb_id = $self->get_toolbar_btn($name)->GetId;
     EVT_TOOL $self->frame, $tb_id, $calllback;
+    return;
+}
+
+sub event_handler_for_list {
+    my ( $self, $list, $calllback ) = @_;
+    EVT_LIST_ITEM_SELECTED $self->frame, $list, $calllback;
     return;
 }
 

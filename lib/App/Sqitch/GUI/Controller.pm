@@ -1,8 +1,6 @@
 package App::Sqitch::GUI::Controller;
 
 use 5.010;
-use strict;
-use warnings;
 use utf8;
 use Moo;
 use App::Sqitch::GUI::Types qw(
@@ -235,6 +233,11 @@ sub _setup_events {
             };
     }
 
+    EVT_BUTTON $self->view->frame,
+        $self->view->project->btn_default->GetId, sub {
+            $self->set_project_default;
+        };
+
     #-- Quit
     $self->view->event_handler_for_tb_button( 'tb_qt',
         sub { $self->on_quit(@_) },
@@ -243,6 +246,12 @@ sub _setup_events {
     #-- Projects
     $self->view->event_handler_for_tb_button( 'tb_pj',
         sub { $self->on_admin(@_) },
+    );
+
+    #-- Projects list
+    $self->view->event_handler_for_list(
+        $self->view->get_project_list_ctrl,
+        sub { $self->_on_project_listitem_selected(@_) },
     );
 
     return;
@@ -263,11 +272,13 @@ sub populate_project_list {
     for my $rec ( $self->model->projects ) {
         my ($name, $attrib) = @{$rec};
         my $default_label = $name eq $attrib->{default} ? __('Yes') : q();
+        my $current_label = $name eq $attrib->{current} ? __('Yes') : q();
         push @projects, {
             name    => $name,
             path    => $attrib->{path},
             engine  => $attrib->{engine},
             default => $default_label,
+            current => $current_label,
         };
     }
     $self->populate_list(
@@ -275,8 +286,25 @@ sub populate_project_list {
         $self->model->project_list_meta_data,
         \@projects,
     );
+    my $index = $self->set_default_project_index;
+
     $self->view->get_project_list_ctrl->RefreshList;
-    $self->view->get_project_list_ctrl->set_selection('last');
+    $self->view->get_project_list_ctrl->set_selection($index);
+
+    return;
+}
+
+sub set_default_project_index {
+    my $self  = shift;
+    my $index = 0;
+    foreach my $item ( $self->model->project_list_data->get_col(4) ) {
+        if ( $item->name eq __ 'Yes' ) {
+            $self->model->default_project->item($index);
+            last;
+        }
+        $index++;
+    }
+    return $index;
 }
 
 sub populate_project {
@@ -427,6 +455,7 @@ sub on_admin {
         if $dialog->list_ctrl->get_item_count > 0;
 
     if ( $dialog->ShowModal == wxID_OK ) {
+        $self->view->get_project_list_ctrl->RefreshList;
         $self->dlg_status->remove_all_observers;
         return;
     }
@@ -437,34 +466,34 @@ sub on_admin {
     return;
 }
 
-sub config_reload {
-    my ($self, $name, $path) = @_;
+# sub config_reload {
+#     my ($self, $name, $path) = @_;
 
-    $name //= $self->model->selected_name;
-    $path //= $self->model->selected_path;
+#     $name //= $self->model->selected_name;
+#     $path //= $self->model->selected_path;
 
-    $self->log_message( __x 'Loading the "{name}" project', name => $name );
+#     $self->log_message( __x 'Loading the "{name}" project', name => $name );
 
-    $self->config->reload($path);
+#     $self->config->reload($path);
 
-    print 'cfg: user_file:  ', $self->config->user_file, "\n";
-    print 'cfg: local_file: ', $self->config->local_file, "\n";
-    # print "\nCONFIG:\n";
-    # print "---\n";
-    # print scalar $self->config->dump;
-    # print "---\n";
-    # print "\n";
+#     print 'cfg: user_file:  ', $self->config->user_file, "\n";
+#     print 'cfg: local_file: ', $self->config->local_file, "\n";
+#     # print "\nCONFIG:\n";
+#     # print "---\n";
+#     # print scalar $self->config->dump;
+#     # print "---\n";
+#     # print "\n";
 
-    $self->config->default_project_name($name);
-    $self->config->default_project_path($path);
+#     $self->config->default_project_name($name);
+#     $self->config->default_project_path($path);
 
-    my $c_name = $self->config->default_project_name;
-    my $c_path = $self->config->default_project_path;
+#     my $c_name = $self->config->default_project_name;
+#     my $c_path = $self->config->default_project_path;
 
-    say "Loading: $c_name $c_path";
+#     say "Loading: $c_name $c_path";
 
-    return;
-}
+#     return;
+# }
 
 sub config_set_default {
     my ($self, $name) = @_;
@@ -480,11 +509,17 @@ sub config_edit_project {
     return 1;
 }
 
+sub config_remove_default {
+    my ( $self, $name, $is_default ) = @_;
+    my @cmd = qw(config --user --remove-section);
+    $self->execute_command(@cmd, "project") if $is_default;
+    return 1;
+}
+
 sub config_remove_project {
     my ( $self, $name, $is_default ) = @_;
     my @cmd = qw(config --user --remove-section);
     $self->execute_command(@cmd, "project.${name}");
-    $self->execute_command(@cmd, "project") if $is_default;
     return 1;
 }
 
@@ -495,49 +530,58 @@ sub config_save_local {
     return 1;
 }
 
-# sub config_set_default {
-#     my $self = shift;
+sub set_project_default {
+    my $self = shift;
 
-#     my $index = $self->list_ctrl->get_selection;
-#     print "Select item no $index (config_set_default)\n";
-#     $self->_select_item($index);
+    my $item = $self->view->get_project_list_ctrl->get_selection;
+    my $name = $self->model->project_list_data->get_value($item, 1);
+    my $path = $self->model->project_list_data->get_value($item, 2);
+    unless ( $name and $path ) {
+        $self->log_message( __ 'Select a project item, please' );
+        return;
+    }
+    $self->config_set_default($name); # write to the config file
+    $self->model->default_project->item($item);
+    $self->mark_as_default($item);
+    $self->view->project->btn_default->Enable(0);
 
-#     my $name = $self->model->selected_name;
-#     my $path = $self->model->selected_path;
-#     unless ( $name and $path ) {
-#         $self->set_message(__ 'Select a project item, please.');
-#         return;
-#     }
+    # Is this necessary?
+    # $self->config->default_project_name($name);
+    # $self->config->default_project_path(dir $path);
+    return;
+}
 
-#     $self->ancestor->config_set_default($name);    # write to the config file
-#     $self->config->default_project_name($name);    # set the new default
-#     $self->config->default_project_path($path);
+sub _clear_default_mark_label {
+    my $self = shift;
+    $self->model->project_list_data->set_col( 4, '' );
+    return;
+}
 
-#     # my $user_file = $self->config->user_file;
-#     # $self->config->reload($user_file);
-#     # $self->config->reload($path);
-#     # p $self->config;
-#     print 'r: user_file:   ', $self->config->user_file, "\n";
-#     print 'r: local_file:  ', $self->config->local_file, "\n";
+sub _set_default_mark_label {
+    my ($self, $item) = @_;
+    $self->model->project_list_data->set_value( $item, 4, __('Yes') );
+    return;
+}
 
-#     $self->_mark_as_default;
+sub mark_as_default {
+    my ($self, $item) = @_;
+    $item //= $self->view->get_project_list_ctrl->get_selection;
+    hurl 'Wrong arguments passed to mark_as_default()'
+        unless defined $item;
+    $self->_clear_default_mark_label;
+    $self->_set_default_mark_label($item);
+    $self->view->get_project_list_ctrl->RefreshList;
+    return;
+}
 
-#     return;
-# }
-
-# sub _clear_default_mark {
-#     my $self = shift;
-#     $self->list_data->set_col( 3, '' );
-#     return;
-# }
-
-# sub _mark_as_default {
-#     my ($self, $item) = @_;
-#     $item //= $self->list_ctrl->get_selection;
-#     $self->_clear_default_mark;
-#     $self->_set_default_mark($item) if defined $item;
-#     $self->list_ctrl->RefreshList;
-#     return;
-# }
+sub _on_project_listitem_selected {
+    my ($self, $var, $event) =  @_;
+    my $current_item = $event->GetIndex;
+    my $default_item = $self->model->default_project->item;
+    my $enabled = $current_item == $default_item ? 0 : 1;
+    $self->view->project->btn_default->Enable($enabled);
+    $self->view->project->btn_load->Enable(0);
+    return;
+}
 
 1;

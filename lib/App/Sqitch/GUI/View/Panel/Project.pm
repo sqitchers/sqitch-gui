@@ -114,13 +114,6 @@ has 'btn_default' => (
     builder => '_build_btn_default',
 );
 
-has 'btn_add' => (
-    is      => 'rw',
-    isa     => WxButton,
-    lazy    => 1,
-    builder => '_build_btn_add',
-);
-
 has 'lbl_project' => (
     is      => 'rw',
     isa     => WxStaticText,
@@ -298,8 +291,6 @@ sub BUILD {
         25 );
     $self->btn_sizer->Add( $self->btn_default, 1,
         wxLEFT | wxRIGHT | wxEXPAND, 25 );
-    $self->btn_sizer->Add( $self->btn_add, 1, wxLEFT | wxRIGHT | wxEXPAND,
-        25 );
 
     $self->list_fg_sz->Add( $self->btn_sizer, 1, wxALIGN_CENTRE);
 
@@ -503,21 +494,6 @@ sub _build_btn_default {
         $self->panel,
         -1,
         __ 'Default',
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-    $button->Enable(0);
-
-    return $button;
-}
-
-sub _build_btn_add {
-    my $self = shift;
-
-    my $button = Wx::Button->new(
-        $self->panel,
-        -1,
-        __ 'Add',
         [ -1, -1 ],
         [ -1, -1 ],
     );

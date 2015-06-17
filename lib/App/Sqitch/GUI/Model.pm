@@ -52,26 +52,27 @@ has 'project_config_issues' => (
 );
 
 has 'default_project' => (
-     is      => 'rw',
-     isa     => Maybe[Str],
-     lazy    => 1,
-     builder => '_build_default_project',
+    is      => 'rw',
+    isa     => SqitchGUIModelProjectItem,
+    lazy    => 1,
+    builder => '_build_default_project',
 );
 
 sub _build_default_project {
     my $self = shift;
+    my $item = App::Sqitch::GUI::Model::ProjectItem->new;
     if ( my $name = $self->config->default_project_name ) {
         if ( my $path = $self->config->default_project_path ) {
-            $self->current_project->name($name);
-            $self->current_project->path($path);
+            $item->name($name);
+            $item->path($path);
         }
         else {
             $self->config_add_issue(
                 __x '[EE] The "{name}" project has no asociated path',
                 name => $name );
         }
-        return $name;
     }
+    return $item;
 }
 
 has project_list => (
@@ -103,12 +104,13 @@ sub _build_project_list {
             if defined $seen_path{$path} and $seen_path{$path} > 1;
 
         my $engine  = $self->get_project_engine($name);
-        my $default = $self->default_project;
+        my $default = $self->default_project->name;
         $projects->{$name} = {
             name    => $name,
             path    => $path,
             engine  => $engine,
             default => $default,
+            current => '',
         };
     }
     return $projects;
@@ -249,7 +251,7 @@ sub project_list_meta_data {
         {   field => 'path',
             label => __ 'Path',
             align => 'left',
-            width => 315,
+            width => 345,
             type  => 'str',
         },
         {   field => 'engine',
@@ -260,6 +262,12 @@ sub project_list_meta_data {
         },
         {   field => 'default',
             label => __ 'Default',
+            align => 'center',
+            width => 70,
+            type  => 'str',
+        },
+        {   field => 'current',
+            label => __ 'Current',
             align => 'center',
             width => 70,
             type  => 'str',

@@ -5,24 +5,24 @@ use utf8;
 use Moo;
 use App::Sqitch::GUI::Types qw(
     Int
-	Str
-	Dir
-	Maybe
+    Str
+    Dir
+    Maybe
 );
 
 has 'item' => (
     is  => 'rw',
-	isa => Maybe[Int],
+    isa => Maybe[Int],
 );
 
 has 'name' => (
     is  => 'rw',
-	isa => Maybe[Str],
+    isa => Maybe[Str],
 );
 
 has 'path' => (
     is  => 'rw',
-	isa => Maybe[Dir],
+    isa => Maybe[Dir],
 );
 
 1;

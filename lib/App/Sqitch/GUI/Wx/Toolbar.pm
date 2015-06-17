@@ -20,8 +20,6 @@ use Path::Class qw(dir);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
 
-use Data::Printer;
-
 extends 'Wx::ToolBar';
 
 has 'icon_path' => (

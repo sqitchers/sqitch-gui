@@ -495,7 +495,7 @@ sub _set_events {
     };
 
     EVT_LIST_ITEM_SELECTED $self, $self->list_ctrl, sub {
-        $self->_on_item_selected(@_);
+        $self->_on_listitem_selected(@_);
     };
 
     EVT_DIRPICKER_CHANGED $self, $self->dpc_path->GetId, sub {
@@ -529,7 +529,7 @@ sub clear_form {
     return;
 }
 
-sub _on_item_selected {
+sub _on_listitem_selected {
     my ($self, $var, $event) =  @_;
     return unless $self->get_state eq 'sele';
 
@@ -646,17 +646,20 @@ sub config_save_project {
     # Save in user config
     $self->ancestor->config_edit_project( $name, $path );
 
+    my $engine_name = $self->control_read_c( $self->cbx_engine );
+    my $params      = {
+        name   => $name,
+        path   => $path,
+        engine => $self->config->get_engine_from_name($engine_name),
+    };
     # Save in local config
-    my $engine_name = $self->control_read_c($self->cbx_engine);
-    my $engine      = $self->config->get_engine_from_name($engine_name);
-    my $database    = $self->control_read_e($self->txt_db);
     # if( $engine and $database ) { # not yet, only when implementing New!
     #     $self->ancestor->config_save_local( $engine, $database );
     # }
     $self->btn_new->SetLabel( __ '&Add' );
     $self->ancestor->dlg_status->set_state('sele');
 
-    $self->_edit_list_item( $self->list_ctrl->get_selection, $name, $path );
+    $self->_edit_list_item( $self->list_ctrl->get_selection, $params );
 
     return;
 }
@@ -664,17 +667,19 @@ sub config_save_project {
 sub add_empty_list_item {
     my $self = shift;
     my $row_count = $self->list_ctrl->get_item_count;
-    $self->list_data->add_row($row_count + 1, 'name', 'path');
+    $self->list_data->add_row($row_count + 1, '<name>', '<path>');
     $self->list_ctrl->RefreshList;
     return;
 }
 
 sub _edit_list_item {
-    my ($self, $item, $name, $path) = @_;
+    my ($self, $item, $params) = @_;
     $self->list_ctrl->Enable(0);
     $item //= $self->list_ctrl->get_selection;
-    $self->list_data->set_value( $item, 1, $name );
-    $self->list_data->set_value( $item, 2, $path );
+    $self->list_data->set_value( $item, 1, $params->{name} );
+    $self->list_data->set_value( $item, 2, $params->{path} );
+    $self->list_data->set_value( $item, 3, $params->{engine} );
+    $self->list_data->set_value( $item, 4, '' );
     $self->list_ctrl->RefreshList;
     $self->list_ctrl->Enable(1);
     return;

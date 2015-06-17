@@ -62,6 +62,12 @@ sub add_row {
     $self->list_data->add_row(\@_);
 }
 
+sub get_col {
+    my $self = shift;
+    my ($col) = @_;
+    return $self->list_data->get_col($col);
+}
+
 sub set_col {
     my $self = shift;
     my ($col, $value) = @_;
