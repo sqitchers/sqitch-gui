@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Refresh;
 
+# ABSTRACT: An Observer for the GUI
+
 use 5.010;
 use Moose;
 use namespace::autoclean;

@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::WxApp;
 
+# ABSTRACT: Wx App Extension
+
 use 5.010;
 use strict;
 use warnings;

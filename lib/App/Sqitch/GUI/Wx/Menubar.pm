@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Wx::Menubar;
 
+# ABSTRACT: Wx Menubar Control
+
 use Moo;
 use App::Sqitch::GUI::Types qw(
     ArrayRef

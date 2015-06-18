@@ -1,12 +1,14 @@
 package App::Sqitch::GUI::Roles::Element;
 
+# ABSTRACT: The Element Role
+
 use Moo::Role;
 use App::Sqitch::GUI::Types qw(
     HashRef
     Maybe
     Object
     SqitchGUIWxApp
-	SqitchGUIModel
+    SqitchGUIModel
     WxWindow
 );
 use namespace::autoclean;

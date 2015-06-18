@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Sqitch;
 
+# ABSTRACT: A Sqitch Extension
+
 use Moose;
 use namespace::autoclean;
 

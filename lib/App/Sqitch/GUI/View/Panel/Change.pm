@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::View::Panel::Change;
 
+# ABSTRACT: The Change Panel
+
 use 5.010;
 use strict;
 use warnings;

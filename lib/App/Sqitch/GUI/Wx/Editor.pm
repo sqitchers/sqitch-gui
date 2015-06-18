@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Wx::Editor;
 
+# ABSTRACT: Wx StyledText Editor Control
+
 use Moo;
 use Wx qw(:everything);
 use Wx::STC;

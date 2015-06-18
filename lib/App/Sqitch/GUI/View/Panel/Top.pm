@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::View::Panel::Top;
 
+# ABSTRACT: The Top Panel
+
 use 5.010;
 use strict;
 use warnings;

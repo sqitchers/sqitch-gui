@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Config;
 
+# ABSTRACT: A Sqitch::Config Extension
+
 use 5.010;
 use strict;
 use utf8;

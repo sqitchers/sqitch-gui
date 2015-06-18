@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Wx::Statusbar;
 
+# ABSTRACT: Wx Statusbar Control
+
 use Moo;
 use App::Sqitch::GUI::Types qw(
     Str

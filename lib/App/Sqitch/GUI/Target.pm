@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Target;
 
+# ABSTRACT: A Sqitch::Target Extension
+
 use Moo;
 use App::Sqitch::GUI::Types qw(
     Dir

@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::View::Dialog::About;
 
+# ABSTRACT: The About Dialog
+
 use 5.010;
 use strict;
 use warnings;

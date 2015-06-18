@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Wx::Notebook;
 
+# ABSTRACT: Wx Notebook Control
+
 use 5.010;
 use strict;
 use warnings;

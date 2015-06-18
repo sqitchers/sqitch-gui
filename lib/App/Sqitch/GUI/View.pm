@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::View;
 
+# ABSTRACT: The View
+
 use 5.010;
 use utf8;
 use Moo;

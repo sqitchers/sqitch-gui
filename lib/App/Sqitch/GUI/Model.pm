@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Model;
 
+# ABSTRACT: The Model
+
 use 5.010;
 use Moo;
 use MooX::HandlesVia;

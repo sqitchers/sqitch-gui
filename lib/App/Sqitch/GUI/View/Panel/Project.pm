@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::View::Panel::Project;
 
+# ABSTRACT: The Project Panel
+
 use 5.010;
 use strict;
 use warnings;

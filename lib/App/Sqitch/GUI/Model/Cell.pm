@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Model::Cell;
 
+# ABSTRACT: Data Table Cell
+
 use Moo;
 use Types::Standard -types;
 
@@ -12,7 +14,7 @@ has name => (
 
 =head1 ACKNOWLEDGMENTS
 
-Code copied from http://www.perlmonks.org/?node_id=1052124
+Code copied and adapted from http://www.perlmonks.org/?node_id=1052124
 
 Thanks tobyink.
 

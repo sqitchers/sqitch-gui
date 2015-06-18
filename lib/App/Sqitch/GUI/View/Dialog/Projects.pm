@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::View::Dialog::Projects;
 
+# ABSTRACT: The Projects Dialog
+
 use 5.010;
 use strict;
 use warnings;

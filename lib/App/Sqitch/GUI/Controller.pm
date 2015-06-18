@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Controller;
 
+# ABSTRACT: The Controller
+
 use 5.010;
 use utf8;
 use Moo;

@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Model::ListDataTable;
 
+# ABSTRACT: List Data Table
+
 use 5.010;
 use utf8;
 use Moo;

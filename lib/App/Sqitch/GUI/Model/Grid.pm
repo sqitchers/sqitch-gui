@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Model::Grid;
 
+# ABSTRACT: Data Table Grid
+
 use Moo;
 use Types::Standard -types;
 use List::Objects::Types -types;
@@ -106,7 +108,7 @@ __END__
 
 =head1 ACKNOWLEDGMENTS
 
-Code copied from http://www.perlmonks.org/?node_id=1052124
+Code copied and adapted from http://www.perlmonks.org/?node_id=1052124
 
 Thanks tobyink.
 

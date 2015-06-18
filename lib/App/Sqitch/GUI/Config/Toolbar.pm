@@ -1,6 +1,6 @@
 package App::Sqitch::GUI::Config::Toolbar;
 
-# ABSTRACT: Data store for toolbar
+# ABSTRACT: Data store for Toolbar
 
 use Moo;
 use MooX::HandlesVia;

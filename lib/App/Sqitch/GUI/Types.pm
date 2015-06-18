@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Types;
 
+# ABSTRACT: Sqitch GUI Types
+
 use 5.010;
 use strict;
 use warnings;

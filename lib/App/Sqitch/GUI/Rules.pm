@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Rules;
 
+# ABSTRACT: Rules for buttons
+
 use Moose;
 use namespace::autoclean;
 use MooseX::AttributeHelpers;

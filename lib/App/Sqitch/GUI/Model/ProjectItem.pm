@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Model::ProjectItem;
 
+# ABSTRACT: Project Item model
+
 use 5.010;
 use utf8;
 use Moo;

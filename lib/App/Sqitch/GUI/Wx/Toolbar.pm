@@ -1,6 +1,6 @@
 package App::Sqitch::GUI::Wx::Toolbar;
 
-# ABSTRACT: A ToolBar Control
+# ABSTRACT: Wx Toolbar Control
 
 use Moo;
 use App::Sqitch::GUI::Types qw(

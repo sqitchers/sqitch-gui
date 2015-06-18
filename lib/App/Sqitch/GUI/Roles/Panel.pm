@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Roles::Panel;
 
+# ABSTRACT: The Panel Role
+
 use Wx qw(:everything);
 use Moo::Role;
 use App::Sqitch::X qw(hurl);

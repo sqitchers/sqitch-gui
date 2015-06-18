@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::View::Dialog::Rules;
 
+# ABSTRACT: Rules for the Projects Dialog
+
 use Moose;
 use namespace::autoclean;
 use MooseX::AttributeHelpers;
