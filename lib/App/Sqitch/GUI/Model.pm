@@ -103,22 +103,28 @@ sub _build_project_list {
             path => $path )
             if defined $seen_path{$path} and $seen_path{$path} > 1;
 
-        my $engine  = $self->get_project_engine($name);
+        my $engine  = $self->get_project_engine_from_name($name);
         my $default = $self->default_project->name;
+        my $current = $self->current_project->name;
         $projects->{$name} = {
             name    => $name,
             path    => $path,
             engine  => $engine,
             default => $default,
-            current => '',
+            current => $current,
         };
     }
     return $projects;
 }
 
-sub get_project_engine {
+sub get_project_engine_from_name {
     my ($self, $name) = @_;
     my $path = $self->config->get_project($name);
+    return $self->get_project_engine_from_path($path);
+}
+
+sub get_project_engine_from_path {
+    my ($self, $path) = @_;
     my $item_cfg_file = file $path, $self->config->confname;
     if ( -f $item_cfg_file ) {
         my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
@@ -159,11 +165,11 @@ has 'target' => (
 
 sub _build_target {
     my $self = shift;
-    try {
+    my $target = try {
         return App::Sqitch::GUI::Target->new( sqitch => $self->sqitch );
     }
     catch {
-        print "Catch ERROR: $_\n";
+        return undef;
     };
 }
 
@@ -171,11 +177,21 @@ has 'plan' => (
     is      => 'ro',
     isa     => Maybe[SqitchGUITarget],
     lazy    => 1,
-    default => sub {
-        my $self = shift;
-        return App::Sqitch::GUI::Target->new( sqitch => $self->sqitch );
-    },
+    builder => '_build_plan',
 );
+
+sub _build_plan {
+    my $self = shift;
+    my $plan = try {
+        return App::Sqitch::Plan->new(
+            sqitch => $self->sqitch,
+            target => $self->target,
+        );
+    }
+    catch {
+        say "ERR: $_";
+    };
+}
 
 #--
 

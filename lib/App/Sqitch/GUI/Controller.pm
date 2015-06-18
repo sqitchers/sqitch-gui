@@ -124,7 +124,7 @@ sub BUILD {
     $self->_setup_events;
     $self->_init_observers;
     $self->log_message('Welcome to Sqitch!');
-    $self->load_sqitch_project;
+    $self->prepare_projects;
     return;
 }
 
@@ -151,21 +151,13 @@ sub populate_list {
     return;
 }
 
-sub load_sqitch_project {
+sub prepare_projects {
     my $self = shift;
     $self->status->set_state('idle');
 
     if ( my $proj_cnt = $self->config->has_project ) {
         $self->populate_project_list;
-
-        # Configuration issues
-        foreach my $item ( $self->model->config_all_issues ) {
-            $self->log_message($item);
-        }
-
-        $self->populate_project;
-        $self->populate_plan;
-        $self->populate_change;
+        $self->load_sqitch_project;
     }
     else {
         $self->log_message('Add a project...');
@@ -174,38 +166,35 @@ sub load_sqitch_project {
         $timer->Start( 2000, 1 );    # one shot
         EVT_TIMER $self->view->frame, 1, sub {
             $self->on_admin(@_);
-            #say "loyding: ", $self->model->selected_name;
-            # my $project_cfg = $self->model->get_project('sqitch-s2i2');
-            # $self->config_reload('sqitch-s2i2', $project_cfg);
+            $self->load_sqitch_project;
         };
     }
 
     return;
 }
 
-sub load_config {
+sub load_sqitch_project {
     my $self = shift;
 
-    # Load the local configuration file
-    if ( $self->config->default_project_name ) {
-        my $project_path = $self->config->default_project_path;
-        if ( $project_path ) {
-            $self->config->reload($project_path);
-        }
-        else {
-            $self->log_message('Wrong default path in config!');
-            return;
-        }
+    if ( my $proj_cnt = $self->config->has_project ) {
+        $self->log_message(
+            __nx 'OK, found a project', 'Found {count} projects',
+            $proj_cnt, count => $proj_cnt );
     }
 
-    print 'cfg: user_file:  ', $self->config->user_file, "\n";
-    print 'cfg: local_file: ', $self->config->local_file, "\n";
+    # Configuration issues?
+    foreach my $item ( $self->model->config_all_issues ) {
+        $self->log_message($item);
+    }
 
-    print "\nCONFIG:\n";
-    print "---\n";
-    print scalar $self->config->dump;
-    print "---\n";
-    print "\n";
+    # Fill the forms
+    if ( my $name = $self->populate_project ) {
+        $self->log_message(
+            __x 'Loading the "{name}" project',
+            name => $name );
+        $self->populate_plan;
+        $self->populate_change;
+    }
 
     return;
 }
@@ -271,8 +260,10 @@ sub populate_project_list {
     my @projects;
     for my $rec ( $self->model->projects ) {
         my ($name, $attrib) = @{$rec};
-        my $default_label = $name eq $attrib->{default} ? __('Yes') : q();
-        my $current_label = $name eq $attrib->{current} ? __('Yes') : q();
+        my $default = $attrib->{default} // q();
+        my $current = $attrib->{current} // q();
+        my $default_label = $name eq $default ? __('Yes') : q();
+        my $current_label = $name eq $current ? __('Yes') : q();
         push @projects, {
             name    => $name,
             path    => $attrib->{path},
@@ -311,13 +302,27 @@ sub populate_project {
     my $self = shift;
 
     my $config = $self->config;
-    my $engine = $self->model->target->engine;
-    my $plan   = $self->model->target->plan;
-    # hurl "No plan?" unless $plan and $plan->isa('App::Sqitch::Plan');
-    # my $dbname = $engine->uri->dbname;
+    my $engine = try { $self->model->target->engine; }
+    catch {
+        $self->log_message( "[EE] $_" );
+        return undef;
+    };
+    return unless $engine;
+    my $plan = try { $self->model->target->plan; }
+    catch {
+        $self->log_message( "[EE] $_" );
+        return undef;
+    };
+    return unless $plan;
+    my $project = try { $plan->project; }
+    catch {
+        $self->log_message( "[EE]: $_" );
+        return undef;
+    };
+    return unless $project;
 
     my $fields = {
-        project  => $plan->project                // 'unknown',
+        project  => $project                      // 'unknown',
         uri      => $plan->uri                    // 'unknown',
         database => $engine->uri->dbname          // 'unknown',
         user     => $engine->uri->user            // 'unknown',
@@ -331,7 +336,7 @@ sub populate_project {
         $self->view->load_txt_form_for( 'project', $field, $value );
     }
 
-    return;
+    return $project;
 }
 
 sub populate_change {
@@ -340,10 +345,21 @@ sub populate_change {
     my $engine = $self->model->target->engine;
     my $plan   = $self->model->target->plan;
     my $change = $plan->last;
-    return unless $change;
-
+    unless ($change) {
+        $self->log_message( __x '[II] No changes defined yet' );
+        return;
+    }
     my $name   = $change->name;
-    my $state  = $engine->current_state( $plan->project );
+
+    my $state = try {
+        $engine->current_state( $plan->project );
+    }
+    catch {
+        $self->log_message( "[EE] $_" );
+        return undef;
+    };
+    return unless $state;
+
     my $planned_at
         = defined $state
         ? $state->{planned_at}->as_string
@@ -466,35 +482,6 @@ sub on_admin {
     return;
 }
 
-# sub config_reload {
-#     my ($self, $name, $path) = @_;
-
-#     $name //= $self->model->selected_name;
-#     $path //= $self->model->selected_path;
-
-#     $self->log_message( __x 'Loading the "{name}" project', name => $name );
-
-#     $self->config->reload($path);
-
-#     print 'cfg: user_file:  ', $self->config->user_file, "\n";
-#     print 'cfg: local_file: ', $self->config->local_file, "\n";
-#     # print "\nCONFIG:\n";
-#     # print "---\n";
-#     # print scalar $self->config->dump;
-#     # print "---\n";
-#     # print "\n";
-
-#     $self->config->default_project_name($name);
-#     $self->config->default_project_path($path);
-
-#     my $c_name = $self->config->default_project_name;
-#     my $c_path = $self->config->default_project_path;
-
-#     say "Loading: $c_name $c_path";
-
-#     return;
-# }
-
 sub config_set_default {
     my ($self, $name) = @_;
     my @cmd = qw(config --user);
@@ -545,7 +532,7 @@ sub set_project_default {
     $self->mark_as_default($item);
     $self->view->project->btn_default->Enable(0);
 
-    # Is this necessary?
+    # TODO: Is this necessary?
     # $self->config->default_project_name($name);
     # $self->config->default_project_path(dir $path);
     return;
@@ -577,7 +564,7 @@ sub mark_as_default {
 sub _on_project_listitem_selected {
     my ($self, $var, $event) =  @_;
     my $current_item = $event->GetIndex;
-    my $default_item = $self->model->default_project->item;
+    my $default_item = $self->model->default_project->item // 999;
     my $enabled = $current_item == $default_item ? 0 : 1;
     $self->view->project->btn_default->Enable($enabled);
     $self->view->project->btn_load->Enable(0);

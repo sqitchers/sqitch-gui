@@ -563,21 +563,24 @@ sub _on_dpc_change {
     my ($self, $frame, $event) = @_;
 
     my $new_path = $event->GetEventObject->GetPath;
-    if ( $self->get_state ne 'sele' ) {
-        if ( $self->is_duplicate_path($new_path) ) {
-            $self->set_message( __ '*** Duplicate path! ***' );
-            return;
-        }
-    }
+
+    # TODO:
+    # if ( $self->get_state ne 'sele' ) {
+    #     if ( $self->is_duplicate_path($new_path) ) {
+    #         $self->set_message( __ '*** Duplicate path! ***' );
+    #         return;
+    #     }
+    # }
 
     $self->init_form;
-    my $engine = $self->config->get( key => 'core.engine' );
+    my $engine = $self->model->get_project_engine_from_path($new_path);
     $self->control_write_c( $self->cbx_engine, $engine ) if $engine;
 
     # Default project name: the dir name
     my $name = file($new_path)->basename;
     $self->control_write_e($self->txt_name, $name);
 
+    $self->btn_save->Enable(1);
     return;
 }
 
@@ -610,6 +613,7 @@ sub config_add_project {
         my $last_item = $self->list_ctrl->get_item_count - 1;
         $self->list_ctrl->set_selection($last_item);
         $self->list_ctrl->Enable(0);
+        $self->btn_save->Enable(0);
     }
     elsif ( $state eq 'add' ) {
         $self->btn_new->SetLabel( __ '&Add' );
@@ -650,12 +654,8 @@ sub config_save_project {
     my $params      = {
         name   => $name,
         path   => $path,
-        engine => $self->config->get_engine_from_name($engine_name),
+        engine => $engine_name,
     };
-    # Save in local config
-    # if( $engine and $database ) { # not yet, only when implementing New!
-    #     $self->ancestor->config_save_local( $engine, $database );
-    # }
     $self->btn_new->SetLabel( __ '&Add' );
     $self->ancestor->dlg_status->set_state('sele');
 
@@ -679,7 +679,8 @@ sub _edit_list_item {
     $self->list_data->set_value( $item, 1, $params->{name} );
     $self->list_data->set_value( $item, 2, $params->{path} );
     $self->list_data->set_value( $item, 3, $params->{engine} );
-    $self->list_data->set_value( $item, 4, '' );
+    $self->list_data->set_value( $item, 4, '' ); # default
+    $self->list_data->set_value( $item, 5, '' ); # current
     $self->list_ctrl->RefreshList;
     $self->list_ctrl->Enable(1);
     return;
