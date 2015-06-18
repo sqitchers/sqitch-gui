@@ -19,7 +19,6 @@ use File::ShareDir qw(dist_dir);
 use Try::Tiny;
 use List::Util qw(first);
 use App::Sqitch::X qw(hurl);
-use MooseX::AttributeHelpers;
 
 extends 'App::Sqitch::Config';
 

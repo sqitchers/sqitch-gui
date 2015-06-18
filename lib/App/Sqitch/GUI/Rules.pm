@@ -2,17 +2,16 @@ package App::Sqitch::GUI::Rules;
 
 # ABSTRACT: Rules for buttons
 
-use Moose;
+use Moo;
+use MooX::HandlesVia;
 use namespace::autoclean;
-use MooseX::AttributeHelpers;
 
 has 'rules' => (
-    metaclass => 'Collection::Hash',
-    is        => 'ro',
-    isa       => 'HashRef[HashRef]',
-    required  => 1,
-    lazy      => 1,
-    default   => sub {
+    is          => 'ro',
+    handles_via => 'Hash',
+    required    => 1,
+    lazy        => 1,
+    default     => sub {
         {   init => {
                 btn_change      => 0,
                 btn_change_sel  => 0,
@@ -43,9 +42,7 @@ has 'rules' => (
             },
         };
     },
-    provides => { 'get' => 'get_rules', },
+    handles => { get_rules => 'get' },
 );
-
-__PACKAGE__->meta->make_immutable;
 
 1;

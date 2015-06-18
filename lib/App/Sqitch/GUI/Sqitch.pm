@@ -2,51 +2,49 @@ package App::Sqitch::GUI::Sqitch;
 
 # ABSTRACT: A Sqitch Extension
 
-use Moose;
+use Moo;
 use namespace::autoclean;
 
 extends 'App::Sqitch';
 
-override 'trace' => sub {
-    my $self = shift;
-    $self->emit();
+around 'trace' => sub {
+    my ($orig, $self) = (shift, shift);
+    $self->$orig(@_);
 };
 
-override 'trace_literal' => sub {
-    my $self = shift;
-    $self->emit_literal(@_);
+around 'trace_literal' => sub {
+    my ($orig, $self) = (shift, shift);
+    $self->$orig(@_);
 };
 
-override 'emit' => sub {
-    shift;
+around 'emit' => sub {
+    my ($orig, $self) = (shift, shift);
     Wx::LogMessage(@_);
 };
 
-override 'emit_literal' => sub {
-    shift;
+around 'emit_literal' => sub {
+    my ($orig, $self) = (shift, shift);
     Wx::LogMessage(@_);
 };
 
-override 'vent' => sub {
-    shift;
+around 'vent' => sub {
+    my ($orig, $self) = (shift, shift);
     Wx::LogMessage(@_);
 };
 
-override 'vent_literal' => sub {
-    shift;
+around 'vent_literal' => sub {
+    my ($orig, $self) = (shift, shift);
     Wx::LogMessage(@_);
 };
 
-override 'page' => sub {
-    shift;
+around 'page' => sub {
+    my ($orig, $self) = (shift, shift);
     Wx::LogMessage(@_);
 };
 
-override 'page_literal' => sub {
-    shift;
+around 'page_literal' => sub {
+    my ($orig, $self) = (shift, shift);
     Wx::LogMessage(@_);
 };
-
-__PACKAGE__->meta->make_immutable(inline_constructor => 0);
 
 1;
