@@ -263,7 +263,7 @@ sub populate_project_list {
         my $default = $attrib->{default} // q();
         my $current = $attrib->{current} // q();
         my $default_label = $name eq $default ? __('Yes') : q();
-        my $current_label = $name eq $current ? __('Yes') : q();
+        my $current_label = $name eq $default ? __('Yes') : q(); # the same
         push @projects, {
             name    => $name,
             path    => $attrib->{path},
@@ -278,6 +278,7 @@ sub populate_project_list {
         \@projects,
     );
     my $index = $self->set_default_project_index;
+    $self->model->current_project->item($index);
 
     $self->view->get_project_list_ctrl->RefreshList;
     $self->view->get_project_list_ctrl->set_selection($index);
@@ -538,15 +539,15 @@ sub set_project_default {
     return;
 }
 
-sub _clear_default_mark_label {
-    my $self = shift;
-    $self->model->project_list_data->set_col( 4, '' );
+sub _clear_mark_label {
+    my ($self, $col) = @_;
+    $self->model->project_list_data->set_col( $col, '' );
     return;
 }
 
-sub _set_default_mark_label {
-    my ($self, $item) = @_;
-    $self->model->project_list_data->set_value( $item, 4, __('Yes') );
+sub _set_mark_label {
+    my ($self, $item, $col) = @_;
+    $self->model->project_list_data->set_value( $item, $col, __('Yes') );
     return;
 }
 
@@ -555,8 +556,19 @@ sub mark_as_default {
     $item //= $self->view->get_project_list_ctrl->get_selection;
     hurl 'Wrong arguments passed to mark_as_default()'
         unless defined $item;
-    $self->_clear_default_mark_label;
-    $self->_set_default_mark_label($item);
+    $self->_clear_mark_label(4);
+    $self->_set_mark_label($item, 4);
+    $self->view->get_project_list_ctrl->RefreshList;
+    return;
+}
+
+sub mark_as_current {
+    my ($self, $item) = @_;
+    $item //= $self->view->get_project_list_ctrl->get_selection;
+    hurl 'Wrong arguments passed to mark_as_current()'
+        unless defined $item;
+    $self->_clear_mark_label(5);
+    $self->_set_mark_label($item, 5);
     $self->view->get_project_list_ctrl->RefreshList;
     return;
 }
