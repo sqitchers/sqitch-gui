@@ -13,6 +13,7 @@ use App::Sqitch::GUI::Types qw(
     HashRef
 );
 use Path::Class qw(dir file);
+use File::ShareDir qw(dist_dir);
 use Try::Tiny;
 use List::Util qw(first);
 use App::Sqitch::X qw(hurl);
@@ -139,7 +140,7 @@ has 'icon_path' => (
     isa     => Dir,
     default => sub {
         my $self = shift;
-        return dir $self->user_dir, 'icons';
+        return dir dist_dir( 'App-Sqitch-GUI' ), 'etc', 'icons';
     },
 );
 

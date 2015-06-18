@@ -16,7 +16,7 @@ use Wx qw(
     wxTB_HORIZONTAL
 );
 use Wx::ArtProvider qw(:artid);
-use Path::Class qw(dir);
+use Path::Class qw(file);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
 
@@ -123,7 +123,7 @@ sub toggle_tool_check {
 
 sub make_bitmap {
     my ( $self, $icon_file_name ) = @_;
-    my $icon = dir $self->icon_path, $icon_file_name;
+    my $icon = file $self->icon_path, $icon_file_name;
     return Wx::Bitmap->new( $icon->stringify, wxBITMAP_TYPE_ANY ) if -f $icon;
     return Wx::ArtProvider::GetBitmap( wxART_ERROR );
 }
