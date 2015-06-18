@@ -397,7 +397,7 @@ sub _build_btn_plan {
 
 sub _set_events { }
 
-__PACKAGE__->meta->make_immutable;
+1;
 
 =head1 AUTHOR
 
@@ -430,4 +430,3 @@ by the Free Software Foundation.
 
 =cut
 
-1;    # End of App::Sqitch::GUI::View::Panel::Right
