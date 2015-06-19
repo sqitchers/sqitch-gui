@@ -67,7 +67,7 @@ sub _build_config {
         $config = App::Sqitch::GUI::Config->new;
     }
     catch {
-        __x '[EE] Configuration error: "{error}"', error => $_;
+        hurl config => __x '[EE] Configuration error: "{error}"', error => $_;
     };
     return $config;
 }

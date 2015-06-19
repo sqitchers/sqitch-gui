@@ -141,7 +141,14 @@ has 'icon_path' => (
     isa     => Dir,
     default => sub {
         my $self = shift;
-        return dir dist_dir( 'App-Sqitch-GUI' ), 'etc', 'icons';
+        my @path = ('etc', 'icons');
+        my $dist_dir = try {
+            dir dist_dir('App-Sqitch-GUI'), @path;
+        }
+        catch {
+            dir 'share', @path;
+        };
+        return $dist_dir;
     },
 );
 
