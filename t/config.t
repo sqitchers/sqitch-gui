@@ -1,55 +1,50 @@
-#
-# Test the
-#
 use strict;
 use warnings;
 use Test::More;
 use Path::Class;
 
-use App::Sqitch::GUI;
+use App::Sqitch::GUI::Config;
 
-$ENV{HOME} = 't/home';          # set HOME for testing
+$ENV{HOME} = 't/home';    # set HOME for testing
 
-ok my $gui  = App::Sqitch::GUI->new, 'New GUI';
-ok my $ctrl = $gui->controller,      'New GUI controller';
+ok my $conf = App::Sqitch::GUI::Config->new, 'new config instance';
 
-ok my $config = $ctrl->config, 'Get the config';
+is $conf->user_file, 't/home/.sqitch/sqitch.conf', 'user config file';
+is $conf->local_file, '/home/flipr/sqitch.conf', 'local config file';
 
-is $config->user_file, 't/home/.sqitch/sqitch.conf', 'Test user_file';
+my ( $name, $path ) = ( 'flipr', '/home/flipr' );
 
-is_deeply $config->project_list, {}, 'No project list';
-is $config->default_project_name, undef, 'No default repo name';
-is $config->default_project_path, undef, 'No default repo path';
+my $conf_href = { "project.${name}.path" => $path };
 
-like $config->icon_path, qr/share/, 'get the icons path';
+is_deeply $conf->_conf_projects_list, $conf_href, 'projects config';
+is_deeply $conf->project_list, { $name => $path }, 'projects list';
 
-#ok($config->reload, 'reload configurations');
+is $conf->default_project_name, $name, 'default repo name';
+is $conf->default_project_path, $path, 'default repo path';
 
-# User config file
+# Inspired from:
+# http://perltricks.com/article/178/2015/6/17/Separate-data-and-behavior-with-table-driven-testing
+# Thanks!
+my @data = (
+    [ ( 'unknown',  'Unknown' ) ],
+    [ ( 'pg',       'PostgreSQL' ) ],
+    [ ( 'mysql',    'MySQL' ) ],
+    [ ( 'sqlite',   'SQLite' ) ],
+    [ ( 'oracle',   'Oracle' ) ],
+    [ ( 'firebird', 'Firebird' ) ],
+);
+foreach my $row ( @data ) {
+    is $conf->get_engine_name($row->[0]), $row->[1],
+        "engine name: $row->[1]";
+}
 
-my ( $name, $path ) = ( 'Test', 't/home/test-repo' );
+# Not used, yet
+# $conf->get_engine_from_name
+# $conf->has_repo_name
+# $conf->has_repo_path
 
-ok $ctrl->config_edit_project( $name, $path ), 'Add test repo';
-ok $ctrl->config_set_default($name), 'Set test repo as default';
+is $conf->project_list_cnt, 1, 'project count';
 
-# Also set as default in the config object
-# ok( $config->default_project_name($name),      'Set default repo name' );
-# ok( $config->default_project_path( dir $path), 'Set default repo path' );
-
-# is( $config->default_project_name, $name, 'Check default repo name' );
-# is( $config->default_project_path, $path, 'Check default repo path' );
-
-# my $conf_list = { "project.${name}.path" => $path };
-# is_deeply($config->project_list, $conf_list, 'Project list');
-
-# Local config file
-
-# $config->reload($config->default_project_path);
-# $config->reload('t/home/.sqitch');
-
-#p $config;
-
-# Cleanup
-ok $ctrl->config_remove_project( $name, $path, 1 ), 'Remove repo and default';
+like $conf->icon_path, qr/share.+icons/, 'get the icons path';
 
 done_testing;

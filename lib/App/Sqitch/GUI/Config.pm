@@ -102,26 +102,28 @@ has 'engine_list' => (
     },
 );
 
-sub get_engine_from_name {
-    my ($self, $engine) = @_;
-    my %engines = reverse %{ $self->engine_list };
-    return $engines{$engine};
-}
+#-- Not used, yet:
 
-sub has_repo_name {
-    my ($self, $name) = @_;
-    hurl 'Wrong arguments passed to has_repo_name()'
-        unless $name;
-    return 1 if first { $name eq $_ } keys %{$self->project_list};
-    return 0;
-}
+# sub get_engine_from_name {
+#     my ($self, $engine) = @_;
+#     my %engines = reverse %{ $self->engine_list };
+#     return $engines{$engine};
+# }
 
-sub has_repo_path {
-    my ($self, $path) = @_;
-    hurl 'Wrong arguments passed to has_repo_path()' unless $path;
-    return 1 if first { $path->stringify eq $_ } values %{$self->project_list};
-    return 0;
-}
+# sub has_repo_name {
+#     my ($self, $name) = @_;
+#     hurl 'Wrong arguments passed to has_repo_name()'
+#         unless $name;
+#     return 1 if first { $name eq $_ } keys %{$self->project_list};
+#     return 0;
+# }
+
+# sub has_repo_path {
+#     my ($self, $path) = @_;
+#     hurl 'Wrong arguments passed to has_repo_path()' unless $path;
+#     return 1 if first { $path->stringify eq $_ } values %{$self->project_list};
+#     return 0;
+# }
 
 sub reload {
     my ( $self, $path ) = @_;

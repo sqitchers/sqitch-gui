@@ -40,19 +40,6 @@ use App::Sqitch::GUI::View::Dialog::Projects;
 use App::Sqitch::GUI::View::Dialog::Status;
 use App::Sqitch::GUI::View::Dialog::Refresh;
 
-has 'model' => (
-    is      => 'ro',
-    isa     => SqitchGUIModel,
-    builder => '_build_model',
-);
-
-sub _build_model {
-    my $self = shift;
-    return App::Sqitch::GUI::Model->new(
-        config => $self->config,
-    );
-}
-
 has config => (
     is      => 'ro',
     isa     => SqitchGUIConfig,
@@ -70,6 +57,19 @@ sub _build_config {
         hurl config => __x '[EE] Configuration error: "{error}"', error => $_;
     };
     return $config;
+}
+
+has 'model' => (
+    is      => 'ro',
+    isa     => SqitchGUIModel,
+    builder => '_build_model',
+);
+
+sub _build_model {
+    my $self = shift;
+    return App::Sqitch::GUI::Model->new(
+        config => $self->config,
+    );
 }
 
 has 'app' => (
