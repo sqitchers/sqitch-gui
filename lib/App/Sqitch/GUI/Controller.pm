@@ -48,13 +48,14 @@ has config => (
 );
 
 sub _build_config {
-    my $self = shift;
-    my $config;
-    try {
-        $config = App::Sqitch::GUI::Config->new;
+    my $self   = shift;
+    my $config = try {
+        App::Sqitch::GUI::Config->new;
     }
     catch {
-        hurl config => __x '[EE] Configuration error: "{error}"', error => $_;
+        hurl
+            controller => __x '[EE] Configuration error: "{error}"',
+            error      => $_;
     };
     return $config;
 }
@@ -66,10 +67,17 @@ has 'model' => (
 );
 
 sub _build_model {
-    my $self = shift;
-    return App::Sqitch::GUI::Model->new(
-        config => $self->config,
-    );
+    my $self  = shift;
+    my $model = try {
+        App::Sqitch::GUI::Model->new(
+            config => $self->config,
+        );
+    }
+    catch {
+        hurl model => __x '[EE] Model error: "{error}"', error => $_;
+        return;
+    };
+    return $model;
 }
 
 has 'app' => (
@@ -190,12 +198,11 @@ sub load_sqitch_project {
     }
 
     # Fill the forms
-    if ( my $name = $self->populate_project ) {
+    if ( my $name = $self->populate_project_form ) {
         $self->log_message(
-            __x 'Loading the "{name}" project',
-            name => $name );
-        $self->populate_plan;
-        $self->populate_change;
+            __x 'Loading the "{name}" project', name => $name );
+        $self->populate_plan_form;
+        $self->populate_change_form;
     }
 
     return;
@@ -227,6 +234,11 @@ sub _setup_events {
     EVT_BUTTON $self->view->frame,
         $self->view->project->btn_default->GetId, sub {
             $self->set_project_default;
+        };
+
+    EVT_BUTTON $self->view->frame,
+        $self->view->project->btn_load->GetId, sub {
+            $self->load_default_project;
         };
 
     #-- Quit
@@ -262,16 +274,13 @@ sub populate_project_list {
     my @projects;
     for my $rec ( $self->model->projects ) {
         my ($name, $attrib) = @{$rec};
-        my $default = $attrib->{default} // q();
-        my $current = $attrib->{current} // q();
-        my $default_label = $name eq $default ? __('Yes') : q();
-        my $current_label = $name eq $default ? __('Yes') : q(); # the same
+        my $default_label   = $attrib->{default} ? __('Yes') : q();
         push @projects, {
             name    => $name,
             path    => $attrib->{path},
             engine  => $attrib->{engine},
             default => $default_label,
-            current => $current_label,
+            current => q(),
         };
     }
     $self->populate_list(
@@ -281,10 +290,10 @@ sub populate_project_list {
     );
     my $index = $self->set_default_project_index;
     $self->model->current_project->item($index);
+    $self->mark_as_current($index);
 
     $self->view->get_project_list_ctrl->RefreshList;
     $self->view->get_project_list_ctrl->set_selection($index);
-
     return;
 }
 
@@ -301,9 +310,8 @@ sub set_default_project_index {
     return $index;
 }
 
-sub populate_project {
+sub populate_project_form {
     my $self = shift;
-
     my $config = $self->config;
     my $engine = try { $self->model->target->engine; }
     catch {
@@ -338,11 +346,10 @@ sub populate_project {
     while ( my ( $field, $value ) = each %{$fields} ) {
         $self->view->load_txt_form_for( 'project', $field, $value );
     }
-
     return $project;
 }
 
-sub populate_change {
+sub populate_change_form {
     my $self = shift;
 
     my $engine = $self->model->target->engine;
@@ -352,8 +359,7 @@ sub populate_change {
         $self->log_message( __x '[II] No changes defined yet' );
         return;
     }
-    my $name   = $change->name;
-
+    my $name  = $change->name;
     my $state = try {
         $engine->current_state( $plan->project );
     }
@@ -401,7 +407,7 @@ sub load_sql_for {
     return;
 }
 
-sub populate_plan {
+sub populate_plan_form {
     my $self = shift;
     my $plan = $self->model->target->plan;
 
@@ -421,9 +427,9 @@ sub populate_plan {
         $self->model->plan_list_meta_data,
         \@plans,
     );
+
     $self->view->get_plan_list_ctrl->RefreshList;
     $self->view->get_plan_list_ctrl->set_selection('last');
-
     return;
 }
 
@@ -535,9 +541,8 @@ sub set_project_default {
     $self->mark_as_default($item);
     $self->view->project->btn_default->Enable(0);
 
-    # TODO: Is this necessary?
-    # $self->config->default_project_name($name);
-    # $self->config->default_project_path(dir $path);
+    $self->config->default_project_name($name);
+    $self->config->default_project_path(dir $path);
     return;
 }
 

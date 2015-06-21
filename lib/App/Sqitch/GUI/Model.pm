@@ -10,6 +10,7 @@ use App::Sqitch::GUI::Types qw(
     Int
     Maybe
     Sqitch
+    SqitchPlan
     SqitchGUIConfig
     SqitchGUIModelListDataTable
     SqitchGUIModelProjectItem
@@ -106,14 +107,16 @@ sub _build_project_list {
             if defined $seen_path{$path} and $seen_path{$path} > 1;
 
         my $engine  = $self->get_project_engine_from_name($name);
-        my $default = $self->default_project->name;
-        my $current = $self->current_project->name;
+        my $default = $self->default_project->name // q{};
+        my $current = $self->current_project->name // q{};
+        my $is_default = $name eq $default ? 1 : 0;
+        my $is_current = $name eq $current ? 1 : 0;
         $projects->{$name} = {
             name    => $name,
             path    => $path,
             engine  => $engine,
-            default => $default,
-            current => $current,
+            default => $is_default,
+            current => $is_current,
         };
     }
     return $projects;
@@ -142,19 +145,17 @@ sub get_project_engine_from_path {
 
 sub sqitch {
     my $self = shift;
-
-    my $opts = {};
-    my $sqitch;
-    try {
-        $sqitch = App::Sqitch::GUI::Sqitch->new( {
+    my $opts = {};                           # options for Sqitch
+    my $sqitch = try {
+        App::Sqitch::GUI::Sqitch->new( {
             options => $opts,
             config  => $self->config,
         } );
     }
     catch {
-        print "Error on Sqitch initialization: $_\n";
+        say "Error on Sqitch initialization: $_";
+        return;
     };
-
     return $sqitch;
 }
 
@@ -168,16 +169,18 @@ has 'target' => (
 sub _build_target {
     my $self = shift;
     my $target = try {
-        return App::Sqitch::GUI::Target->new( sqitch => $self->sqitch );
+        App::Sqitch::GUI::Target->new( sqitch => $self->sqitch );
     }
     catch {
-        return undef;
+        say "Error on Target initialization: $_";
+        return;
     };
+    return $target;
 }
 
 has 'plan' => (
     is      => 'ro',
-    isa     => Maybe[SqitchGUITarget],
+    isa     => Maybe[SqitchPlan],
     lazy    => 1,
     builder => '_build_plan',
 );
@@ -185,29 +188,17 @@ has 'plan' => (
 sub _build_plan {
     my $self = shift;
     my $plan = try {
-        return App::Sqitch::Plan->new(
+        App::Sqitch::Plan->new(
             sqitch => $self->sqitch,
             target => $self->target,
         );
     }
     catch {
-        say "ERR: $_";
+        say "Error on Target initialization: $_";
+        return;
     };
+    return $plan;
 }
-
-#--
-
-has 'selected_name' => (
-    is      => 'rw',
-    isa     => Maybe[Str],
-    default => sub { undef },
-);
-
-has 'selected_path' => (
-    is      => 'rw',
-    isa     => Maybe[Dir],
-    default => sub { undef },
-);
 
 #-- List data
 
