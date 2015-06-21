@@ -10,6 +10,7 @@ use Type::Library 0.040 -base, -declare => qw(
     Dir
     File
     Sqitch
+    SqitchPlan
     SqitchGUIConfig
     SqitchGUIController
     SqitchGUIDialogProject
@@ -64,6 +65,7 @@ use App::Sqitch::X qw(hurl);
 BEGIN { extends "Types::Standard" };
 
 class_type Sqitch,            { class => 'App::Sqitch' };
+class_type SqitchPlan,        { class => 'App::Sqitch::Plan' };
 class_type SqitchGUIWxApp,    { class => 'App::Sqitch::GUI::WxApp' };
 class_type SqitchGUIView,     { class => 'App::Sqitch::GUI::View' };
 class_type SqitchGUIModel,    { class => 'App::Sqitch::GUI::Model' };
