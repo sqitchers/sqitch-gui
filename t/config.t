@@ -1,18 +1,25 @@
 use strict;
 use warnings;
 use Test::More;
-use Path::Class;
+use Path::Class qw(dir file);
 
 use App::Sqitch::GUI::Config;
 
-$ENV{HOME} = 't/home';    # set HOME for testing
+$ENV{HOME} = dir('t', 'home')->stringify;   # set HOME for testing
+
+# protect against user's environment variables (from Sqitch)
+delete @ENV{qw( SQITCH_CONFIG SQITCH_USER_CONFIG SQITCH_SYSTEM_CONFIG )};
 
 ok my $conf = App::Sqitch::GUI::Config->new, 'new config instance';
 
-is $conf->user_file, 't/home/.sqitch/sqitch.conf', 'user config file';
-is $conf->local_file, '/home/flipr/sqitch.conf', 'local config file';
+is $conf->confname, 'sqitch.conf', 'config file name';
+is $conf->user_file,
+    file( 't', 'home', '.sqitch', 'sqitch.conf' )->stringify,
+    'user config file';
+is $conf->local_file, file( 't', 'home', 'flipr', 'sqitch.conf' )->stringify,
+    'local config file';
 
-my ( $name, $path ) = ( 'flipr', '/home/flipr' );
+my ( $name, $path ) = ( 'flipr', dir( 't', 'home', 'flipr' )->stringify );
 
 my $conf_href = { "project.${name}.path" => $path };
 

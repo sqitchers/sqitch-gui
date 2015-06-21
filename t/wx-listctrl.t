@@ -100,7 +100,7 @@ sub OnInit {
     main::is $list_data->get_item_count, 3, 'item count: 3 values';
 
     # Uncomment this to observe the test
-    $frame->Show(1) if $ENV{DISPLAY};
+    #$frame->Show(1) if $ENV{DISPLAY};
 
     MyTimer->new->Start( 500, 1 );
 

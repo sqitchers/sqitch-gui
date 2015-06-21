@@ -1,55 +1,57 @@
 #
 # Test the
 #
+use 5.010;
 use strict;
 use warnings;
 use Test::More;
-use Path::Class;
+use Path::Class qw(dir file);
 
-use App::Sqitch::GUI;
+use App::Sqitch::GUI::Config;
+use App::Sqitch::GUI::Model;
 
-$ENV{HOME} = 't/home';          # set HOME for testing
+$ENV{HOME} = dir('t', 'home')->stringify;   # set HOME for testing
 
-ok my $gui  = App::Sqitch::GUI->new, 'New GUI';
-ok my $ctrl = $gui->controller,      'New GUI controller';
+# protect against user's environment variables (from Sqitch)
+delete @ENV{qw( SQITCH_CONFIG SQITCH_USER_CONFIG SQITCH_SYSTEM_CONFIG )};
 
-ok my $config = $ctrl->config, 'Get the config';
+ok my $conf = App::Sqitch::GUI::Config->new, 'new config instance';
+isa_ok $conf, 'App::Sqitch::GUI::Config', 'GUI::Config';
 
-is $config->user_file, 't/home/.sqitch/sqitch.conf', 'Test user_file';
+my ( $name, $path ) = ( 'flipr', dir( 't', 'home', 'flipr' ) );
 
-is_deeply $config->project_list, {}, 'No project list';
-is $config->default_project_name, undef, 'No default repo name';
-is $config->default_project_path, undef, 'No default repo path';
+is $conf->default_project_name, $name, 'default project name';
+is $conf->default_project_path, $path->stringify, 'default project path';
 
-like $config->icon_path, qr/share/, 'get the icons path';
+ok my $model = App::Sqitch::GUI::Model->new( config => $conf ),
+    'new model instance';
+isa_ok $model, 'App::Sqitch::GUI::Model', 'GUI::Model';
 
-#ok($config->reload, 'reload configurations');
+isa_ok $model->sqitch, 'App::Sqitch::GUI::Sqitch', 'App::Sqitch';
+isa_ok $model->target, 'App::Sqitch::GUI::Target', 'App::Sqitch::Target';
+isa_ok $model->plan,   'App::Sqitch::Plan', 'App::Sqitch::Plan';
 
-# User config file
+for my $rec ( $model->projects ) {
+    my ($name, $attrib) = @{$rec};
+    ok $name, "project '$name'";
+    is ref $attrib, 'HASH', 'project attributes';
+}
 
-my ( $name, $path ) = ( 'Test', 't/home/test-repo' );
+isa_ok $model->project_list_data, 'App::Sqitch::GUI::Model::ListDataTable',
+    'Project ListDataTable';
+isa_ok $model->plan_list_data, 'App::Sqitch::GUI::Model::ListDataTable',
+    'Plan ListDataTable';
 
-ok $ctrl->config_edit_project( $name, $path ), 'Add test repo';
-ok $ctrl->config_set_default($name), 'Set test repo as default';
+is ref $model->project_dlg_list_meta_data, 'ARRAY', 'project dlg list metadata';
+is ref $model->project_list_meta_data, 'ARRAY', 'project list metadata';
+is ref $model->plan_list_meta_data, 'ARRAY', 'plan list metadata';
 
-# Also set as default in the config object
-# ok( $config->default_project_name($name),      'Set default repo name' );
-# ok( $config->default_project_path( dir $path), 'Set default repo path' );
+( $name, $path ) = ( 'flipr', dir( 't', 'home', 'intro' ) );
 
-# is( $config->default_project_name, $name, 'Check default repo name' );
-# is( $config->default_project_path, $path, 'Check default repo path' );
+ok $conf->default_project_name($name), 'set default project name';
+ok $conf->default_project_path($path), 'set default project path';
 
-# my $conf_list = { "project.${name}.path" => $path };
-# is_deeply($config->project_list, $conf_list, 'Project list');
-
-# Local config file
-
-# $config->reload($config->default_project_path);
-# $config->reload('t/home/.sqitch');
-
-#p $config;
-
-# Cleanup
-ok $ctrl->config_remove_project( $name, $path, 1 ), 'Remove repo and default';
+is $conf->default_project_name, $name, 'default project name';
+is $conf->default_project_path, $path->stringify, 'default project path';
 
 done_testing;
