@@ -22,7 +22,7 @@ use App::Sqitch::X qw(hurl);
 
 extends 'App::Sqitch::Config';
 
-has default_project_name => (
+has 'default_project_name' => (
     is      => 'rw',
     isa     => Maybe[Str],
     lazy    => 1,
@@ -32,7 +32,7 @@ has default_project_name => (
     }
 );
 
-has default_project_path => (
+has 'default_project_path' => (
     is      => 'rw',
     isa     => Maybe[Dir],
     lazy    => 1,
@@ -52,7 +52,7 @@ sub local_file {
         : file( $self->confname );
 };
 
-has _conf_projects_list => (
+has '_conf_projects_list' => (
     is      => 'ro',
     isa     => Maybe[HashRef],
     lazy    => 1,
@@ -61,7 +61,7 @@ has _conf_projects_list => (
     }
 );
 
-has project_list => (
+has 'project_list' => (
     is          => 'ro',
     handles_via => 'Hash',
     lazy        => 1,
@@ -143,14 +143,15 @@ has 'icon_path' => (
     isa     => Dir,
     default => sub {
         my $self = shift;
-        my @path = ('etc', 'icons');
-        my $dist_dir = try {
+        my @path = ( 'etc', 'icons' );
+        my $path = try {
             dir dist_dir('App-Sqitch-GUI'), @path;
         }
         catch {
+            warn "Error from icon_path: $_";
             dir 'share', @path;
         };
-        return $dist_dir;
+        return $path;
     },
 );
 
