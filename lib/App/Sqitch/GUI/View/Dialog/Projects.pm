@@ -552,12 +552,16 @@ the local configuration file and get the required info from there.
 =cut
 
 sub load_item_details {
-    my ($self, $name) = @_;
+    my ( $self, $name ) = @_;
     return unless $name;
-    my $project = $self->model->get_project($name);
     $self->control_write_e( $self->txt_name, $name );
-    $self->control_write_p( $self->dpc_path, $project->{path} );
-    $self->control_write_c( $self->cbx_engine, $project->{engine} );
+    my $project = $self->model->get_project($name);
+    if ( my $project = $self->model->get_project($name) ) {
+        $self->control_write_p( $self->dpc_path, $project->{path} )
+            if $project->{path};
+        $self->control_write_c( $self->cbx_engine, $project->{engine} )
+            if $project->{engine};
+    }
     return;
 }
 

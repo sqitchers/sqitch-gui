@@ -132,7 +132,8 @@ sub log_message {
 sub BUILD {
     my $self = shift;
     $self->_setup_events;
-    $self->_init_observers;
+    $self->status->add_observer(
+        App::Sqitch::GUI::Refresh->new( view => $self->view ) );
     $self->log_message('II Welcome to Sqitch!');
     $self->prepare_projects;
     return;
@@ -256,15 +257,6 @@ sub _setup_events {
         $self->view->get_project_list_ctrl,
         sub { $self->_on_project_listitem_selected(@_) },
     );
-
-    return;
-}
-
-sub _init_observers {
-    my $self = shift;
-
-    $self->status->add_observer(
-        App::Sqitch::GUI::Refresh->new( view => $self->view ) );
 
     return;
 }
@@ -474,7 +466,6 @@ sub on_admin {
 
     $self->dlg_status->add_observer(
         App::Sqitch::GUI::View::Dialog::Refresh->new( dialog => $dialog ) );
-
     $self->dlg_status->set_state('sele');
     $dialog->list_ctrl->set_selection(0)
         if $dialog->list_ctrl->get_item_count > 0;
