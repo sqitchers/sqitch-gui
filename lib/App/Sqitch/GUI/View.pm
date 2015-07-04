@@ -68,7 +68,7 @@ has 'style' => (
 );
 
 has 'frame' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxFrame,
     lazy    => 1,
     builder => '_build_frame',
@@ -89,14 +89,14 @@ has 'size' => (
 );
 
 has 'tool_bar' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => SqitchGUIWxToolbar,
     lazy    => 1,
     builder => '_build_tool_bar',
 );
 
 has 'status_bar' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => SqitchGUIWxStatusbar,
     lazy    => 1,
     builder => '_build_status_bar',
@@ -104,58 +104,58 @@ has 'status_bar' => (
 
 # Panels
 
-has 'left_side' => (
-    is      => 'rw',
+has 'left' => (
+    is      => 'ro',
     isa     => SqitchGUIViewPanelLeft,
     lazy    => 1,
-    builder => '_build_left_side',
+    builder => '_build_left',
 );
 
-has 'right_side' => (
-    is      => 'rw',
+has 'right' => (
+    is      => 'ro',
     isa     => SqitchGUIViewPanelRight,
     lazy    => 1,
-    builder => '_build_right_side',
+    builder => '_build_right',
 );
 
-has 'top_side' => (
-    is      => 'rw',
+has 'top' => (
+    is      => 'ro',
     isa     => SqitchGUIViewPanelTop,
     lazy    => 1,
-    builder => '_build_top_side',
+    builder => '_build_top',
 );
 
 has 'project' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => SqitchGUIViewPanelProject,
     lazy    => 1,
     builder => '_build_project',
 );
 
 has 'plan' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => SqitchGUIViewPanelPlan,
     lazy    => 1,
     builder => '_build_plan',
 );
 
 has 'change' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => SqitchGUIViewPanelChange,
     lazy    => 1,
     builder => '_build_change',
 );
 
-has 'bottom_side' => (
-    is      => 'rw',
+has 'bottom' => (
+    is      => 'ro',
     isa     => SqitchGUIViewPanelBottom,
     lazy    => 1,
-    builder => '_build_bottom_side',
+    builder => '_build_bottom',
 );
 
 # Sizers
 has 'main_sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_main_sizer',
@@ -163,14 +163,14 @@ has 'main_sizer' => (
 
 # Miscellaneous
 has 'min_pane_size' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => Int,
     lazy    => 1,
     default => 50,
 );
 
 has 'sash_pos' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => Int,
     lazy    => 1,
     default => 450,
@@ -178,7 +178,7 @@ has 'sash_pos' => (
 
 # Splitter window
 has 'splitter_w' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSplitterWindow,
     lazy    => 1,
     builder => '_build_splitter_w',
@@ -219,21 +219,21 @@ sub BUILD {
     $tb->set_initial_mode( \@toolbars );
     $self->frame->SetToolBar($tb);
 
-    $self->main_sizer->Add( $self->left_side->panel,  1, wxEXPAND | wxALL, 0 );
-    $self->main_sizer->Add( $self->right_side->panel, 0, wxEXPAND | wxALL, 0 );
+    $self->main_sizer->Add( $self->left->panel,  1, wxEXPAND | wxALL, 0 );
+    $self->main_sizer->Add( $self->right->panel, 0, wxEXPAND | wxALL, 0 );
 
-    $self->left_side->sizer->Add( $self->splitter_w, 1, wxEXPAND | wxALL, 0 );
+    $self->left->sizer->Add( $self->splitter_w, 1, wxEXPAND | wxALL, 0 );
 
-    $self->splitter_w->SplitHorizontally( $self->top_side->panel,
-        $self->bottom_side->panel,
+    $self->splitter_w->SplitHorizontally( $self->top->panel,
+        $self->bottom->panel,
         $self->sash_pos );
     $self->splitter_w->SetMinimumPaneSize( $self->min_pane_size );
 
-    $self->top_side->sizer->Add( $self->change->panel, 1, wxEXPAND | wxALL, 0 );
-    $self->top_side->sizer->Add( $self->project->panel, 1, wxEXPAND | wxALL, 0 );
-    $self->top_side->sizer->Add( $self->plan->panel, 1, wxEXPAND | wxALL, 0 );
+    $self->top->sizer->Add( $self->change->panel, 1, wxEXPAND | wxALL, 0 );
+    $self->top->sizer->Add( $self->project->panel, 1, wxEXPAND | wxALL, 0 );
+    $self->top->sizer->Add( $self->plan->panel, 1, wxEXPAND | wxALL, 0 );
 
-    $self->top_side->panel->SetSizer( $self->top_side->sizer );
+    $self->top->panel->SetSizer( $self->top->sizer );
 
     $self->frame->SetSizer( $self->main_sizer );
 
@@ -308,7 +308,7 @@ sub _build_top_sizer {
     return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
-sub _build_left_side {
+sub _build_left {
     my $self = shift;
 
     my $panel = App::Sqitch::GUI::View::Panel::Left->new(
@@ -320,7 +320,7 @@ sub _build_left_side {
     return $panel;
 }
 
-sub _build_right_side {
+sub _build_right {
     my $self = shift;
 
     my $panel = App::Sqitch::GUI::View::Panel::Right->new(
@@ -332,7 +332,7 @@ sub _build_right_side {
     return $panel;
 }
 
-sub _build_top_side {
+sub _build_top {
     my $self = shift;
 
     return App::Sqitch::GUI::View::Panel::Top->new(
@@ -347,7 +347,7 @@ sub _build_project {
 
     return App::Sqitch::GUI::View::Panel::Project->new(
         app      => $self->app,
-        parent   => $self->top_side->panel,
+        parent   => $self->top->panel,
         ancestor => $self,
     );
 }
@@ -356,7 +356,7 @@ sub _build_plan {
     my $self = shift;
     return App::Sqitch::GUI::View::Panel::Plan->new(
         app       => $self->app,
-        parent    => $self->top_side->panel,
+        parent    => $self->top->panel,
         ancestor  => $self,
         list_data => $self->model->plan_list_data,
     );
@@ -367,12 +367,12 @@ sub _build_change {
 
     return App::Sqitch::GUI::View::Panel::Change->new(
         app      => $self->app,
-        parent   => $self->top_side->panel,
+        parent   => $self->top->panel,
         ancestor => $self,
     );
 }
 
-sub _build_bottom_side {
+sub _build_bottom {
     my $self = shift;
 
     return App::Sqitch::GUI::View::Panel::Bottom->new(
@@ -386,7 +386,7 @@ sub _build_splitter_w {
     my $self = shift;
 
     my $spw = Wx::SplitterWindow->new(
-        $self->left_side->panel,
+        $self->left->panel,
         -1,
         [ -1, -1 ],
         [ -1, -1 ],
@@ -403,12 +403,12 @@ sub _set_events {
 
     foreach my $name ( qw{change project plan} ) {
         my $btn = q{btn_} . $name;
-        EVT_BUTTON $self->frame, $self->right_side->$btn->GetId, sub {
+        EVT_BUTTON $self->frame, $self->right->$btn->GetId, sub {
             $self->show_panel($name);
         };
 
         my $btn_sel = q{btn_} . $name . q{_sel};
-        EVT_RADIOBUTTON $self->frame, $self->right_side->$btn_sel->GetId,
+        EVT_RADIOBUTTON $self->frame, $self->right->$btn_sel->GetId,
             sub { $self->on_radio($name); };
     }
 
@@ -427,9 +427,9 @@ sub show_panel {
     }
 
     my $btn_sel = q{btn_} . $name . q{_sel};
-    $self->right_side->$btn_sel->SetValue(1);
+    $self->right->$btn_sel->SetValue(1);
 
-    $self->top_side->panel->Layout();
+    $self->top->panel->Layout();
 
     return;
 }
@@ -440,7 +440,7 @@ sub set_status {
     $self->status_bar->change_caption( $state, 1 );
     foreach my $btn ( keys %{$gui_rules} ) {
         my $enable = $gui_rules->{$btn};
-        $self->right_side->$btn->Enable($enable);
+        $self->right->$btn->Enable($enable);
     }
     $self->show_panel('project');
 
@@ -502,6 +502,14 @@ sub get_plan_list_ctrl {
 sub get_project_list_ctrl {
     my $self = shift;
     return $self->project->list_ctrl;
+}
+
+sub log_message {
+    my ($self, $msg) = @_;
+    my $control = $self->bottom->log_ctrl;
+    $self->bottom->control_write_stc($control, $msg, 'append');
+    $control->LineScrollDown;
+    return;
 }
 
 =head1 PANELS

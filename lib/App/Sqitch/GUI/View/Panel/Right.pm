@@ -20,140 +20,140 @@ use Wx::Event qw<EVT_CLOSE>;
 with 'App::Sqitch::GUI::Roles::Element';
 
 has 'panel' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxPanel,
     lazy    => 1,
     builder => '_build_panel',
 );
 
 has 'sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_sizer',
 );
 
 has 'panel_sbs' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_panel_sbs',
 );
 
 has 'panel_fgs' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_panel_fgs',
 );
 
 has 'commands_sbs' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_commands_sbs',
 );
 
 has 'commands_fgs' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_commands_fgs',
 );
 
 has 'sizer_cmdtop' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_sizer_cmdtop',
 );
 
 has 'sizer_cmdbot' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_sizer_cmdbot',
 );
 
 has 'btn_status' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_status',
 );
 
 has 'btn_add' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_add',
 );
 
 has 'btn_deploy' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_deploy',
 );
 
 has 'btn_revert' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_revert',
 );
 
 has 'btn_verify' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_verify',
 );
 
 has 'btn_log' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_log',
 );
 
 has 'btn_project' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_project',
 );
 
 has 'btn_project_sel' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxRadioButton,
     lazy    => 1,
     builder => '_build_btn_project_sel',
 );
 
 has 'btn_change' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_change',
 );
 
 has 'btn_change_sel' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxRadioButton,
     lazy    => 1,
     builder => '_build_btn_change_sel',
 );
 
 has 'btn_plan' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_plan',
 );
 
 has 'btn_plan_sel' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxRadioButton,
     lazy    => 1,
     builder => '_build_btn_plan_sel',

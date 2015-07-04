@@ -13,7 +13,7 @@ use Wx qw(wxVERSION_STRING);
 with 'App::Sqitch::GUI::Roles::Element';
 
 has 'info' => (
-    is  => 'rw',
+    is  => 'ro',
     isa => WxAboutDialogInfo,
 );
 

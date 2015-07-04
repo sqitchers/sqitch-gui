@@ -3,13 +3,22 @@ package App::Sqitch::GUI::Wx::Editor;
 # ABSTRACT: Wx StyledText Editor Control
 
 use Moo;
-use Wx qw(:everything);
-use Wx::STC;
-use Wx::Event qw();
+use Wx::Scintilla 0.34 ();
+use Wx qw(
+    wxDEFAULT
+    wxNORMAL
+    wxSTC_LEX_MSSQL
+    wxSTC_MARGIN_SYMBOL
+    wxSTC_STYLE_BRACEBAD
+    wxSTC_STYLE_BRACELIGHT
+    wxSTC_STYLE_DEFAULT
+    wxSTC_WRAP_NONE
+);
+use Wx::Event;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-extends 'Wx::StyledTextCtrl';
+extends 'Wx::Scintilla::TextCtrl';
 
 sub FOREIGNBUILDARGS {
     my $self = shift;
@@ -19,7 +28,6 @@ sub FOREIGNBUILDARGS {
         -1,
         [-1, -1],
         [-1, -1],
-        wxBORDER_SUNKEN,
     );
 }
 
@@ -29,7 +37,6 @@ sub BUILD {
     #
     # From QDepo (http://sourceforge.net/projects/tpda-qrt/)  ;)
     #
-    $self->SetMarginType( 1, wxSTC_MARGIN_SYMBOL );
     $self->SetMarginType( 1, wxSTC_MARGIN_SYMBOL );
     $self->SetMarginWidth( 1, 10 );
     $self->StyleSetFont( wxSTC_STYLE_DEFAULT,

@@ -17,14 +17,14 @@ use Wx::Event qw(EVT_CLOSE);
 with 'App::Sqitch::GUI::Roles::Element';
 
 has 'panel' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxPanel,
     lazy    => 1,
     builder => '_build_panel',
 );
 
 has 'sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_sizer',

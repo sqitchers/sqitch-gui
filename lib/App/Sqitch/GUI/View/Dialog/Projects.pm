@@ -48,7 +48,7 @@ with qw(App::Sqitch::GUI::Roles::Element
 use App::Sqitch::GUI::Wx::Listctrl;
 
 has 'sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_sizer',
@@ -59,7 +59,7 @@ sub _build_sizer {
 }
 
 has 'vbox_sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_vbox_sizer',
@@ -70,7 +70,7 @@ sub _build_vbox_sizer {
 }
 
 has 'h_line1' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticLine,
     lazy    => 1,
     builder => '_build_h_line1',
@@ -86,7 +86,7 @@ sub _build_h_line1 {
 }
 
 has 'h_line2' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticLine,
     lazy    => 1,
     builder => '_build_h_line2',
@@ -102,7 +102,7 @@ sub _build_h_line2 {
 }
 
 has 'form_fg_sz' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_form_fg_sz',
@@ -115,7 +115,7 @@ sub _build_form_fg_sz {
 }
 
 has 'list_fg_sz' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_list_fg_sz',
@@ -129,7 +129,7 @@ sub _build_list_fg_sz {
 }
 
 has 'lbl_name' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_name',
@@ -141,7 +141,7 @@ sub _build_lbl_name {
 }
 
 has 'txt_name' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_name',
@@ -153,7 +153,7 @@ sub _build_txt_name {
 }
 
 has 'lbl_path' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_path',
@@ -165,7 +165,7 @@ sub _build_lbl_path {
 }
 
 has 'dpc_path' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxDirPickerCtrl,
     lazy    => 1,
     builder => '_build_dpc_path',
@@ -184,7 +184,7 @@ sub _build_dpc_path {
 }
 
 has 'lbl_engine' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_engine',
@@ -196,7 +196,7 @@ sub _build_lbl_engine {
 }
 
 has 'cbx_engine' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxComboBox,
     lazy    => 1,
     builder => '_build_cbx_engine',
@@ -218,7 +218,7 @@ sub _build_cbx_engine {
 }
 
 has 'lbl_db' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_db',
@@ -230,7 +230,7 @@ sub _build_lbl_db {
 }
 
 has 'txt_db' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_db',
@@ -242,7 +242,7 @@ sub _build_txt_db {
 }
 
 has 'list_ctrl' => (
-    is       => 'rw',
+    is       => 'ro',
     isa      => SqitchGUIWxListctrl,
     required => 1,
     lazy     => 1,
@@ -261,7 +261,7 @@ sub _build_list_ctrl {
 }
 
 has 'btn_sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_btn_sizer',
@@ -272,7 +272,7 @@ sub _build_btn_sizer {
 }
 
 has 'btn_sizer_l' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxGridSizer,
     lazy    => 1,
     builder => '_build_btn_sizer_l',
@@ -283,7 +283,7 @@ sub _build_btn_sizer_l {
 }
 
 has 'btn_sizer_r' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_btn_sizer_r',
@@ -294,7 +294,7 @@ sub _build_btn_sizer_r {
 }
 
 has 'btn_new' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_new',
@@ -314,7 +314,7 @@ sub _build_btn_new {
 }
 
 has 'btn_remove' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_remove',
@@ -334,7 +334,7 @@ sub _build_btn_remove {
 }
 
 has 'btn_close' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_close',
@@ -353,7 +353,7 @@ sub _build_btn_close {
 }
 
 has 'btn_save' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_save',

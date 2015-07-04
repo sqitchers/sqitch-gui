@@ -14,7 +14,7 @@ use App::Sqitch::GUI::Types qw(
 use namespace::autoclean;
 
 has 'app' => (
-    is       => 'rw',
+    is       => 'ro',
     isa      => SqitchGUIWxApp,
     required => 1,
     weak_ref => 1,
@@ -27,7 +27,7 @@ has 'ancestor' => (
 );
 
 has 'parent' => (
-    is  => 'rw',
+    is  => 'ro',
     isa => Maybe[WxWindow],
 );
 

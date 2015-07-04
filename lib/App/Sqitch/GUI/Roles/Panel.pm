@@ -10,12 +10,17 @@ use namespace::autoclean;
 sub control_write_stc {
     my ( $self, $control, $value, $is_append ) = @_;
     hurl 'Wrong arguments passed to control_write_stc()'
-        unless $control and $control->isa('Wx::StyledTextCtrl');
+        unless $control and $control->isa('Wx::Scintilla::TextCtrl');
     $value ||= q{};                 # empty
+    my $readonly = $control->GetReadOnly;
+    $control->SetReadOnly(0);
     $control->ClearAll unless $is_append;
-    $control->AppendText($value);
-    $control->AppendText("\n");
+    if ($value) {
+        $control->AppendText($value);
+        $control->AppendText("\n");
+    }
     $control->Colourise( 0, $control->GetTextLength );
+    $control->SetReadOnly($readonly);
     return;
 }
 
@@ -83,20 +88,9 @@ None known.
 
 Please report any bugs or feature requests to the author.
 
-=head1 ACKNOWLEDGMENTS
-
-GUI with Wx and Moose heavily inspired/copied from the LacunaWaX
-project:
-
-https://github.com/tmtowtdi/LacunaWaX
-
-Copyright: Jonathan D. Barton 2012-2013
-
-Thank you!
-
 =head1 LICENSE AND COPYRIGHT
 
-  Stefan Suciu       2013
+  Stefan Suciu       2015
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

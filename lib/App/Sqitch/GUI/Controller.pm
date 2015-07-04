@@ -54,7 +54,7 @@ sub _build_config {
     }
     catch {
         hurl
-            controller => __x '[EE] Configuration error: "{error}"',
+            controller => __x 'EE Configuration error: "{error}"',
             error      => $_;
     };
     return $config;
@@ -74,7 +74,7 @@ sub _build_model {
         );
     }
     catch {
-        hurl model => __x '[EE] Model error: "{error}"', error => $_;
+        hurl model => __x 'EE Model error: "{error}"', error => $_;
         return;
     };
     return $model;
@@ -125,15 +125,15 @@ has 'dlg_status' => (
 
 sub log_message {
     my ($self, $msg) = @_;
-    #? This should clear the control first
-    Wx::LogMessage($msg);
+    $self->view->log_message($msg);
+    return;
 }
 
 sub BUILD {
     my $self = shift;
     $self->_setup_events;
     $self->_init_observers;
-    $self->log_message('Welcome to Sqitch!');
+    $self->log_message('II Welcome to Sqitch!');
     $self->prepare_projects;
     return;
 }
@@ -170,8 +170,8 @@ sub prepare_projects {
         $self->load_sqitch_project;
     }
     else {
-        $self->log_message('Add a project...');
-        $self->log_message('Opening the dialog...');
+        $self->log_message('WW Add a project...');
+        $self->log_message('WW Opening the dialog...');
         my $timer = Wx::Timer->new( $self->view->frame, 1 );
         $timer->Start( 2000, 1 );    # one shot
         EVT_TIMER $self->view->frame, 1, sub {
@@ -188,19 +188,19 @@ sub load_sqitch_project {
 
     if ( my $proj_cnt = $self->config->has_project ) {
         $self->log_message(
-            __nx 'OK, found a project', 'Found {count} projects',
+            __nx 'II OK, found a project', 'II Found {count} projects',
             $proj_cnt, count => $proj_cnt );
     }
 
     # Configuration issues?
     foreach my $item ( $self->model->config_all_issues ) {
-        $self->log_message($item);
+        $self->log_message("EE $item");
     }
 
     # Fill the forms
     if ( my $name = $self->populate_project_form ) {
         $self->log_message(
-            __x 'Loading the "{name}" project', name => $name );
+            __x 'II Loading the "{name}" project', name => $name );
         $self->populate_plan_form;
         $self->populate_change_form;
     }
@@ -226,7 +226,7 @@ sub _setup_events {
     foreach my $cmd ( qw(status deploy verify log) ) {
         my $btn = "btn_$cmd";
         EVT_BUTTON $self->view->frame,
-            $self->view->right_side->$btn->GetId, sub {
+            $self->view->right->$btn->GetId, sub {
                 $self->execute_command($cmd);
             };
     }
@@ -315,19 +315,19 @@ sub populate_project_form {
     my $config = $self->config;
     my $engine = try { $self->model->target->engine; }
     catch {
-        $self->log_message( "[EE] $_" );
+        $self->log_message( "EE $_" );
         return undef;
     };
     return unless $engine;
     my $plan = try { $self->model->target->plan; }
     catch {
-        $self->log_message( "[EE] $_" );
+        $self->log_message( "EE $_" );
         return undef;
     };
     return unless $plan;
     my $project = try { $plan->project; }
     catch {
-        $self->log_message( "[EE]: $_" );
+        $self->log_message( "EE: $_" );
         return undef;
     };
     return unless $project;
@@ -356,7 +356,7 @@ sub populate_change_form {
     my $plan   = $self->model->target->plan;
     my $change = $plan->last;
     unless ($change) {
-        $self->log_message( __x '[II] No changes defined yet' );
+        $self->log_message( __x 'II No changes defined yet' );
         return;
     }
     my $name  = $change->name;
@@ -364,7 +364,7 @@ sub populate_change_form {
         $engine->current_state( $plan->project );
     }
     catch {
-        $self->log_message( "[EE] $_" );
+        $self->log_message( "EE $_" );
         return undef;
     };
     return unless $state;
@@ -533,7 +533,7 @@ sub set_project_default {
     my $name = $self->model->project_list_data->get_value($item, 1);
     my $path = $self->model->project_list_data->get_value($item, 2);
     unless ( $name and $path ) {
-        $self->log_message( __ 'Select a project item, please' );
+        $self->log_message( __ 'WW Select a project item, please' );
         return;
     }
     $self->config_set_default($name); # write to the config file

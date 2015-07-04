@@ -28,7 +28,7 @@ has config => (
 );
 
 has 'view' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => SqitchGUIView,
     lazy    => 1,
     builder => '_build_view',

@@ -22,49 +22,49 @@ use App::Sqitch::GUI::Wx::Listctrl;
 with 'App::Sqitch::GUI::Roles::Element';
 
 has 'panel' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxPanel,
     lazy    => 1,
     builder => '_build_panel',
 );
 
 has 'sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_sizer',
 );
 
 has 'btn_sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_btn_sizer',
 );
 
 has 'sb_sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_sb_sizer',
 );
 
 has 'main_fg_sz' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_main_fg_sz',
 );
 
 has 'list_fg_sz' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_list_fg_sz',
 );
 
 has 'list_ctrl' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => SqitchGUIWxListctrl,
     lazy    => 1,
     builder => '_build_list_ctrl',

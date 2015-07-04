@@ -31,6 +31,7 @@ use Type::Library 0.040 -base, -declare => qw(
     SqitchGUIViewPanelTop
     SqitchGUIWxApp
     SqitchGUIWxEditor
+	SqitchGUIWxLogView
     SqitchGUIWxNotebook
     SqitchGUIWxStatusbar
     SqitchGUIWxToolbar
@@ -105,6 +106,8 @@ class_type SqitchGUIWxNotebook,
     { class => 'App::Sqitch::GUI::Wx::Notebook' };
 class_type SqitchGUIWxEditor,
     { class => 'App::Sqitch::GUI::Wx::Editor' };
+class_type SqitchGUIWxLogView,
+    { class => 'App::Sqitch::GUI::Wx::LogView' };
 
 # Wx
 class_type WxAboutDialogInfo, { class => 'Wx::AboutDialogInfo' };

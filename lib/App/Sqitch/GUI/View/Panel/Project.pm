@@ -26,217 +26,217 @@ with qw(App::Sqitch::GUI::Roles::Element
         App::Sqitch::GUI::Roles::Panel);
 
 has 'panel' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxPanel,
     lazy    => 1,
     builder => '_build_panel',
 );
 
 has 'sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_sizer',
 );
 
 has 'btn_sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_btn_sizer',
 );
 
 has 'sb_sizer' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_sb_sizer',
 );
 
 has 'main_fg_sz' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_main_fg_sz',
 );
 
 has 'list_fg_sz' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_list_fg_sz',
 );
 
 has 'form_fg_sz' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_form_fg_sz',
 );
 
 has 'subform1_fg_sz' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_subform1_fg_sz',
 );
 
 has 'subform2_fg_sz' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxSizer,
     lazy    => 1,
     builder => '_build_subform2_fg_sz',
 );
 
 has 'list_ctrl' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => SqitchGUIWxListctrl,
     lazy    => 1,
     builder => '_build_list_ctrl',
 );
 
 has 'h_line1' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticLine,
     lazy    => 1,
     builder => '_build_h_line1',
 );
 
 has 'btn_load' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_load',
 );
 
 has 'btn_default' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxButton,
     lazy    => 1,
     builder => '_build_btn_default',
 );
 
 has 'lbl_project' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_project',
 );
 
 has 'lbl_database' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_database',
 );
 
 has 'lbl_user' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_user',
 );
 
 has 'lbl_uri' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_uri',
 );
 
 has 'lbl_created_at' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_created_at',
 );
 
 has 'lbl_creator_name' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_creator_name',
 );
 
 has 'lbl_creator_email' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_creator_email',
 );
 
 has 'lbl_path' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_path',
 );
 
 has 'lbl_engine' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxStaticText,
     lazy    => 1,
     builder => '_build_lbl_engine',
 );
 
 has 'txt_project' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_project',
 );
 
 has 'txt_database' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_database',
 );
 
 has 'txt_user' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_user',
 );
 
 has 'txt_uri' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_uri',
 );
 
 has 'txt_created_at' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_created_at',
 );
 
 has 'txt_creator_name' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_creator_name',
 );
 
 has 'txt_creator_email' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_creator_email',
 );
 
 has 'txt_path' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_path',
 );
 
 has 'txt_engine' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => WxTextCtrl,
     lazy    => 1,
     builder => '_build_txt_engine',
