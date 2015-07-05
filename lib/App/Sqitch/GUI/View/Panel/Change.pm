@@ -1,87 +1,281 @@
 package App::Sqitch::GUI::View::Panel::Change;
 
+# ABSTRACT: The Change Panel
+
+use 5.010;
+use strict;
+use warnings;
 use utf8;
-use Moose;
-use namespace::autoclean;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    SqitchGUIWxEditor
+    SqitchGUIWxNotebook
+    WxCollapsiblePane
+    WxPanel
+    WxSizer
+    WxStaticText
+    WxTextCtrl
+);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE EVT_COLLAPSIBLEPANE_CHANGED);
 
-with 'App::Sqitch::GUI::Roles::Element';
+with qw(App::Sqitch::GUI::Roles::Element
+        App::Sqitch::GUI::Roles::Panel);
 
-use App::Sqitch::GUI::View::Notebook;
-use App::Sqitch::GUI::View::Editor;
+use App::Sqitch::GUI::Wx::Notebook;
+use App::Sqitch::GUI::Wx::Editor;
 
-has 'panel'     => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'sizer'     => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'top_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'colpsizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'panel' => (
+    is      => 'ro',
+    isa     => WxPanel,
+    lazy    => 1,
+    builder => '_build_panel',
+);
 
-has 'collpane' => ( is => 'rw', isa => 'Wx::CollapsiblePane', lazy_build => 1 );
+has 'sizer' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sizer',
+);
 
-has 'main_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'form_fg_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'top_sizer' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_top_sizer',
+);
 
-has 'lbl_change_id' =>
-    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_name' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_note' => ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_committed_at' =>
-    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_committer_name' =>
-    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_committer_email' =>
-    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_planned_at' =>
-    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_planner_name' =>
-    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
-has 'lbl_planner_email' =>
-    ( is => 'rw', isa => 'Wx::StaticText', lazy_build => 1 );
+has 'colpsizer' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_colpsizer',
+);
 
-has 'txt_change_id' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_name'      => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_note'      => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_committed_at' =>
-    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_committer_name' =>
-    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_committer_email' =>
-    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_planned_at' =>
-    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_planner_name' =>
-    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'txt_planner_email' =>
-    ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
+has 'collpane' => (
+    is      => 'ro',
+    isa     => WxCollapsiblePane,
+    lazy    => 1,
+    builder => '_build_collpane',
+);
 
-has 'sb_sizer'  => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'deploy_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'verify_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'revert_sz' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'main_fg_sz' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_main_fg_sz',
+);
+
+has 'form_fg_sz' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_form_fg_sz',
+);
+
+has 'lbl_change_id' => (
+    is      => 'ro',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_change_id',
+);
+
+has 'lbl_name' => (
+    is      => 'ro',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_name',
+);
+
+has 'lbl_note' => (
+    is      => 'ro',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_note',
+);
+
+has 'lbl_committed_at' => (
+    is      => 'ro',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_committed_at',
+);
+
+has 'lbl_committer_name' => (
+    is      => 'ro',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_committer_name',
+);
+
+has 'lbl_committer_email' => (
+    is      => 'ro',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_committer_email',
+);
+
+has 'lbl_planned_at' => (
+    is      => 'ro',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_planned_at',
+);
+
+has 'lbl_planner_name' => (
+    is      => 'ro',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_planner_name',
+);
+
+has 'lbl_planner_email' => (
+    is      => 'ro',
+    isa     => WxStaticText,
+    lazy    => 1,
+    builder => '_build_lbl_planner_email',
+);
+
+has 'txt_change_id' => (
+    is      => 'ro',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_change_id',
+);
+
+has 'txt_name' => (
+    is      => 'ro',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_name',
+);
+
+has 'txt_note' => (
+    is      => 'ro',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_note',
+);
+
+has 'txt_committed_at' => (
+    is      => 'ro',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_committed_at',
+);
+
+has 'txt_committer_name' => (
+    is      => 'ro',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_committer_name',
+);
+
+has 'txt_committer_email' => (
+    is      => 'ro',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_committer_email',
+);
+
+has 'txt_planned_at' => (
+    is      => 'ro',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_planned_at',
+);
+
+has 'txt_planner_name' => (
+    is      => 'ro',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_planner_name',
+);
+
+has 'txt_planner_email' => (
+    is      => 'ro',
+    isa     => WxTextCtrl,
+    lazy    => 1,
+    builder => '_build_txt_planner_email',
+);
+
+has 'sb_sizer' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sb_sizer',
+);
+
+has 'deploy_sz' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_deploy_sz',
+);
+
+has 'verify_sz' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_verify_sz',
+);
+
+has 'revert_sz' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_revert_sz',
+);
 
 has 'notebook' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::View::Notebook',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => SqitchGUIWxNotebook,
+    lazy    => 1,
+    builder => '_build_notebook',
 );
+
 has 'edit_deploy' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::View::Editor',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => SqitchGUIWxEditor,
+    lazy    => 1,
+    builder => '_build_edit_deploy',
 );
+
 has 'edit_revert' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::View::Editor',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => SqitchGUIWxEditor,
+    lazy    => 1,
+    builder => '_build_edit_revert',
 );
+
 has 'edit_verify' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::View::Editor',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => SqitchGUIWxEditor,
+    lazy    => 1,
+    builder => '_build_edit_verify',
 );
-has 'ed_deploy_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'ed_revert_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'ed_verify_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+
+has 'ed_deploy_sbs' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_ed_deploy_sbs',
+);
+
+has 'ed_revert_sbs' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_ed_revert_sbs',
+);
+
+has 'ed_verify_sbs' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_ed_verify_sbs',
+);
 
 sub BUILD {
     my $self = shift;
@@ -324,7 +518,7 @@ sub _build_sb_sizer {
 sub _build_notebook {
     my $self = shift;
 
-    return App::Sqitch::GUI::View::Notebook->new(
+    return App::Sqitch::GUI::Wx::Notebook->new(
         app      => $self->app,
         parent   => $self->panel,
         ancestor => $self,
@@ -334,7 +528,7 @@ sub _build_notebook {
 sub _build_edit_deploy {
     my $self = shift;
 
-    return App::Sqitch::GUI::View::Editor->new(
+    return App::Sqitch::GUI::Wx::Editor->new(
         app      => $self->app,
         parent   => $self->notebook->page_deploy,
         ancestor => $self,
@@ -344,7 +538,7 @@ sub _build_edit_deploy {
 sub _build_edit_revert {
     my $self = shift;
 
-    return App::Sqitch::GUI::View::Editor->new(
+    return App::Sqitch::GUI::Wx::Editor->new(
         app      => $self->app,
         parent   => $self->notebook->page_revert,
         ancestor => $self,
@@ -354,7 +548,7 @@ sub _build_edit_revert {
 sub _build_edit_verify {
     my $self = shift;
 
-    return App::Sqitch::GUI::View::Editor->new(
+    return App::Sqitch::GUI::Wx::Editor->new(
         app      => $self->app,
         parent   => $self->notebook->page_verify,
         ancestor => $self,
@@ -414,8 +608,6 @@ sub OnPaneChanged {
 sub OnClose {
     my ($self, $event) = @_;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

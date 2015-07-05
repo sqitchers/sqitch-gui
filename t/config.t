@@ -1,52 +1,57 @@
-#!/bin/env perl
-
 use strict;
 use warnings;
-use Test::More tests => 9;
-use Path::Class;
+use Test::More;
+use Path::Class qw(dir file);
 
-use App::Sqitch::GUI;
+use App::Sqitch::GUI::Config;
 
-use Data::Printer;
+$ENV{HOME} = dir('t', 'home')->stringify;   # set HOME for testing
 
-$ENV{HOME} = 't/home';          # set HOME for testing
+# protect against user's environment variables (from Sqitch)
+delete @ENV{qw( SQITCH_CONFIG SQITCH_USER_CONFIG SQITCH_SYSTEM_CONFIG )};
 
-ok( my $gui  = App::Sqitch::GUI->new, 'New GUI' );
-ok( my $ctrl = $gui->controller,      'New GUI controller' );
+ok my $conf = App::Sqitch::GUI::Config->new, 'new config instance';
 
-my $config = $ctrl->config;
+is $conf->confname, 'sqitch.conf', 'config file name';
+is $conf->user_file,
+    file( 't', 'home', '.sqitch', 'sqitch.conf' )->stringify,
+    'user config file';
+is $conf->local_file, file( 't', 'home', 'flipr', 'sqitch.conf' )->stringify,
+    'local config file';
 
-is($config->user_file, 't/home/.sqitch/sqitch.conf', 'Test user_file');
+my ( $name, $path ) = ( 'flipr', dir( 't', 'home', 'flipr' )->stringify );
 
-is_deeply( $config->repo_list, {}, 'No repository list' );
-is( $config->repo_default_name, undef, 'No default repo name' );
-is( $config->repo_default_path, undef, 'No default repo path' );
+my $conf_href = { "project.${name}.path" => $path };
 
-#ok($config->reload, 'reload configurations');
+is_deeply $conf->_conf_projects_list, $conf_href, 'projects config';
+is_deeply $conf->project_list, { $name => $path }, 'projects list';
 
-# User config file
+is $conf->default_project_name, $name, 'default repo name';
+is $conf->default_project_path, $path, 'default repo path';
 
-my ( $name, $path ) = ( 'Test', 't/home/test-repo' );
+# Inspired from:
+# http://perltricks.com/article/178/2015/6/17/Separate-data-and-behavior-with-table-driven-testing
+# Thanks!
+my @data = (
+    [ ( 'unknown',  'Unknown' ) ],
+    [ ( 'pg',       'PostgreSQL' ) ],
+    [ ( 'mysql',    'MySQL' ) ],
+    [ ( 'sqlite',   'SQLite' ) ],
+    [ ( 'oracle',   'Oracle' ) ],
+    [ ( 'firebird', 'Firebird' ) ],
+);
+foreach my $row ( @data ) {
+    is $conf->get_engine_name($row->[0]), $row->[1],
+        "engine name: $row->[1]";
+}
 
-ok( $ctrl->config_edit_repo( $name, $path ), 'Add test repo' );
-ok( $ctrl->config_set_default($name), 'Set test repo as default' );
+# Not used, yet
+# $conf->get_engine_from_name
+# $conf->has_repo_name
+# $conf->has_repo_path
 
-# Also set as default in the config object
-# ok( $config->repo_default_name($name),      'Set default repo name' );
-# ok( $config->repo_default_path( dir $path), 'Set default repo path' );
+is $conf->project_list_cnt, 1, 'project count';
 
-# is( $config->repo_default_name, $name, 'Check default repo name' );
-# is( $config->repo_default_path, $path, 'Check default repo path' );
+like $conf->icon_path, qr/share.+icons/, 'get the icons path';
 
-# my $conf_list = { "repository.${name}.path" => $path };
-# is_deeply($config->repo_list, $conf_list, 'Repository list');
-
-# Local config file
-
-# $config->reload($config->repo_default_path);
-# $config->reload('t/home/.sqitch');
-
-#p $config;
-
-# Cleanup
-ok( $ctrl->config_remove_repo( $name, $path, 1 ), 'Remove repo and default' );
+done_testing;

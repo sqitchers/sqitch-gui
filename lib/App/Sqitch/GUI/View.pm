@@ -1,94 +1,197 @@
 package App::Sqitch::GUI::View;
 
-use Moose;
-use namespace::autoclean;
-use Wx qw<:everything>;
-use Wx::Event qw<EVT_CLOSE EVT_BUTTON EVT_MENU EVT_RADIOBUTTON>;
+# ABSTRACT: The View
+
+use 5.010;
+use utf8;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    ArrayRef
+    Int
+    Maybe
+    SqitchGUIModel
+    SqitchGUIViewPanelBottom
+    SqitchGUIViewPanelChange
+    SqitchGUIViewPanelLeft
+    SqitchGUIViewPanelPlan
+    SqitchGUIViewPanelProject
+    SqitchGUIViewPanelRight
+    SqitchGUIViewPanelTop
+    SqitchGUIWxStatusbar
+    SqitchGUIWxToolbar
+    Str
+    WxFrame
+    WxPoint
+    WxSize
+    WxSizer
+    WxSplitterWindow
+);
+use Wx qw(:everything);
+use Wx::Event qw(
+    EVT_BUTTON
+    EVT_CLOSE
+    EVT_LIST_ITEM_SELECTED
+    EVT_MENU
+    EVT_RADIOBUTTON
+    EVT_TOOL
+);
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
+use App::Sqitch::X qw(hurl);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-use App::Sqitch::GUI::View::MenuBar;
-use App::Sqitch::GUI::View::StatusBar;
+use App::Sqitch::GUI::Config::Toolbar;
+use App::Sqitch::GUI::Wx::Menubar;
+use App::Sqitch::GUI::Wx::Toolbar;
+use App::Sqitch::GUI::Wx::Statusbar;
 use App::Sqitch::GUI::View::Panel::Left;
 use App::Sqitch::GUI::View::Panel::Right;
 use App::Sqitch::GUI::View::Panel::Top;
 use App::Sqitch::GUI::View::Panel::Bottom;
-
 use App::Sqitch::GUI::View::Panel::Change;
 use App::Sqitch::GUI::View::Panel::Project;
 use App::Sqitch::GUI::View::Panel::Plan;
 
-#use Data::Printer;
-
 # Main window
+
+# Optional, point: the upper-left corner of the app.
 has 'position' => (
-    is            => 'rw',
-    isa           => 'Maybe[Wx::Point]',
-    documentation => q{ Optional, point: the upper-left corner of the app. }
+    is  => 'rw',
+    isa => Maybe[WxPoint],
 );
-has 'style' => ( is => 'rw', isa => 'Int',       lazy_build => 1 );
-has 'frame' => ( is => 'rw', isa => 'Wx::Frame', lazy_build => 1 );
-has 'title' => ( is => 'rw', isa => 'Str',       lazy_build => 1 );
-has 'size'  => ( is => 'rw', isa => 'Wx::Size',  lazy_build => 1 );
-has 'menu_bar' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::View::MenuBar',
-    lazy_build => 1,
+
+has 'style' => (
+    is      => 'rw',
+    isa     => Int,
+    lazy    => 1,
+    builder => '_build_style',
 );
+
+has 'frame' => (
+    is      => 'ro',
+    isa     => WxFrame,
+    lazy    => 1,
+    builder => '_build_frame',
+);
+
+has 'title' => (
+    is      => 'rw',
+    isa     => Str,
+    lazy    => 1,
+    builder => '_build_title',
+);
+
+has 'size' => (
+    is      => 'rw',
+    isa     => WxSize,
+    lazy    => 1,
+    builder => '_build_size',
+);
+
+has 'tool_bar' => (
+    is      => 'ro',
+    isa     => SqitchGUIWxToolbar,
+    lazy    => 1,
+    builder => '_build_tool_bar',
+);
+
 has 'status_bar' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::View::StatusBar',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => SqitchGUIWxStatusbar,
+    lazy    => 1,
+    builder => '_build_status_bar',
 );
 
 # Panels
 
-has 'left_side' => (
-    is           => 'rw',
-    isa          => 'App::Sqitch::GUI::View::Panel::Left',
-    lazy_build   => 1
+has 'left' => (
+    is      => 'ro',
+    isa     => SqitchGUIViewPanelLeft,
+    lazy    => 1,
+    builder => '_build_left',
 );
-has 'right_side' => (
-    is           => 'rw',
-    isa          => 'App::Sqitch::GUI::View::Panel::Right',
-    lazy_build   => 1
+
+has 'right' => (
+    is      => 'ro',
+    isa     => SqitchGUIViewPanelRight,
+    lazy    => 1,
+    builder => '_build_right',
 );
-has 'top_side' => (
-    is           => 'rw',
-    isa          => 'App::Sqitch::GUI::View::Panel::Top',
-    lazy_build   => 1
+
+has 'top' => (
+    is      => 'ro',
+    isa     => SqitchGUIViewPanelTop,
+    lazy    => 1,
+    builder => '_build_top',
 );
+
 has 'project' => (
-    is           => 'rw',
-    isa          => 'App::Sqitch::GUI::View::Panel::Project',
-    lazy_build   => 1
+    is      => 'ro',
+    isa     => SqitchGUIViewPanelProject,
+    lazy    => 1,
+    builder => '_build_project',
 );
+
 has 'plan' => (
-    is           => 'rw',
-    isa          => 'App::Sqitch::GUI::View::Panel::Plan',
-    lazy_build   => 1
+    is      => 'ro',
+    isa     => SqitchGUIViewPanelPlan,
+    lazy    => 1,
+    builder => '_build_plan',
 );
+
 has 'change' => (
-    is           => 'rw',
-    isa          => 'App::Sqitch::GUI::View::Panel::Change',
-    lazy_build   => 1
+    is      => 'ro',
+    isa     => SqitchGUIViewPanelChange,
+    lazy    => 1,
+    builder => '_build_change',
 );
-has 'bottom_side' => (
-    is           => 'rw',
-    isa          => 'App::Sqitch::GUI::View::Panel::Bottom',
-    lazy_build   => 1
+
+has 'bottom' => (
+    is      => 'ro',
+    isa     => SqitchGUIViewPanelBottom,
+    lazy    => 1,
+    builder => '_build_bottom',
 );
 
 # Sizers
-has 'main_sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+has 'main_sizer' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_main_sizer',
+);
 
 # Miscellaneous
-has 'min_pane_size' => ( is => 'rw', isa => 'Int', lazy => 1, default => 50 );
-has 'sash_pos' => ( is => 'rw', isa => 'Int', lazy => 1, default => 450 );
+has 'min_pane_size' => (
+    is      => 'ro',
+    isa     => Int,
+    lazy    => 1,
+    default => 50,
+);
+
+has 'sash_pos' => (
+    is      => 'ro',
+    isa     => Int,
+    lazy    => 1,
+    default => 450,
+);
 
 # Splitter window
-has 'splitter_w' =>
-    ( is => 'rw', isa => 'Wx::SplitterWindow', lazy_build => 1 );
+has 'splitter_w' => (
+    is      => 'ro',
+    isa     => WxSplitterWindow,
+    lazy    => 1,
+    builder => '_build_splitter_w',
+);
+
+has 'model' => (
+    is      => 'ro',
+    isa     => SqitchGUIModel,
+    lazy    => 1,
+    default => sub {
+        shift->app->model;
+    },
+);
 
 sub BUILD {
     my($self, @params) = @_;
@@ -97,28 +200,45 @@ sub BUILD {
 
     $self->frame->Hide;
 
-    $self->frame->SetMenuBar($self->menu_bar);
+    # Menu Bar
+    my $menu = App::Sqitch::GUI::Wx::Menubar->new(
+        app       => $self->app,
+        ancestor  => $self,
+        parent    => $self->frame,
+    );
+    $self->frame->SetMenuBar( $menu->menu_bar );
 
-    $self->main_sizer->Add( $self->left_side->panel,  1, wxEXPAND | wxALL, 0 );
-    $self->main_sizer->Add( $self->right_side->panel, 0, wxEXPAND | wxALL, 0 );
+    # Tool Bar
+    my $conf     = App::Sqitch::GUI::Config::Toolbar->new;
+    my @toolbars = $conf->all_buttons;
+    my $tb = $self->tool_bar;
+    foreach my $name (@toolbars) {
+        my $attribs = $conf->get_tool($name);
+        $tb->make_toolbar_button( $name, $attribs );
+    }
+    $tb->set_initial_mode( \@toolbars );
+    $self->frame->SetToolBar($tb);
 
-    $self->left_side->sizer->Add( $self->splitter_w, 1, wxEXPAND | wxALL, 0 );
+    $self->main_sizer->Add( $self->left->panel,  1, wxEXPAND | wxALL, 0 );
+    $self->main_sizer->Add( $self->right->panel, 0, wxEXPAND | wxALL, 0 );
 
-    $self->splitter_w->SplitHorizontally( $self->top_side->panel,
-        $self->bottom_side->panel,
+    $self->left->sizer->Add( $self->splitter_w, 1, wxEXPAND | wxALL, 0 );
+
+    $self->splitter_w->SplitHorizontally( $self->top->panel,
+        $self->bottom->panel,
         $self->sash_pos );
     $self->splitter_w->SetMinimumPaneSize( $self->min_pane_size );
 
-    $self->top_side->sizer->Add( $self->change->panel,  1, wxEXPAND | wxALL, 0 );
-    $self->top_side->sizer->Add( $self->project->panel, 1, wxEXPAND | wxALL, 0 );
-    $self->top_side->sizer->Add( $self->plan->panel,    1, wxEXPAND | wxALL, 0 );
+    $self->top->sizer->Add( $self->change->panel, 1, wxEXPAND | wxALL, 0 );
+    $self->top->sizer->Add( $self->project->panel, 1, wxEXPAND | wxALL, 0 );
+    $self->top->sizer->Add( $self->plan->panel, 1, wxEXPAND | wxALL, 0 );
 
-    $self->top_side->panel->SetSizer($self->top_side->sizer);
+    $self->top->panel->SetSizer( $self->top->sizer );
 
-    $self->frame->SetSizer($self->main_sizer);
+    $self->frame->SetSizer( $self->main_sizer );
 
     $self->change->panel->Show; # Gtk-WARNINGs if default is not Change
-                                # later set to Project pragmatically ;)
+                                # later set to Project...  ;)
 
     $self->frame->Show;
 
@@ -138,28 +258,29 @@ sub _build_frame {
     return $y;
 }
 
-sub _build_menu_bar {
+sub _build_tool_bar {
     my $self = shift;
-    my $mb   = App::Sqitch::GUI::View::MenuBar->new(
-        app      => $self->app,
-        ancestor => $self,
-        parent   => $self->frame
+    my $tb = App::Sqitch::GUI::Wx::Toolbar->new(
+        app       => $self->app,
+        ancestor  => $self,
+        parent    => $self->frame,
+        icon_path => $self->app->config->icon_path,
     );
-    return $mb;
+    return $tb;
 }
 
 sub _build_status_bar {
     my $self = shift;
-    my $sb   = App::Sqitch::GUI::View::StatusBar->new(
+    my $sb   = App::Sqitch::GUI::Wx::Statusbar->new(
         app      => $self->app,
         ancestor => $self,
-        parent   => $self->frame
+        parent   => $self->frame,
     );
     return $sb;
 }
 
 sub _build_size {
-    return Wx::Size->new(800, 650); # default window size
+    return Wx::Size->new(900, 700); # default window size
 }
 
 sub _build_style {
@@ -187,7 +308,7 @@ sub _build_top_sizer {
     return Wx::BoxSizer->new(wxHORIZONTAL);
 }
 
-sub _build_left_side {
+sub _build_left {
     my $self = shift;
 
     my $panel = App::Sqitch::GUI::View::Panel::Left->new(
@@ -199,7 +320,7 @@ sub _build_left_side {
     return $panel;
 }
 
-sub _build_right_side {
+sub _build_right {
     my $self = shift;
 
     my $panel = App::Sqitch::GUI::View::Panel::Right->new(
@@ -211,7 +332,7 @@ sub _build_right_side {
     return $panel;
 }
 
-sub _build_top_side {
+sub _build_top {
     my $self = shift;
 
     return App::Sqitch::GUI::View::Panel::Top->new(
@@ -226,18 +347,18 @@ sub _build_project {
 
     return App::Sqitch::GUI::View::Panel::Project->new(
         app      => $self->app,
-        parent   => $self->top_side->panel,
+        parent   => $self->top->panel,
         ancestor => $self,
     );
 }
 
 sub _build_plan {
     my $self = shift;
-
     return App::Sqitch::GUI::View::Panel::Plan->new(
-        app      => $self->app,
-        parent   => $self->top_side->panel,
-        ancestor => $self,
+        app       => $self->app,
+        parent    => $self->top->panel,
+        ancestor  => $self,
+        list_data => $self->model->plan_list_data,
     );
 }
 
@@ -246,12 +367,12 @@ sub _build_change {
 
     return App::Sqitch::GUI::View::Panel::Change->new(
         app      => $self->app,
-        parent   => $self->top_side->panel,
+        parent   => $self->top->panel,
         ancestor => $self,
     );
 }
 
-sub _build_bottom_side {
+sub _build_bottom {
     my $self = shift;
 
     return App::Sqitch::GUI::View::Panel::Bottom->new(
@@ -265,7 +386,7 @@ sub _build_splitter_w {
     my $self = shift;
 
     my $spw = Wx::SplitterWindow->new(
-        $self->left_side->panel,
+        $self->left->panel,
         -1,
         [ -1, -1 ],
         [ -1, -1 ],
@@ -282,12 +403,12 @@ sub _set_events {
 
     foreach my $name ( qw{change project plan} ) {
         my $btn = q{btn_} . $name;
-        EVT_BUTTON $self->frame, $self->right_side->$btn->GetId, sub {
+        EVT_BUTTON $self->frame, $self->right->$btn->GetId, sub {
             $self->show_panel($name);
         };
 
         my $btn_sel = q{btn_} . $name . q{_sel};
-        EVT_RADIOBUTTON $self->frame, $self->right_side->$btn_sel->GetId,
+        EVT_RADIOBUTTON $self->frame, $self->right->$btn_sel->GetId,
             sub { $self->on_radio($name); };
     }
 
@@ -306,58 +427,20 @@ sub show_panel {
     }
 
     my $btn_sel = q{btn_} . $name . q{_sel};
-    $self->right_side->$btn_sel->SetValue(1);
+    $self->right->$btn_sel->SetValue(1);
 
-    $self->top_side->panel->Layout();
+    $self->top->panel->Layout();
 
-    return;
-}
-
-sub control_write_s {
-    my ( $self, $control, $value, $is_append ) = @_;
-
-    $value ||= q{};                 # empty
-
-    $control->ClearAll unless $is_append;
-    $control->AppendText($value);
-    $control->AppendText("\n");
-    $control->Colourise( 0, $control->GetTextLength );
-
-    return;
-}
-
-sub control_write_e {
-    my ( $self, $control, $value ) = @_;
-
-    $control->Clear;
-    $control->SetValue($value) if defined $value;
-
-    return;
-}
-
-sub dirpicker_write {
-    my ( $self, $path ) = @_;
-
-    die "Wrong path: $path!" unless -d $path;
-
-    $self->project->dpc_path->SetPath($path);
-
-    return;
-}
-
-sub combobox_write {
-    my ( $self, $name ) = @_;
-    $self->project->cbx_driver->SetValue($name) if $name;
     return;
 }
 
 sub set_status {
     my ($self, $state, $gui_rules) = @_;
 
-    $self->status_bar->change_caption($state, 1);
+    $self->status_bar->change_caption( $state, 1 );
     foreach my $btn ( keys %{$gui_rules} ) {
         my $enable = $gui_rules->{$btn};
-        $self->right_side->$btn->Enable($enable);
+        $self->right->$btn->Enable($enable);
     }
     $self->show_panel('project');
 
@@ -376,8 +459,58 @@ sub OnClose {
     return;
 }
 
-__PACKAGE__->meta->make_immutable;
+sub get_toolbar_btn {
+    my ( $self, $name ) = @_;
+    return $self->tool_bar->get_toolbar_btn($name);
+}
 
+sub event_handler_for_tb_button {
+    my ( $self, $name, $calllback ) = @_;
+    my $tb_id = $self->get_toolbar_btn($name)->GetId;
+    EVT_TOOL $self->frame, $tb_id, $calllback;
+    return;
+}
+
+sub event_handler_for_list {
+    my ( $self, $list, $calllback ) = @_;
+    EVT_LIST_ITEM_SELECTED $self->frame, $list, $calllback;
+    return;
+}
+
+sub load_txt_form_for {
+    my ($self, $form, $field, $value) = @_;
+    hurl __ 'Wrong arguments passed to load_txt_form_for()'
+        unless defined $field;
+    my $name    = "txt_$field";
+    my $control = $self->$form->$name;
+    $self->$form->control_write_e($control, $value);
+    return;
+}
+
+sub load_sql_form_for {
+    my ($self, $form, $command, $value) = @_;
+    my $name    = "edit_$command";
+    my $control = $self->$form->$name;
+    $self->$form->control_write_stc($control, $value);
+}
+
+sub get_plan_list_ctrl {
+    my $self = shift;
+    return $self->plan->list_ctrl;
+}
+
+sub get_project_list_ctrl {
+    my $self = shift;
+    return $self->project->list_ctrl;
+}
+
+sub log_message {
+    my ($self, $msg) = @_;
+    my $control = $self->bottom->log_ctrl;
+    $self->bottom->control_write_stc($control, $msg, 'append');
+    $control->LineScrollDown;
+    return;
+}
 
 =head1 PANELS
 

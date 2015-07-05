@@ -1,141 +1,173 @@
 package App::Sqitch::GUI::Config;
 
+# ABSTRACT: A Sqitch::Config Extension
+
+use 5.010;
+use strict;
 use utf8;
-use Moose;
-use namespace::autoclean;
-use Path::Class;
+use warnings;
+use Moo;
+use MooX::HandlesVia;
+use App::Sqitch::GUI::Types qw(
+    Dir
+    Str
+    Maybe
+    HashRef
+);
+use Path::Class qw(dir file);
+use File::ShareDir qw(dist_dir);
+use Try::Tiny;
 use List::Util qw(first);
 use App::Sqitch::X qw(hurl);
-use MooseX::AttributeHelpers;
 
 extends 'App::Sqitch::Config';
 
-has repo_default_name => (
+has 'default_project_name' => (
     is      => 'rw',
-    isa     => 'Maybe[Str]',
+    isa     => Maybe[Str],
     lazy    => 1,
     default => sub {
-        shift->get(key => 'repository.default');
+        my $self = shift;
+        return $self->get(key => 'core.project');
     }
 );
 
-has repo_default_path => (
+has 'default_project_path' => (
     is      => 'rw',
-    isa     => 'Maybe[Path::Class::Dir]',
+    isa     => Maybe[Dir],
     lazy    => 1,
     default => sub {
         my $self    = shift;
-        my $default = $self->repo_default_name;
+        my $default = $self->default_project_name;
         return $default
-            ? dir $self->get( key => "repository.${default}.path" )
+            ? dir $self->get( key => "project.${default}.path" )
             : undef;
     }
 );
 
 sub local_file {
     my $self = shift;
-    return $self->repo_default_path
-        ? file( $self->repo_default_path, $self->confname )
+    return $self->default_project_path
+        ? file( $self->default_project_path, $self->confname )
         : file( $self->confname );
 };
 
-has _repo_conf_list => (
+has '_conf_projects_list' => (
     is      => 'ro',
-    isa     => 'Maybe[HashRef]',
+    isa     => Maybe[HashRef],
     lazy    => 1,
     default => sub {
-        shift->get_regexp( key => '^repository\..+\.path$' );
+        shift->get_regexp( key => qr/^project[.][^.]+[.]path$/ );
     }
 );
 
-has repo_list => (
-    is      => 'ro',
-    isa     => 'Maybe[HashRef]',
-    lazy_build => 1,
+has 'project_list' => (
+    is          => 'ro',
+    handles_via => 'Hash',
+    lazy        => 1,
+    builder     => '_build_project_list',
+    handles     => {
+        get_project => 'get',
+        has_project => 'count',
+        projects    => 'kv',
+    },
 );
 
+sub _build_project_list {
+    my $self = shift;
+    my $project_list = {};
+    while ( my ( $key, $path ) = each( %{ $self->_conf_projects_list } ) ) {
+        my ($name) = $key =~ m{^project[.](.+)[.]path$};
+        $project_list->{$name} = dir $path;
+    }
+    return $project_list;
+}
+
 has 'engine_list' => (
-    metaclass => 'Collection::Hash',
-    is        => 'ro',
-    isa       => 'HashRef[Str]',
-    required  => 1,
-    lazy      => 1,
-    default   => sub {
-        {
-            unknown  => 'Unknown',
+    handles_via => 'Hash',
+    is          => 'ro',
+    required    => 1,
+    lazy        => 1,
+    default     => sub {
+        {   unknown  => 'Unknown',
             pg       => 'PostgreSQL',
             mysql    => 'MySQL',
             sqlite   => 'SQLite',
-            cubrid   => 'CUBRID',
             oracle   => 'Oracle',
             firebird => 'Firebird',
         };
     },
-    provides => { 'get' => 'get_engine_name', }
+    handles => {
+        get_engine_name => 'get',
+    },
 );
 
-sub get_engine_from_name {
-    my ($self, $engine) = @_;
-    my %engines = reverse %{ $self->engine_list };
-    return $engines{$engine};
-}
+#-- Not used, yet:
 
-sub _build_repo_list {
-    my $self = shift;
+# sub get_engine_from_name {
+#     my ($self, $engine) = @_;
+#     my %engines = reverse %{ $self->engine_list };
+#     return $engines{$engine};
+# }
 
-    my $repo_cfg_lst = $self->_repo_conf_list;
+# sub has_repo_name {
+#     my ($self, $name) = @_;
+#     hurl 'Wrong arguments passed to has_repo_name()'
+#         unless $name;
+#     return 1 if first { $name eq $_ } keys %{$self->project_list};
+#     return 0;
+# }
 
-    my $repo_list = {};
-    while ( my ( $key, $path ) = each( %{$repo_cfg_lst} ) ) {
-        my ($name) = $key =~ m{^repository\.(.+)\.path$}xmg;
-        $repo_list->{$name} = dir $path;
-    }
-
-    return $repo_list;
-}
-
-sub has_repo_name {
-    my ($self, $name) = @_;
-    hurl 'Wrong arguments passed to has_repo_name()'
-        unless $name;
-    return 1 if first { $name eq $_ } keys %{$self->repo_list};
-    return 0;
-}
-
-sub has_repo_path {
-    my ($self, $path) = @_;
-    hurl 'Wrong arguments passed to has_repo_path()'
-        unless $path;
-    return 1 if first { $path eq $_ } values %{$self->repo_list};
-    return 0;
-}
+# sub has_repo_path {
+#     my ($self, $path) = @_;
+#     hurl 'Wrong arguments passed to has_repo_path()' unless $path;
+#     return 1 if first { $path->stringify eq $_ } values %{$self->project_list};
+#     return 0;
+# }
 
 sub reload {
     my ( $self, $path ) = @_;
+    hurl 'Wrong arguments passed to reload()' unless $path;
+    $self->default_project_path($path);
     my $file = file $path, $self->confname;
-    print "Reloading $file...\n";
-    $self->load($file);
+    try { $self->load($file) } catch { print "Reload config error: $_\n" };
 }
 
-sub repo_list_cnt {
+sub project_list_cnt {
     my $self = shift;
-    return scalar keys %{ $self->repo_list };
+    return scalar keys %{ $self->project_list };
 }
 
-__PACKAGE__->meta->make_immutable;
+has 'icon_path' => (
+    is      => 'ro',
+    isa     => Dir,
+    default => sub {
+        my $self = shift;
+        my @path = ( 'etc', 'icons' );
+        my $path = try {
+            dir dist_dir('App-Sqitch-GUI'), @path;
+        }
+        catch {
+            warn "Error from icon_path: $_";
+            dir 'share', @path;
+        };
+        return $path;
+    },
+);
 
 =pod
 
 Additions to the user configuration file C<sqitch.conf>:
 
-  [repository]
-      default = FliprPg
-  [repository "FliprPg"]
-      path = /home/user/sqitch/flipr-pg
-  [repository "FliprCubrid"]
-      path = /home/user/sqitch/flipr-cubrid
+[core]
+    engine = pg
+    project = flipr
+[project "flipr"]
+    path = /home/user/sqitch/flipr
+[project "widgets"]
+    path = /home/user/sqitch/widgets
 
-The list of repository names and paths and a default repository name.
+The list of project names and paths and a default project name.
 
 =cut
 

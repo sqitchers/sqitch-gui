@@ -1,27 +1,33 @@
-package App::Sqitch::GUI::View::Editor;
+package App::Sqitch::GUI::Wx::Editor;
 
-use Moose;
-use namespace::autoclean;
-use Wx qw(:everything);
-use Wx::STC;
-use Wx::Event qw();
+# ABSTRACT: Wx StyledText Editor Control
+
+use Moo;
+use Wx::Scintilla 0.34 ();
+use Wx qw(
+    wxDEFAULT
+    wxNORMAL
+    wxSTC_LEX_MSSQL
+    wxSTC_MARGIN_SYMBOL
+    wxSTC_STYLE_BRACEBAD
+    wxSTC_STYLE_BRACELIGHT
+    wxSTC_STYLE_DEFAULT
+    wxSTC_WRAP_NONE
+);
+use Wx::Event;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-use MooseX::NonMoose::InsideOut;
-extends 'Wx::StyledTextCtrl';
+extends 'Wx::Scintilla::TextCtrl';
 
 sub FOREIGNBUILDARGS {
     my $self = shift;
-
     my %args = @_;
-
     return (
         $args{parent},
         -1,
         [-1, -1],
         [-1, -1],
-        wxBORDER_SUNKEN,
     );
 }
 
@@ -31,7 +37,6 @@ sub BUILD {
     #
     # From QDepo (http://sourceforge.net/projects/tpda-qrt/)  ;)
     #
-    $self->SetMarginType( 1, wxSTC_MARGIN_SYMBOL );
     $self->SetMarginType( 1, wxSTC_MARGIN_SYMBOL );
     $self->SetMarginWidth( 1, 10 );
     $self->StyleSetFont( wxSTC_STYLE_DEFAULT,
@@ -83,37 +88,5 @@ sub _set_events {
     return 1;
 }
 
-__PACKAGE__->meta->make_immutable;
+1;
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 ACKNOWLEDGMENTS
-
-GUI with Wx and Moose heavily inspired/copied from the LacunaWaX
-project:
-
-https://github.com/tmtowtdi/LacunaWaX
-
-Copyright: Jonathan D. Barton 2012-2013
-
-Thank you!
-
-=head1 LICENSE AND COPYRIGHT
-
-  Stefan Suciu       2013
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of App::Sqitch::GUI::View::Editor

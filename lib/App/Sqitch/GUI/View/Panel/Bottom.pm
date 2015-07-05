@@ -1,18 +1,60 @@
 package App::Sqitch::GUI::View::Panel::Bottom;
 
+# ABSTRACT: The Bottom Panel
+
+use 5.010;
+use strict;
+use warnings;
 use utf8;
-use Moose;
-use namespace::autoclean;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    ArrayRef
+    Maybe
+    Object
+	SqitchGUIWxLogView
+    WxPanel
+    WxSizer
+    WxTextCtrl
+);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw(EVT_CLOSE);
 
-with 'App::Sqitch::GUI::Roles::Element';
+with qw(App::Sqitch::GUI::Roles::Element
+        App::Sqitch::GUI::Roles::Panel);
 
-has 'panel' => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'sizer' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
+use App::Sqitch::GUI::Wx::LogView;
 
-has 'log_ctrl' => ( is => 'rw', isa => 'Wx::TextCtrl', lazy_build => 1 );
-has 'old_log'  => ( is => 'rw', isa => 'Maybe[Object]' );
+has 'panel' => (
+    is      => 'ro',
+    isa     => WxPanel,
+    lazy    => 1,
+    builder => '_build_panel',
+);
+
+has 'sizer' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sizer',
+);
+
+has 'log_ctrl' => (
+    is      => 'ro',
+    isa     => SqitchGUIWxLogView,
+    lazy    => 1,
+    builder => '_build_log_ctrl',
+);
+
+sub _build_log_ctrl {
+    my $self = shift;
+	my $log_ctrl = App::Sqitch::GUI::Wx::LogView->new(
+        app      => $self->app,
+        parent   => $self->panel,
+        ancestor => $self,
+    );
+	$log_ctrl->SetReadOnly(1);					 # log is readonly
+	return $log_ctrl;
+}
 
 sub BUILD {
     my $self = shift;
@@ -54,26 +96,7 @@ sub _build_sizer {
     return Wx::BoxSizer->new(wxVERTICAL);
 }
 
-sub _build_log_ctrl {
-    my $self = shift;
-
-    my $log_ctrl = Wx::TextCtrl->new(
-        $self->panel,
-        -1, q{},
-        [-1, -1],
-        [-1, -1],
-        wxTE_MULTILINE,
-    );
-    $log_ctrl->SetBackgroundColour( Wx::Colour->new( 'WHEAT' ) );
-    my $old_log = Wx::Log::SetActiveTarget( Wx::LogTextCtrl->new( $log_ctrl ) );
-    $self->old_log($old_log);
-
-    return $log_ctrl;
-}
-
 sub _set_events { }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

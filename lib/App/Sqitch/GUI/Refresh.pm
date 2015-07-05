@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Refresh;
 
+# ABSTRACT: An Observer for the GUI
+
 use 5.010;
 use Moose;
 use namespace::autoclean;
@@ -14,9 +16,10 @@ has 'view' => (
 );
 
 has 'rules' => (
-    is         => 'ro',
-    isa        => 'App::Sqitch::GUI::Rules',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => 'App::Sqitch::GUI::Rules',
+    lazy    => 1,
+    builder => '_build_rules',
 );
 
 sub _build_rules {

@@ -1,0 +1,21 @@
+%syntax-version=1.0.0-b2
+%project=flipr
+%uri=https://github.com/theory/sqitch-intro/
+
+appschema 2013-12-30T23:19:45Z Marge N. O’Vera <marge@example.com> # Add schema for all flipr objects.
+users [appschema] 2013-12-30T23:49:00Z Marge N. O’Vera <marge@example.com> # Creates table to track our users.
+insert_user [users appschema] 2013-12-30T23:57:36Z Marge N. O’Vera <marge@example.com> # Creates a function to insert a user.
+change_pass [users appschema] 2013-12-30T23:57:45Z Marge N. O’Vera <marge@example.com> # Creates a function to change a user password.
+@v1.0.0-dev1 2013-12-31T00:01:22Z Marge N. O’Vera <marge@example.com> # Tag v1.0.0-dev1.
+
+lists [appschema users] 2013-12-31T00:39:40Z Marge N. O’Vera <marge@example.com> # Adds table for storing lists.
+insert_list [lists appschema users] 2013-12-31T00:41:29Z Marge N. O’Vera <marge@example.com> # Creates a function to insert a list.
+delete_list [lists appschema users] 2013-12-31T00:41:37Z Marge N. O’Vera <marge@example.com> # Creates a function to delete a list.
+flips [appschema users] 2013-12-31T00:32:39Z Marge N. O’Vera <marge@example.com> # Adds table for storing flips.
+insert_flip [flips appschema users] 2013-12-31T00:35:59Z Marge N. O’Vera <marge@example.com> # Creates a function to insert a flip.
+delete_flip [flips appschema users] 2013-12-31T00:36:34Z Marge N. O’Vera <marge@example.com> # Creates a function to delete a flip.
+@v1.0.0-dev2 2013-12-31T00:55:06Z Marge N. O’Vera <marge@example.com> # Tag v1.0.0-dev2.
+
+pgcrypto 2013-12-31T00:57:24Z Marge N. O’Vera <marge@example.com> # Loads pgcrypto extension.
+insert_user [insert_user@v1.0.0-dev2 pgcrypto] 2013-12-31T01:00:10Z Marge N. O’Vera <marge@example.com># Change insert_user to use pgcrypto.
+change_pass [change_pass@v1.0.0-dev2 pgcrypto] 2013-12-31T01:02:35Z Marge N. O’Vera <marge@example.com># Change change_pass to use pgcrypto.

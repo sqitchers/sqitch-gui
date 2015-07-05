@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Status;
 
+# ABSTRACT: GUI Status
+
 use Moose;
 use namespace::autoclean;
 use Moose::Util::TypeConstraints;

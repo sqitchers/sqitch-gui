@@ -20,7 +20,7 @@ Status
 
 Draft - Limited functionality:
 
-- Add repository and set a default one;
+- Add project and set a default one;
 - Load project and change details;
 
 Test usage
@@ -34,10 +34,10 @@ Test usage
 
     % PERL5LIB=lib perl bin/sqitch-gui
 
-After the application start, open the menu Admin -> Repository.
+After the application start, open the menu Admin -> Project.
 
 It should show a dialog window.  Select a path to an existing Sqitch
-repository, fill in a name and click on the Add button.  The path
+project, fill in a name and click on the Add button.  The path
 should be added to the list.  Click on the Default button and quit the
 dialog and the application.
 
@@ -58,7 +58,7 @@ it is closed.
 To integrate Sqitch into Sqitch::GUI there are a few problems that
 have to be solved:
 
-The `sqitch` command is executed from a repository directory from
+The `sqitch` command is executed from a project directory from
 where it reads some configurations and the plan file.  To be useful
 Sqitch::GUI needs to keep the list of repositories in a configuration
 file located in standard places in order to be able to find, read and

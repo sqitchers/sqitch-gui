@@ -2,15 +2,16 @@ package App::Sqitch::GUI;
 
 # ABSTRACT: GUI for Sqitch
 
-use 5.010001;
-use Moose;
-use namespace::autoclean;
-
+use 5.010;
+use strict;
+use warnings;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    SqitchGUIController
+);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Locale::Messages qw(bind_textdomain_filter);
 use App::Sqitch::GUI::Controller;
-
-our $VERSION = '0.003';
 
 BEGIN {
     # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
@@ -19,9 +20,10 @@ BEGIN {
 }
 
 has 'controller' => (
-    is         => 'rw',
-    isa        => 'App::Sqitch::GUI::Controller',
-    lazy_build => 1,
+    is      => 'rw',
+    isa     => SqitchGUIController,
+    lazy    => 1,
+    builder => '_build_controller',
 );
 
 sub _build_controller {
@@ -32,7 +34,7 @@ sub run {
     shift->controller->app->MainLoop;
 }
 
-__PACKAGE__->meta->make_immutable;
+1;
 
 =head1 AUTHOR
 
@@ -53,6 +55,9 @@ https://github.com/tmtowtdi/LacunaWaX
 
 Copyright: Jonathan D. Barton 2012-2013
 
+The implementation of the localization code is based on the work of
+David E. Wheeler.
+
 Thank you!
 
 =head1 LICENSE AND COPYRIGHT
@@ -64,5 +69,3 @@ under the terms of either: the GNU General Public License as published
 by the Free Software Foundation.
 
 =cut
-
-1;    # End of App::Sqitch::GUI

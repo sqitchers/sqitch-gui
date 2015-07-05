@@ -1,36 +1,163 @@
 package App::Sqitch::GUI::View::Panel::Right;
 
+# ABSTRACT: The Right Panel
+
+use 5.010;
+use strict;
+use warnings;
 use utf8;
-use Moose;
-use namespace::autoclean;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    WxPanel
+    WxSizer
+    WxButton
+    WxRadioButton
+);
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw(:allclasses :everything);
 use Wx::Event qw<EVT_CLOSE>;
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-has 'panel'   => ( is => 'rw', isa => 'Wx::Panel', lazy_build => 1 );
-has 'sizer'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'panel_sbs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'panel_fgs'   => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'commands_sbs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'commands_fgs' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'sizer_cmdtop' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'sizer_cmdbot' => ( is => 'rw', isa => 'Wx::Sizer', lazy_build => 1 );
-has 'btn_status'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_add'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_deploy'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_revert'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_verify'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_log'     => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_quit'    => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
+has 'panel' => (
+    is      => 'ro',
+    isa     => WxPanel,
+    lazy    => 1,
+    builder => '_build_panel',
+);
 
-has 'btn_project' => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_project_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1 );
-has 'btn_change'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_change_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1);
-has 'btn_plan'  => ( is => 'rw', isa => 'Wx::Button', lazy_build => 1 );
-has 'btn_plan_sel' => ( is => 'rw', isa => 'Wx::RadioButton', lazy_build => 1);
+has 'sizer' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sizer',
+);
+
+has 'panel_sbs' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_panel_sbs',
+);
+
+has 'panel_fgs' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_panel_fgs',
+);
+
+has 'commands_sbs' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_commands_sbs',
+);
+
+has 'commands_fgs' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_commands_fgs',
+);
+
+has 'sizer_cmdtop' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sizer_cmdtop',
+);
+
+has 'sizer_cmdbot' => (
+    is      => 'ro',
+    isa     => WxSizer,
+    lazy    => 1,
+    builder => '_build_sizer_cmdbot',
+);
+
+has 'btn_status' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_status',
+);
+
+has 'btn_add' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_add',
+);
+
+has 'btn_deploy' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_deploy',
+);
+
+has 'btn_revert' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_revert',
+);
+
+has 'btn_verify' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_verify',
+);
+
+has 'btn_log' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_log',
+);
+
+has 'btn_project' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_project',
+);
+
+has 'btn_project_sel' => (
+    is      => 'ro',
+    isa     => WxRadioButton,
+    lazy    => 1,
+    builder => '_build_btn_project_sel',
+);
+
+has 'btn_change' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_change',
+);
+
+has 'btn_change_sel' => (
+    is      => 'ro',
+    isa     => WxRadioButton,
+    lazy    => 1,
+    builder => '_build_btn_change_sel',
+);
+
+has 'btn_plan' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_plan',
+);
+
+has 'btn_plan_sel' => (
+    is      => 'ro',
+    isa     => WxRadioButton,
+    lazy    => 1,
+    builder => '_build_btn_plan_sel',
+);
 
 sub BUILD {
     my $self = shift;
@@ -63,7 +190,6 @@ sub BUILD {
     $self->commands_fgs->Add( $self->btn_revert,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_verify,   1, wxEXPAND,         0 );
     $self->commands_fgs->Add( $self->btn_log,      1, wxEXPAND,         0 );
-    $self->sizer_cmdbot->Add( $self->btn_quit,     1, wxALIGN_BOTTOM | wxALL, 5 );
 
     $self->panel->Show(1);
 
@@ -196,18 +322,6 @@ sub _build_btn_log {
     );
 }
 
-sub _build_btn_quit {
-    my $self = shift;
-
-    return Wx::Button->new(
-        $self->panel,
-        -1,
-        __ '&Quit',
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-}
-
 sub _build_btn_change_sel {
     my $self = shift;
 
@@ -283,7 +397,7 @@ sub _build_btn_plan {
 
 sub _set_events { }
 
-__PACKAGE__->meta->make_immutable;
+1;
 
 =head1 AUTHOR
 
@@ -316,4 +430,3 @@ by the Free Software Foundation.
 
 =cut
 
-1;    # End of App::Sqitch::GUI::View::Panel::Right

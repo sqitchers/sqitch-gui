@@ -1,27 +1,41 @@
 package App::Sqitch::GUI::View::Dialog::About;
 
-use Moose;
-use namespace::autoclean;
+# ABSTRACT: The About Dialog
+
+use 5.010;
+use utf8;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    WxAboutDialogInfo
+);
+use Wx qw(wxVERSION_STRING);
 
 with 'App::Sqitch::GUI::Roles::Element';
 
-has 'info'  => (is => 'rw', isa => 'Wx::AboutDialogInfo');
+has 'info' => (
+    is  => 'ro',
+    isa => WxAboutDialogInfo,
+);
 
 sub BUILD {
     my $self = shift;
 
-    $self->info( Wx::AboutDialogInfo->new() );
-    $self->info->SetName('Sqitch-GUI');
-    $self->info->SetVersion(
-        "$App::Sqitch::GUI::VERSION - wxPerl $Wx::VERSION"
-    );
-    $self->info->SetCopyright('Copyright 2013 Stefan Suciu');
-    $self->info->SetDescription( 'A GUI for Sqitch.' );
-    ### Full license in ROOT/LICENSE
+    $self->info( Wx::AboutDialogInfo->new );
+
+    my $PROGRAM_NAME = q{ Sqitch GUI };
+    my $WX_VERSION   = wxVERSION_STRING;
+    my $PROGRAM_DESC
+        = qq{\nA GUI for Sqitch.\n} . qq{\nwxPerl $Wx::VERSION, $WX_VERSION\n};
+    my $PROGRAM_VER = $App::Sqitch::GUI::VERSION // q{(devel)};
+    $self->info->SetName($PROGRAM_NAME);
+    $self->info->SetVersion($PROGRAM_VER);
+    $self->info->SetDescription($PROGRAM_DESC);
+    $self->info->SetCopyright('Copyright 2015 Ștefan Suciu');
     $self->info->SetLicense(
         'This is free software; you can redistribute it and/or modify it under
             the same terms as the Perl 5 programming language system itself.'
     );
+    $self->info->AddDeveloper('Ștefan Suciu <stefan@s2i2.ro>');
 
     return $self;
 }
@@ -33,8 +47,6 @@ sub show {
     Wx::AboutBox($self->info);
     return;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 

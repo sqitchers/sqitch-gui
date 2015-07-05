@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::View::Dialog::Status;
 
+# ABSTRACT: Projects Dialog Status
+
 use Moose;
 use namespace::autoclean;
 use Moose::Util::TypeConstraints;

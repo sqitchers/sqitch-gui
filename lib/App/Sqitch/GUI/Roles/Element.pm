@@ -1,29 +1,35 @@
 package App::Sqitch::GUI::Roles::Element;
 
-use Moose::Role;
-use Wx qw(:everything);
+# ABSTRACT: The Element Role
+
+use Moo::Role;
+use App::Sqitch::GUI::Types qw(
+    HashRef
+    Maybe
+    Object
+    SqitchGUIWxApp
+    SqitchGUIModel
+    WxWindow
+);
+use namespace::autoclean;
 
 has 'app' => (
-    is          => 'rw',
-    isa         => 'App::Sqitch::GUI::WxApp',
-    required    => 1,
-    weak_ref    => 1,
-    handles => {
-        # get_view       => 'view',
-        # has_view       => 'has_view',
-        # menu           => 'menu_bar',
-        # get_left_pane  => 'left_pane',
-        # get_right_pane => 'right_pane',
-    }
+    is       => 'ro',
+    isa      => SqitchGUIWxApp,
+    required => 1,
+    weak_ref => 1,
 );
-has 'ancestor'  => (is => 'rw', isa => 'Object', weak_ref => 1 );
-has 'parent'    => (is => 'rw', isa => 'Maybe[Wx::Window]' );
-# has 'sizer_debug' => (is => 'rw', isa => 'Int',  lazy => 1, default => 0,
-#         documentation => q{
-#             draws boxes with titles around all sizers if true.
-#         }
-#     );
-has 'sizers' => (is => 'rw', isa => 'HashRef', lazy => 1, default => sub{ {} });
+
+has 'ancestor' => (
+    is       => 'ro',
+    isa      => Object,
+    weak_ref => 1,
+);
+
+has 'parent' => (
+    is  => 'ro',
+    isa => Maybe[WxWindow],
+);
 
 requires '_set_events';
 
@@ -33,7 +39,7 @@ after BUILD => sub {
     return 1;
 };
 
-no Moose::Role;
+1;
 
 =head1 AUTHOR
 
@@ -65,5 +71,3 @@ under the terms of either: the GNU General Public License as published
 by the Free Software Foundation.
 
 =cut
-
-1;    # End of App::Sqitch::GUI::Roles::Element
