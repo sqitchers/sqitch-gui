@@ -543,14 +543,6 @@ sub _on_listitem_selected {
     return;
 }
 
-=head2 load_item_details
-
-Load info for the selected list item.  Can't use the current Sqitch
-configuration for this, for every item (project) we have to load
-the local configuration file and get the required info from there.
-
-=cut
-
 sub load_item_details {
     my ( $self, $name ) = @_;
     return unless $name;
@@ -565,25 +557,43 @@ sub load_item_details {
     return;
 }
 
+sub dialog_info {
+    my ( $self, $message, $details ) = @_;
+    Wx::MessageBox( "$message\n\n$details", 'Info', wxOK | wxICON_INFORMATION,
+        $self );
+    return;
+}
+
 sub _on_dpc_change {
     my ($self, $frame, $event) = @_;
 
-    my $new_path = $event->GetEventObject->GetPath;
+    my$path;
+    if ( my $dir = $event->GetEventObject->GetPath ) {
+        $path = dir $dir;
+    }
+    else {
+       return;
+    }
 
-    # TODO:
-    # if ( $self->get_state ne 'sele' ) {
-    #     if ( $self->is_duplicate_path($new_path) ) {
-    #         $self->set_message( __ '*** Duplicate path! ***' );
-    #         return;
-    #     }
-    # }
+    unless ( $self->model->is_project_path($path) ) {
+        $self->dialog_info("The selected path doesn't look like a Sqitch project.", "Path: $path");
+        return;
+    }
+    if ( $self->get_state ne 'sele' ) {
+        if ( $self->is_duplicate_path($path) ) {
+            $self->dialog_info("The selected path is a duplicate.", "Path: $path");
+            return;
+        }
+    }
 
     $self->init_form;
-    my $engine = $self->model->get_project_engine_from_path($new_path);
-    $self->control_write_c( $self->cbx_engine, $engine ) if $engine;
+
+    if ( my $engine = $self->model->get_project_engine_from_path($path) ) {
+        $self->control_write_c( $self->cbx_engine, $engine );
+    }
 
     # Default project name: the dir name
-    my $name = file($new_path)->basename;
+    my $name = $path->basename;
     $self->control_write_e($self->txt_name, $name);
 
     $self->btn_save->Enable(1);
@@ -591,11 +601,15 @@ sub _on_dpc_change {
 }
 
 sub is_duplicate_path {
-    my ($self, $path) = @_;
-    for my $rec ( $self->config->projects ) {
-        return 1 if $rec->[1] eq $path;
+    my ( $self, $path ) = @_;
+    my $rezult = 0;
+    for my $rec ( $self->model->projects ) {
+        if ( $rec->[1]{path}->stringify eq $path->stringify ) {
+            $rezult = 1;
+            last;
+        }
     }
-    return;
+    return $rezult;
 }
 
 sub set_message {
@@ -700,3 +714,25 @@ sub OnClose {
 }
 
 1;
+
+__END__
+
+=encoding utf8
+
+=head1 DESCRIPTION
+
+=head1 SYNOPSIS
+
+=head1 ATTRIBUTES
+
+=head2 C<plan>
+
+=head1 METHODS
+
+=head2 <load_item_details>
+
+Load info for the selected list item.  Can't use the current Sqitch
+configuration for this, for every item (project) we have to load
+the local configuration file and get the required info from there.
+
+=cut

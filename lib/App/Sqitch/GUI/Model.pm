@@ -122,6 +122,13 @@ sub _build_project_list {
     return $projects;
 }
 
+sub is_project_path {
+    my ($self, $path) = @_;
+    my $cfg_file = file $path, $self->config->confname;
+    return 0 unless -f $cfg_file->stringify;
+    return 1;
+}
+
 sub get_project_engine_from_name {
     my ($self, $name) = @_;
     my $path = $self->config->get_project($name);
@@ -130,15 +137,12 @@ sub get_project_engine_from_name {
 
 sub get_project_engine_from_path {
     my ($self, $path) = @_;
-    my $item_cfg_file = file $path, $self->config->confname;
-    if ( -f $item_cfg_file ) {
-        my $item_cfg_href = Config::GitLike->load_file($item_cfg_file);
-        my $engine_code = $item_cfg_href->{'core.engine'};
+    my $cfg_file = file $path, $self->config->confname;
+    if ( -f $cfg_file ) {
+        my $cfg_href = Config::GitLike->load_file($cfg_file);
+        my $engine_code = $cfg_href->{'core.engine'};
         my $engine_name = $self->config->get_engine_name($engine_code);
         return $engine_name;
-    }
-    else {
-        hurl "File not found: $item_cfg_file";
     }
     return;
 }
@@ -194,7 +198,7 @@ sub _build_plan {
         );
     }
     catch {
-        say "Error on Target initialization: $_";
+        say "Error on Plan initialization: $_";
         return;
     };
     return $plan;
@@ -320,3 +324,55 @@ sub plan_list_meta_data {
 }
 
 1;
+
+__END__
+
+=encoding utf8
+
+=head1 DESCRIPTION
+
+The Model.
+
+=head1 SYNOPSIS
+
+=head1 ATTRIBUTES
+
+=head2 C<config>
+
+=head2 C<current_project>
+
+=head2 C<project_config_issues>
+
+=head2 C<default_project>
+
+=head2 C<project_list>
+
+=head2 C<target>
+
+=head2 C<plan>
+
+=head2 C<project_list_data>
+
+=head2 C<plan_list_data>
+
+=head1 METHODS
+
+=head2 C<is_project_path>
+
+Return true if the path contains a Sqitch project.
+
+XXX: Is enough to check if it has a sqitch.conf file in it?
+
+=head2 C<get_project_engine_from_name>
+
+=head2 C<get_project_engine_from_path>
+
+=head2 C<sqitch>
+
+=head2 C<project_dlg_list_meta_data>
+
+=head2 C<project_list_meta_data>
+
+=head2 C<plan_list_meta_data>
+
+=cut
