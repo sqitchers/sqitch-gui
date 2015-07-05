@@ -241,7 +241,7 @@ sub project_dlg_list_meta_data {
         {   field => 'path',
             label => __ 'Path',
             align => 'left',
-            width => 326,
+            width => 327,
             type  => 'str',
         },
     ];
@@ -264,7 +264,7 @@ sub project_list_meta_data {
         {   field => 'path',
             label => __ 'Path',
             align => 'left',
-            width => 345,
+            width => 353,
             type  => 'str',
         },
         {   field => 'engine',
