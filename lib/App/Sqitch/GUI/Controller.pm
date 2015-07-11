@@ -266,10 +266,14 @@ sub prepare_projects {
 sub load_sqitch_project {
     my $self = shift;
 
-    if ( my $proj_cnt = $self->config->has_project ) {
+    my $proj_cnt = $self->config->has_project;
+    if ($proj_cnt) {
         $self->log_message(
             __nx 'II OK, found a project', 'II Found {count} projects',
             $proj_cnt, count => $proj_cnt );
+    }
+    else {
+        return;
     }
 
     # Configuration issues?
@@ -277,10 +281,38 @@ sub load_sqitch_project {
         $self->log_message("EE $item");
     }
 
+    # Load the default == current project
+    my $name = $self->model->current_project->name;
     my $path = $self->model->current_project->path;
-    $self->load_project_from_path($path);
+    if ($name and $path) {
+        $self->load_project_from_path($path);
+        my $index = $self->default_project_item;
+        $self->mark_as_current($index);
+        $self->model->current_project->item($index);
+        $self->view->get_project_list_ctrl->set_selection($index);
+    }
+    else {
+        $self->log_message(
+            __nx 'II No valid default project, select the project and load it', 'II No valid default project, select a project and load it',
+            $proj_cnt );
+    }
 
     return;
+}
+
+sub default_project_item {
+    my $self  = shift;
+    my $index = 0;
+    my $default_item;
+    foreach my $item ( $self->model->project_list_data->get_col(4) ) {
+        if ( $item->name eq __ 'Yes' ) {
+            $self->model->default_project->item($index);
+            $default_item = $index;
+            last;
+        }
+        $index++;
+    }
+    return $default_item;
 }
 
 sub load_project_item {
@@ -293,7 +325,6 @@ sub load_project_item {
             __ 'EE Something went wrong, no project "name" and path"' );
         return;
     }
-    say "loading: $name = $path";
     $self->model->current_project->item($item);
     $self->model->current_project->name($name);
     $self->model->current_project->path(dir $path);
@@ -398,25 +429,8 @@ sub populate_project_list {
         $self->model->project_list_meta_data,
         \@projects,
     );
-    my $index = $self->set_default_project_index;
-    $self->model->current_project->item($index);
-    $self->mark_as_current($index);
     $self->view->get_project_list_ctrl->RefreshList;
-    $self->view->get_project_list_ctrl->set_selection($index);
     return;
-}
-
-sub set_default_project_index {
-    my $self  = shift;
-    my $index = 0;
-    foreach my $item ( $self->model->project_list_data->get_col(4) ) {
-        if ( $item->name eq __ 'Yes' ) {
-            $self->model->default_project->item($index);
-            last;
-        }
-        $index++;
-    }
-    return $index;
 }
 
 sub populate_project_form {

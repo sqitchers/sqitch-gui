@@ -43,11 +43,6 @@ sub _build_current_project {
             $item->name($name);
             $item->path($path);
         }
-        else {
-            $self->config_add_issue(
-                __x '[EE] The "{name}" project has no asociated path',
-                name => $name );
-        }
     }
     return $item;
 }
@@ -81,7 +76,7 @@ sub _build_default_project {
         }
         else {
             $self->config_add_issue(
-                __x '[EE] The "{name}" project has no asociated path',
+                __x '[EE] The "{name}" project has no associated path and is set as default',
                 name => $name );
         }
     }

@@ -479,7 +479,7 @@ sub event_handler_for_list {
 
 sub load_txt_form_for {
     my ($self, $form, $field, $value) = @_;
-    hurl __ 'Wrong arguments passed to load_txt_form_for()'
+    hurl 'Wrong arguments passed to load_txt_form_for()'
         unless defined $field;
     my $name    = "txt_$field";
     my $control = $self->$form->$name;
