@@ -50,8 +50,9 @@ sub get_data_as_string {
 
 sub remove_row {
     my $self = shift;
-    my ($item) = @_;
-    return $self->list_data->remove_row($item, 1);
+    my ($item, $count) = @_;
+    $count //= 1;
+    return $self->list_data->remove_row($item, $count);
 }
 
 sub get_item_count {

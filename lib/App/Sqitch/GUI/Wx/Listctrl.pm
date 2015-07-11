@@ -121,6 +121,15 @@ sub delete_current_item {
     return;
 }
 
+sub delete_all_items {
+    my $self = shift;
+    my $count = $self->get_item_count;
+    $self->list_data->remove_row(0, $count);
+    $self->RefreshItems( 0, 0 );
+    $self->Select( 0, 0 );                   # 1|0 <=> select|deselect
+    return;
+}
+
 sub _set_events { }
 
 1;
