@@ -1,12 +1,13 @@
-App::Sqitch::GUI version 0.003
+App::Sqitch::GUI version 0.010
 ==============================
 Ștefan Suciu <stefan@s2i2.ro>
-2015-06-05
+2015-07-11
 
 GUI for Sqitch - Simple SQL change management.
 
 Please see [Sqitch](http://sqitch.org) for a detailed description of the
 command line application.
+
 
 Requirements
 ------------
@@ -15,13 +16,16 @@ Requirements
 - Sqitch v0.9992 or newer;
 - wxPerl, Moose and other modules;
 
+
 Status
 ------
 
 Draft - Limited functionality:
 
-- Add project and set a default one;
-- Load project and change details;
+- Add project;
+- Set a default project;
+- Load a project and view it's details;
+
 
 Test usage
 ----------
@@ -30,21 +34,21 @@ Test usage
     % cd sqitch-gui
 
     # Install prereqs
-    % cpanm --installdeps .
+    % dzil authordeps --missing | cpanm
+    % dzil listdeps --missing | cpanm
 
     % PERL5LIB=lib perl bin/sqitch-gui
 
-After the application start, open the menu Admin -> Project.
+After the application start, if there is no project configured yet, a
+dialog is automaticaly opened.  Click on the `Add` button and select a
+path to an existing Sqitch project.  The path should be updated in the
+list.  Click on the close button.
 
-It should show a dialog window.  Select a path to an existing Sqitch
-project, fill in a name and click on the Add button.  The path
-should be added to the list.  Click on the Default button and quit the
-dialog and the application.
-
-After the restart, the other panels buttons should be enabled...
+Select a project and Press the `Load` button.
 
 Still much work to do but some feedback, in this stage, would be
 awesome...
+
 
 Implementation notes
 --------------------
@@ -74,12 +78,13 @@ ones, like `sqitch show`).
 User Interaction - some commands require confirmation from the user.
 This can be implemented by using custom dialogs for each command.
 
+
 License And Copyright
 ---------------------
 
-Copyright (C) 2012-2013 iovation Inc.
+Copyright (C) 2012-2015 iovation Inc.
 
-Copyright (C) 2013 Ștefan Suciu.
+Copyright (C) 2015 Ștefan Suciu.
 
 The license is the same as for Sqitch:
 
