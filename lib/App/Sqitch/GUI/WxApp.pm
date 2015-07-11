@@ -22,7 +22,7 @@ use App::Sqitch::GUI::View;
 
 has config => (
     is       => 'ro',
-    isa      => Maybe [SqitchGUIConfig],
+    isa      => Maybe[SqitchGUIConfig],
     lazy     => 1,
     required => 1,
 );

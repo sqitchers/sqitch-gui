@@ -9,13 +9,16 @@ use App::Sqitch::GUI::Types qw(
     HashRef
     Maybe
     Object
-    SqitchGUIWxApp
+    Sqitch
     SqitchGUIConfig
-    SqitchGUIStatus
     SqitchGUIDialogStatus
     SqitchGUIModel
     SqitchGUIModelListDataTable
+    SqitchGUIStatus
+    SqitchGUITarget
     SqitchGUIView
+    SqitchGUIWxApp
+    SqitchPlan
     WxWindow
 );
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
@@ -35,6 +38,8 @@ use App::Sqitch::GUI::WxApp;
 use App::Sqitch::GUI::Config;
 use App::Sqitch::GUI::Status;
 use App::Sqitch::GUI::Refresh;
+use App::Sqitch::GUI::Sqitch;
+use App::Sqitch::GUI::Target;
 
 use App::Sqitch::GUI::View::Dialog::Projects;
 use App::Sqitch::GUI::View::Dialog::Status;
@@ -63,6 +68,7 @@ sub _build_config {
 has 'model' => (
     is      => 'ro',
     isa     => SqitchGUIModel,
+    lazy    => 1,
     builder => '_build_model',
 );
 
@@ -122,6 +128,79 @@ has 'dlg_status' => (
         return App::Sqitch::GUI::View::Dialog::Status->new;
     }
 );
+
+###
+
+has 'sqitch' => (
+    is      => 'ro',
+    isa     => Maybe[Sqitch],
+    lazy    => 1,
+    clearer => 1,                    # creates clear_sqitch.
+    builder => '_build_sqitch',
+);
+
+sub _build_sqitch {
+    my $self = shift;
+    my $opts = {};                           # options for Sqitch
+    my $sqitch = try {
+        App::Sqitch::GUI::Sqitch->new( {
+            options => $opts,
+            config  => $self->config,
+        } );
+    }
+    catch {
+        say "Error on Sqitch initialization: $_";
+        return;
+    };
+    return $sqitch;
+}
+
+has 'target' => (
+    is      => 'ro',
+    isa     => Maybe[SqitchGUITarget],
+    lazy    => 1,
+    clearer => 1,                    # creates clear_target.
+    builder => '_build_target',
+);
+
+sub _build_target {
+    my $self = shift;
+    my $target = try {
+        App::Sqitch::GUI::Target->new(
+            sqitch => $self->sqitch,
+        );
+    }
+    catch {
+        say "Error on Target initialization: $_";
+        return;
+    };
+    return $target;
+}
+
+has 'plan' => (
+    is      => 'ro',
+    isa     => Maybe[SqitchPlan],
+    lazy    => 1,
+    clearer => 1,                    # creates clear_plan.
+    builder => '_build_plan',
+);
+
+sub _build_plan {
+    my $self = shift;
+    my $plan = try {
+        App::Sqitch::Plan->new(
+            sqitch => $self->sqitch,
+            target => $self->target,
+        );
+    }
+    catch {
+        say "Error on Plan initialization: $_";
+        return;
+    };
+    return $plan;
+}
+
+###
 
 sub log_message {
     my ($self, $msg) = @_;
@@ -198,6 +277,44 @@ sub load_sqitch_project {
         $self->log_message("EE $item");
     }
 
+    my $path = $self->model->current_project->path;
+    $self->load_project_from_path($path);
+
+    return;
+}
+
+sub load_project_item {
+    my $self = shift;
+    my $item = $self->view->get_project_list_ctrl->get_selection;
+    my $name = $self->model->project_list_data->get_value($item, 1);
+    my $path = $self->model->project_list_data->get_value($item, 2);
+    unless ( $name and $path ) {
+        $self->log_message(
+            __ 'EE Something went wrong, no project "name" and path"' );
+        return;
+    }
+    say "loading: $name = $path";
+    $self->model->current_project->item($item);
+    $self->model->current_project->name($name);
+    $self->model->current_project->path(dir $path);
+    $self->mark_as_current($item);
+    $self->load_project_from_path($path);
+    return;
+}
+
+sub load_project_from_path {
+    my ($self, $path) = @_;
+
+    $self->config->reload($path);
+
+    $self->clear_sqitch;
+    $self->clear_plan;
+    $self->clear_target;
+
+    $self->clear_project_form;
+    $self->clear_plan_form;
+    $self->clear_change_form;
+
     # Fill the forms
     if ( my $name = $self->populate_project_form ) {
         $self->log_message(
@@ -206,6 +323,7 @@ sub load_sqitch_project {
         $self->populate_change_form;
     }
 
+    $self->view->project->btn_load->Enable(0);
     return;
 }
 
@@ -239,7 +357,7 @@ sub _setup_events {
 
     EVT_BUTTON $self->view->frame,
         $self->view->project->btn_load->GetId, sub {
-            $self->load_default_project;
+            $self->load_project_item;
         };
 
     #-- Quit
@@ -283,7 +401,6 @@ sub populate_project_list {
     my $index = $self->set_default_project_index;
     $self->model->current_project->item($index);
     $self->mark_as_current($index);
-
     $self->view->get_project_list_ctrl->RefreshList;
     $self->view->get_project_list_ctrl->set_selection($index);
     return;
@@ -305,21 +422,25 @@ sub set_default_project_index {
 sub populate_project_form {
     my $self = shift;
     my $config = $self->config;
-    my $engine = try { $self->model->target->engine; }
+
+    my $engine = try { $self->target->engine; }
     catch {
-        $self->log_message( "EE $_" );
+        ( my $err = $_ ) =~ s/\n*$//;
+        $self->log_message( qq{EE "$err"} );
         return undef;
     };
     return unless $engine;
-    my $plan = try { $self->model->target->plan; }
-    catch {
-        $self->log_message( "EE $_" );
+    my $plan = try { $self->target->plan; }
+        catch {
+        ( my $err = $_ ) =~ s/\n*$//;
+        $self->log_message( qq{EE "$err"} );
         return undef;
     };
     return unless $plan;
     my $project = try { $plan->project; }
     catch {
-        $self->log_message( "EE: $_" );
+        ( my $err = $_ ) =~ s/\n*$//;
+        $self->log_message( qq{EE "$err"} );
         return undef;
     };
     return unless $project;
@@ -329,7 +450,7 @@ sub populate_project_form {
         uri      => $plan->uri                    // 'unknown',
         database => $engine->uri->dbname          // 'unknown',
         user     => $engine->uri->user            // 'unknown',
-        path     => $config->default_project_path // 'unknown',
+        path     => $config->current_project_path // 'unknown',
         engine   => $engine->uri->engine          // 'unknown',
         created_at    => undef,
         creator_name  => undef,
@@ -341,11 +462,30 @@ sub populate_project_form {
     return $project;
 }
 
+sub clear_project_form {
+    my $self   = shift;
+    my $fields = {
+        project       => undef,
+        uri           => undef,
+        database      => undef,
+        user          => undef,
+        path          => undef,
+        engine        => undef,
+        created_at    => undef,
+        creator_name  => undef,
+        creator_email => undef,
+    };
+    while ( my ( $field, $value ) = each %{$fields} ) {
+        $self->view->load_txt_form_for( 'project', $field, $value );
+    }
+    return;
+}
+
 sub populate_change_form {
     my $self = shift;
 
-    my $engine = $self->model->target->engine;
-    my $plan   = $self->model->target->plan;
+    my $engine = $self->target->engine;
+    my $plan   = $self->target->plan;
     my $change = $plan->last;
     unless ($change) {
         $self->log_message( __x 'II No changes defined yet' );
@@ -390,18 +530,46 @@ sub populate_change_form {
     return;
 }
 
+sub clear_change_form {
+    my $self = shift;
+    my %fields = (
+        change_id       => undef,
+        name            => undef,
+        note            => undef,
+        planner_name    => undef,
+        planner_email   => undef,
+        planned_at      => undef,
+        planner_name    => undef,
+        planner_email   => undef,
+        committed_at    => undef,
+        committer_name  => undef,
+        committer_email => undef,
+    );
+    while ( my ( $field, $value ) = each(%fields) ) {
+        $self->view->load_txt_form_for( 'change', $field, $value );
+    }
+    $self->view->load_sql_form_for( 'change', $_, undef )
+        for qw(deploy revert verify);
+    return;
+}
+
 sub load_sql_for {
     my ($self, $command, $name) = @_;
-    my $repo_path = $self->config->default_project_path;
+    my $repo_path = $self->config->current_project_path;
     my $sql_file  = file $repo_path, $command, "$name.sql";
-    my $text      = read_file($sql_file);
-    $self->view->load_sql_form_for( 'change', $command, $text );
+    if (-f $sql_file) {
+        my $text = read_file($sql_file);
+        $self->view->load_sql_form_for( 'change', $command, $text );
+    }
+    else {
+        say "no file: $sql_file";
+    }
     return;
 }
 
 sub populate_plan_form {
     my $self = shift;
-    my $plan = $self->model->target->plan;
+    my $plan = $self->target->plan;
 
     # Search the changes. (from ...Sqitch::Command::plan)
     my $iter = $plan->search_changes();
@@ -414,14 +582,23 @@ sub populate_plan_form {
             creator     => $change->planner_name,
         };
     }
-    $self->populate_list(
-        $self->model->plan_list_data,
-        $self->model->plan_list_meta_data,
-        \@plans,
-    );
+
+    if (scalar @plans > 0 ) {
+        $self->populate_list(
+            $self->model->plan_list_data,
+            $self->model->plan_list_meta_data,
+            \@plans,
+        );
+    }
 
     $self->view->get_plan_list_ctrl->RefreshList;
     $self->view->get_plan_list_ctrl->set_selection('last');
+    return;
+}
+
+sub clear_plan_form {
+    my $self = shift;
+    $self->view->get_plan_list_ctrl->delete_all_items;
     return;
 }
 
@@ -430,7 +607,7 @@ sub execute_command {
 
     # Instantiate the command object.
     my $command = App::Sqitch::Command->load({
-        sqitch  => $self->model->sqitch,
+        sqitch  => $self->sqitch,
         command => $cmd,
         config  => $self->config,
         args    => \@cmd_args,
@@ -573,12 +750,35 @@ sub mark_as_current {
 
 sub _on_project_listitem_selected {
     my ($self, $var, $event) =  @_;
-    my $current_item = $event->GetIndex;
+    my $item = $event->GetIndex;
     my $default_item = $self->model->default_project->item // 999;
-    my $enabled = $current_item == $default_item ? 0 : 1;
-    $self->view->project->btn_default->Enable($enabled);
-    $self->view->project->btn_load->Enable(0);
+    my $current_item = $self->model->current_project->item // 999;
+    my $defa_enabled = $item == $default_item ? 0 : 1;
+    my $load_enabled = $item == $current_item ? 0 : 1;
+    $self->view->project->btn_default->Enable($defa_enabled);
+    $self->view->project->btn_load->Enable($load_enabled);
     return;
 }
 
+
 1;
+
+__END__
+
+=encoding utf8
+
+=head1 DESCRIPTION
+
+The Model.
+
+=head1 SYNOPSIS
+
+=head1 ATTRIBUTES
+
+=head2 C<config>
+
+=head2 C<sqitch>
+
+=head1 METHODS
+
+=cut

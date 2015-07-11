@@ -13,8 +13,8 @@ use App::Sqitch::GUI::Types qw(
 );
 
 has 'item' => (
-    is  => 'rw',
-    isa => Maybe[Int],
+    is      => 'rw',
+    isa     => Maybe[Int],
 );
 
 has 'name' => (

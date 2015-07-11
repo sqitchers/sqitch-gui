@@ -27,10 +27,6 @@ ok my $model = App::Sqitch::GUI::Model->new( config => $conf ),
     'new model instance';
 isa_ok $model, 'App::Sqitch::GUI::Model', 'GUI::Model';
 
-isa_ok $model->sqitch, 'App::Sqitch::GUI::Sqitch', 'App::Sqitch';
-isa_ok $model->target, 'App::Sqitch::GUI::Target', 'App::Sqitch::Target';
-isa_ok $model->plan,   'App::Sqitch::Plan', 'App::Sqitch::Plan';
-
 for my $rec ( $model->projects ) {
     my ($name, $attrib) = @{$rec};
     ok $name, "project '$name'";

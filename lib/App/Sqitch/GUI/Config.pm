@@ -45,11 +45,16 @@ has 'default_project_path' => (
     }
 );
 
+has 'current_project_path' => (
+    is  => 'rw',
+    isa => Dir,
+);
+
 sub local_file {
     my $self = shift;
-    return $self->default_project_path
-        ? file( $self->default_project_path, $self->confname )
-        : file( $self->confname );
+    return $self->current_project_path
+        ? file( $self->current_project_path, $self->confname )
+        : undef;
 };
 
 has '_conf_projects_list' => (
@@ -128,7 +133,7 @@ has 'engine_list' => (
 sub reload {
     my ( $self, $path ) = @_;
     hurl 'Wrong arguments passed to reload()' unless $path;
-    $self->default_project_path($path);
+    $self->current_project_path(dir $path);
     my $file = file $path, $self->confname;
     try { $self->load($file) } catch { print "Reload config error: $_\n" };
 }

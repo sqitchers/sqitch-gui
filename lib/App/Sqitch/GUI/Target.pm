@@ -20,7 +20,7 @@ has +top_dir => (
     lazy     => 1,
     default => sub {
         my $self = shift;
-        dir( $self->sqitch->config->default_project_path,
+        dir( $self->sqitch->config->current_project_path,
             $self->sqitch->config->get( key => 'core.top_dir' ) )
             || ();
         },

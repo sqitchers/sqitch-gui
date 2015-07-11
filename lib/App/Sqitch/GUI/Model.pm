@@ -6,16 +6,9 @@ use 5.010;
 use Moo;
 use MooX::HandlesVia;
 use App::Sqitch::GUI::Types qw(
-    Dir
-    Int
-    Maybe
-    Sqitch
-    SqitchPlan
     SqitchGUIConfig
     SqitchGUIModelListDataTable
     SqitchGUIModelProjectItem
-    SqitchGUITarget
-    Str
 );
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
@@ -37,10 +30,27 @@ has 'current_project' => (
     is      => 'rw',
     isa     => SqitchGUIModelProjectItem,
     lazy    => 1,
-    default => sub {
-        return App::Sqitch::GUI::Model::ProjectItem->new;
-    }
+    builder => '_build_current_project',
 );
+
+sub _build_current_project {
+    my $self = shift;
+
+    # At build time, the current item is the default item
+    my $item = App::Sqitch::GUI::Model::ProjectItem->new;
+    if ( my $name = $self->config->default_project_name ) {
+        if ( my $path = $self->config->default_project_path ) {
+            $item->name($name);
+            $item->path($path);
+        }
+        else {
+            $self->config_add_issue(
+                __x '[EE] The "{name}" project has no asociated path',
+                name => $name );
+        }
+    }
+    return $item;
+}
 
 has 'project_config_issues' => (
     is          => 'rw',
@@ -145,63 +155,6 @@ sub get_project_engine_from_path {
         return $engine_name;
     }
     return;
-}
-
-sub sqitch {
-    my $self = shift;
-    my $opts = {};                           # options for Sqitch
-    my $sqitch = try {
-        App::Sqitch::GUI::Sqitch->new( {
-            options => $opts,
-            config  => $self->config,
-        } );
-    }
-    catch {
-        say "Error on Sqitch initialization: $_";
-        return;
-    };
-    return $sqitch;
-}
-
-has 'target' => (
-    is      => 'ro',
-    isa     => Maybe[SqitchGUITarget],
-    lazy    => 1,
-    builder => '_build_target',
-);
-
-sub _build_target {
-    my $self = shift;
-    my $target = try {
-        App::Sqitch::GUI::Target->new( sqitch => $self->sqitch );
-    }
-    catch {
-        say "Error on Target initialization: $_";
-        return;
-    };
-    return $target;
-}
-
-has 'plan' => (
-    is      => 'ro',
-    isa     => Maybe[SqitchPlan],
-    lazy    => 1,
-    builder => '_build_plan',
-);
-
-sub _build_plan {
-    my $self = shift;
-    my $plan = try {
-        App::Sqitch::Plan->new(
-            sqitch => $self->sqitch,
-            target => $self->target,
-        );
-    }
-    catch {
-        say "Error on Plan initialization: $_";
-        return;
-    };
-    return $plan;
 }
 
 #-- List data
