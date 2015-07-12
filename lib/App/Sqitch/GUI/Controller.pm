@@ -144,8 +144,9 @@ sub _build_sqitch {
     my $opts = {};                           # options for Sqitch
     my $sqitch = try {
         App::Sqitch::GUI::Sqitch->new( {
-            options => $opts,
-            config  => $self->config,
+            options    => $opts,
+            config     => $self->config,
+            controller => $self,
         } );
     }
     catch {
