@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Sqitch-GUI 0.003\n"
 "Report-Msgid-Bugs-To: stefan@s2i2.ro\n"
-"POT-Creation-Date: 2015-07-11 14:30+0300\n"
+"POT-Creation-Date: 2015-07-12 14:19+0300\n"
 "PO-Revision-Date: 2015-07-11 14:37+0200\n"
 "Last-Translator: Ștefan Suciu <stefan@s2i2.ro>\n"
 "Language-Team: none\n"
@@ -42,7 +42,7 @@ msgstr "EE Eroare de configurare:  \"{error}\""
 msgid "EE Model error: \"{error}\""
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:271
+#: lib/App/Sqitch/GUI/Controller.pm:272
 #, perl-brace-format
 msgid "II OK, found a project"
 msgid_plural "II Found {count} projects"
@@ -50,81 +50,88 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:295
+#: lib/App/Sqitch/GUI/Controller.pm:296
+msgid "II No valid default project, select the project and load it"
+msgid_plural "II No valid default project, select a project and load it"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: lib/App/Sqitch/GUI/Controller.pm:308 lib/App/Sqitch/GUI/Controller.pm:418
+#: lib/App/Sqitch/GUI/Controller.pm:739
+msgid "Yes"
+msgstr "Da"
+
+#: lib/App/Sqitch/GUI/Controller.pm:325
 msgid "EE Something went wrong, no project \"name\" and path\""
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:323
+#: lib/App/Sqitch/GUI/Controller.pm:352
 #, perl-brace-format
 msgid "II Loading the \"{name}\" project"
 msgstr "II Încarc proiectul \"{name}\""
 
-#: lib/App/Sqitch/GUI/Controller.pm:389 lib/App/Sqitch/GUI/Controller.pm:415
-#: lib/App/Sqitch/GUI/Controller.pm:727
-msgid "Yes"
-msgstr "Da"
-
-#: lib/App/Sqitch/GUI/Controller.pm:493
+#: lib/App/Sqitch/GUI/Controller.pm:505
 msgid "II No changes defined yet"
 msgstr "II Încă nu sunt definite modificări"
 
-#: lib/App/Sqitch/GUI/Controller.pm:658
+#: lib/App/Sqitch/GUI/Controller.pm:670
 msgid "This should NOT happen!"
 msgstr "Acesta NU ar fi trebuit să se întâmple!"
 
-#: lib/App/Sqitch/GUI/Controller.pm:706
+#: lib/App/Sqitch/GUI/Controller.pm:718
 msgid "WW Select a project item, please"
 msgstr "WW Rog, selectați un articol"
 
-#: lib/App/Sqitch/GUI/Model.pm:48 lib/App/Sqitch/GUI/Model.pm:84
+#: lib/App/Sqitch/GUI/Model.pm:79
 #, perl-brace-format
-msgid "[EE] The \"{name}\" project has no asociated path"
+msgid "EE The \"{name}\" project has no associated path and is set as default"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:111
+#: lib/App/Sqitch/GUI/Model.pm:106
 #, perl-brace-format
-msgid "[EE] Duplicate name found: \"{name}\""
+msgid "EE Duplicate name found: \"{name}\""
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:115
+#: lib/App/Sqitch/GUI/Model.pm:110
 #, perl-brace-format
-msgid "[EE] Duplicate path found: \"{path}\""
+msgid "EE Duplicate path found: \"{path}\""
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:189 lib/App/Sqitch/GUI/Model.pm:212
-#: lib/App/Sqitch/GUI/Model.pm:253
+#: lib/App/Sqitch/GUI/Model.pm:184 lib/App/Sqitch/GUI/Model.pm:207
+#: lib/App/Sqitch/GUI/Model.pm:248
 #: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:140
 msgid "Name"
 msgstr "Nume"
 
-#: lib/App/Sqitch/GUI/Model.pm:195 lib/App/Sqitch/GUI/Model.pm:218
+#: lib/App/Sqitch/GUI/Model.pm:190 lib/App/Sqitch/GUI/Model.pm:213
 msgid "Path"
 msgstr "Cale"
 
-#: lib/App/Sqitch/GUI/Model.pm:224
+#: lib/App/Sqitch/GUI/Model.pm:219
 #: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:195
 #: lib/App/Sqitch/GUI/View/Panel/Project.pm:394
 msgid "Engine"
 msgstr "Motor"
 
-#: lib/App/Sqitch/GUI/Model.pm:230
+#: lib/App/Sqitch/GUI/Model.pm:225
 #: lib/App/Sqitch/GUI/View/Panel/Project.pm:498
 msgid "Default"
 msgstr "Implicit"
 
-#: lib/App/Sqitch/GUI/Model.pm:236
+#: lib/App/Sqitch/GUI/Model.pm:231
 msgid "Current"
 msgstr "Curent"
 
-#: lib/App/Sqitch/GUI/Model.pm:259
+#: lib/App/Sqitch/GUI/Model.pm:254
 msgid "Create time"
 msgstr "Creat la"
 
-#: lib/App/Sqitch/GUI/Model.pm:265
+#: lib/App/Sqitch/GUI/Model.pm:260
 msgid "Creator"
 msgstr "Nume creator"
 
-#: lib/App/Sqitch/GUI/Model.pm:271
+#: lib/App/Sqitch/GUI/Model.pm:266
 msgid "Description"
 msgstr "Descriere"
 

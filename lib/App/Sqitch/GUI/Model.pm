@@ -76,7 +76,7 @@ sub _build_default_project {
         }
         else {
             $self->config_add_issue(
-                __x '[EE] The "{name}" project has no associated path and is set as default',
+                __x 'EE The "{name}" project has no associated path and is set as default',
                 name => $name );
         }
     }
@@ -103,11 +103,11 @@ sub _build_project_list {
         my ( $name, $path ) = @{$rec};
 
         $seen_name{$name}++;
-        $self->config_add_issue( __x '[EE] Duplicate name found: "{name}"',
+        $self->config_add_issue( __x 'EE Duplicate name found: "{name}"',
             name => $name )
             if defined $seen_name{$name} and $seen_name{$name} > 1;
         $seen_path{$path}++;
-        $self->config_add_issue( __x '[EE] Duplicate path found: "{path}"',
+        $self->config_add_issue( __x 'EE Duplicate path found: "{path}"',
             path => $path )
             if defined $seen_path{$path} and $seen_path{$path} > 1;
 
