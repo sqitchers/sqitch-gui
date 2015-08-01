@@ -13,14 +13,15 @@ use Wx qw(wxVERSION_STRING);
 with 'App::Sqitch::GUI::Roles::Element';
 
 has 'info' => (
-    is  => 'ro',
-    isa => WxAboutDialogInfo,
+    is      => 'ro',
+    isa     => WxAboutDialogInfo,
+    default => sub {
+        return Wx::AboutDialogInfo->new;
+    },
 );
 
 sub BUILD {
     my $self = shift;
-
-    $self->info( Wx::AboutDialogInfo->new );
 
     my $PROGRAM_NAME = q{ Sqitch GUI };
     my $WX_VERSION   = wxVERSION_STRING;
