@@ -46,8 +46,9 @@ has 'default_project_path' => (
 );
 
 has 'current_project_path' => (
-    is  => 'rw',
-    isa => Dir,
+    is       => 'rw',
+    isa      => Dir,
+    required => 0,
 );
 
 sub local_file {

@@ -165,10 +165,11 @@ has 'target' => (
 );
 
 sub _build_target {
-    my $self = shift;
+    my $self   = shift;
     my $target = try {
         App::Sqitch::GUI::Target->new(
-            sqitch => $self->sqitch,
+            sqitch  => $self->sqitch,
+            top_dir => $self->config->current_project_path,
         );
     }
     catch {
@@ -183,23 +184,11 @@ has 'plan' => (
     isa     => Maybe[SqitchPlan],
     lazy    => 1,
     clearer => 1,                    # creates clear_plan.
-    builder => '_build_plan',
+    default => sub {
+        my $self = shift;
+        return $self->target->plan;
+    },
 );
-
-sub _build_plan {
-    my $self = shift;
-    my $plan = try {
-        App::Sqitch::Plan->new(
-            sqitch => $self->sqitch,
-            target => $self->target,
-        );
-    }
-    catch {
-        say "Error on Plan initialization: $_";
-        return;
-    };
-    return $plan;
-}
 
 ###
 
