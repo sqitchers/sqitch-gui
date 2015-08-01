@@ -1,5 +1,5 @@
 #
-# Test the
+# Test the Model
 #
 use 5.010;
 use strict;

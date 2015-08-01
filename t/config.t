@@ -12,7 +12,8 @@ delete @ENV{qw( SQITCH_CONFIG SQITCH_USER_CONFIG SQITCH_SYSTEM_CONFIG )};
 
 ok my $conf = App::Sqitch::GUI::Config->new, 'new config instance';
 
-ok $conf->current_project_path( dir( 't', 'home', 'flipr' ) ), 'set current path';
+ok $conf->current_project_path( dir( 't', 'home', 'flipr' ) ),
+    'set current path';
 
 is $conf->confname, 'sqitch.conf', 'config file name';
 is $conf->user_file,
