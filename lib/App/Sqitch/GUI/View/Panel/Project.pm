@@ -264,7 +264,7 @@ sub BUILD {
 
     $self->form_fg_sz->Add( $self->lbl_database, 0, wxLEFT, 5 );
     $self->subform2_fg_sz->Add( $self->txt_database, 1, wxLEFT, 0 );
-    $self->subform2_fg_sz->Add( $self->lbl_user, 0, wxLEFT, 53 );
+    $self->subform2_fg_sz->Add( $self->lbl_user, 0, wxLEFT, 20 );
     $self->subform2_fg_sz->Add( $self->txt_user, 1, wxEXPAND | wxLEFT, 20 );
     $self->form_fg_sz->Add( $self->subform2_fg_sz, 1, wxEXPAND | wxLEFT, 0 );
 
@@ -403,17 +403,17 @@ sub _build_lbl_path {
 
 sub _build_txt_project {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 400, -1 ] );
 }
 
 sub _build_txt_database {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 400, -1 ] );
 }
 
 sub _build_txt_user {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 100, -1 ] );
 }
 
 sub _build_txt_uri {
@@ -443,7 +443,7 @@ sub _build_txt_path {
 
 sub _build_txt_engine {
     my $self = shift;
-    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 170, -1 ] );
+    return Wx::TextCtrl->new( $self->panel, -1, q{}, [ -1, -1 ], [ 100, -1 ] );
 }
 
 #-  List and buttons
