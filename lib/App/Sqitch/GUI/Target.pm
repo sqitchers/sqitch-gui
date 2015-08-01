@@ -2,28 +2,30 @@ package App::Sqitch::GUI::Target;
 
 # ABSTRACT: A Sqitch::Target Extension
 
+use 5.010;
 use Moo;
 use App::Sqitch::GUI::Types qw(
     Dir
+    File
     Maybe
 );
-#use namespace::autoclean;
-
-use Path::Class qw(dir);
+use Path::Class qw(dir file);
+use App::Sqitch::X qw(hurl);
+use namespace::autoclean;
 
 extends 'App::Sqitch::Target';
 
-has +top_dir => (
+has 'top_dir' => (
     is       => 'rw',
-    isa      => Maybe[Dir],
+    isa      => Dir,
     required => 1,
     lazy     => 1,
-    default => sub {
+    default  => sub {
         my $self = shift;
-        dir( $self->sqitch->config->current_project_path,
-            $self->sqitch->config->get( key => 'core.top_dir' ) )
-            || ();
-        },
+        dir($self->sqitch->config->current_project_path,
+            $self->sqitch->config->get( key => 'core.top_dir' )
+        );
+    },
 );
 
 1;
