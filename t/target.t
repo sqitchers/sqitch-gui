@@ -23,15 +23,19 @@ $ENV{HOME} = dir('t', 'home')->stringify;   # set HOME for testing
 delete @ENV{qw( SQITCH_CONFIG SQITCH_USER_CONFIG SQITCH_SYSTEM_CONFIG )};
 
 ok my $config = App::Sqitch::GUI::Config->new, 'new config instance';
-# ok $config->current_project_path( dir( 't', 'home', 'flipr' ) ),
-#     'set current path';
-
+ok $config->current_project_path( dir( 't', 'home', 'flipr' ) ),
+    'set current path';
 ok my $sqitch = App::Sqitch::GUI::Sqitch->new(
     options => { engine => 'sqlite' },
     config  => $config,
 ), 'Load a sqitch sqitch object';
+is $sqitch->config->current_project_path, dir( 't', 'home', 'flipr' ),
+    'get current path';
 
-isa_ok my $target = $CLASS->new(sqitch => $sqitch), $CLASS;
+isa_ok my $target = $CLASS->new(
+    sqitch  => $sqitch,
+    top_dir => $config->current_project_path,
+), $CLASS;
 
 can_ok $target, qw(
     new
@@ -64,9 +68,9 @@ my $client = $target->engine->default_client;
 $client .= '.exe' if $^O eq 'MSWin32' && $client !~ /[.](?:exe|bat)$/;
 is $target->client, $client, 'Should have default client';
 
-#is $target->top_dir, dir( 't', 'home', 'flipr' ), 'Should have custom top_dir';
-throws_ok { $target->top_dir, dir( 't', 'home', 'flipr' ) } qr/^Missing required arguments:/,
-    'Should get error for missing params';
+is $target->top_dir, dir( 't', 'home', 'flipr' ), 'Should have custom top_dir';
+# throws_ok { $target->top_dir, dir( 't', 'home', 'flipr' ) } qr/^Missing required arguments:/,
+#     'Should get error for missing params';
 
 is $target->deploy_dir, $target->top_dir->subdir('deploy'),
     'Should have default deploy_dir';
@@ -86,7 +90,10 @@ is $target->username, $uri->user, 'Username should be from URI';
 is $target->password, $uri->password, 'Password should be from URI';
 
 do {
-    isa_ok my $target = $CLASS->new(sqitch => $sqitch), $CLASS;
+    isa_ok my $target = $CLASS->new(
+        sqitch  => $sqitch,
+        top_dir => $config->current_project_path,
+    ), $CLASS;
     local $ENV{SQITCH_PASSWORD} = 'S3cre7s';
     is $target->password, $ENV{SQITCH_PASSWORD},
         'Password should be from environment variable';
