@@ -81,7 +81,6 @@ sub _build_model {
     }
     catch {
         hurl model => __x 'EE Model error: "{error}"', error => $_;
-        return;
     };
     return $model;
 }
@@ -150,17 +149,16 @@ sub _build_sqitch {
         } );
     }
     catch {
-        say "Error on Sqitch initialization: $_";
-        return;
+        hurl "Error on Sqitch initialization: $_";
     };
     return $sqitch;
 }
 
 has 'target' => (
     is      => 'ro',
-    isa     => Maybe[SqitchGUITarget],
+    isa     => Maybe [SqitchGUITarget],
     lazy    => 1,
-    clearer => 1,                    # creates clear_target.
+    clearer => 1,                            # creates clear_target
     builder => '_build_target',
 );
 
@@ -173,8 +171,7 @@ sub _build_target {
         );
     }
     catch {
-        say "Error on Target initialization: $_";
-        return;
+        hurl "Error on Target initialization: $_";
     };
     return $target;
 }
@@ -274,7 +271,10 @@ sub load_sqitch_project {
     # Load the default == current project
     my $name = $self->model->current_project->name;
     my $path = $self->model->current_project->path;
-    if ($name and $path) {
+    if ( $name and $path ) {
+        chdir $path
+            or $self->log_message( __x 'II Can not cd to {path}"',
+            path => $path );
         $self->load_project_from_path($path);
         my $index = $self->default_project_item;
         $self->mark_as_current($index);
@@ -283,7 +283,8 @@ sub load_sqitch_project {
     }
     else {
         $self->log_message(
-            __nx 'II No valid default project, select the project and load it', 'II No valid default project, select a project and load it',
+            __nx 'II No valid default project, select the project and load it',
+                 'II No valid default project, select a project and load it',
             $proj_cnt );
     }
 
@@ -434,7 +435,7 @@ sub populate_project_form {
         return undef;
     };
     return unless $engine;
-    my $plan = try { $self->target->plan; }
+    my $plan = try { $self->plan; }
         catch {
         ( my $err = $_ ) =~ s/\n*$//;
         $self->log_message( qq{EE "$err"} );
@@ -489,7 +490,7 @@ sub populate_change_form {
     my $self = shift;
 
     my $engine = $self->target->engine;
-    my $plan   = $self->target->plan;
+    my $plan   = $self->plan;
     my $change = $plan->last;
     unless ($change) {
         $self->log_message( __x 'II No changes defined yet' );
@@ -573,7 +574,7 @@ sub load_sql_for {
 
 sub populate_plan_form {
     my $self = shift;
-    my $plan = $self->target->plan;
+    my $plan = $self->plan;
 
     # Search the changes. (from ...Sqitch::Command::plan)
     my $iter = $plan->search_changes();
@@ -612,8 +613,8 @@ sub execute_command {
     # Instantiate the command object.
     my $command = App::Sqitch::Command->load({
         sqitch  => $self->sqitch,
-        command => $cmd,
         config  => $self->config,
+        command => $cmd,
         args    => \@cmd_args,
     });
 
@@ -657,7 +658,7 @@ sub on_admin {
         return;
     }
     else {
-        hurl __ 'This should NOT happen!';
+        hurl 'This should NOT happen!';
     }
 
     return;
