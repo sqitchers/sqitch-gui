@@ -64,7 +64,7 @@ use App::Sqitch::X qw(hurl);
 #use App::Sqitch::Config;
 #use Wx;
 
-# Inherit standar types.
+# Inherit standard types.
 BEGIN { extends "Types::Standard" };
 
 class_type Sqitch,            { class => 'App::Sqitch' };
