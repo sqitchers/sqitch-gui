@@ -3,21 +3,25 @@ package App::Sqitch::GUI::View::Dialog::Refresh;
 # ABSTRACT: An Observer for the Projects Dialog
 
 use 5.010;
-use Moose;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+    SqitchGUIDialogProjects
+    SqitchGUIDialogRules
+);
+use App::Sqitch::GUI::View::Dialog::Rules;
 use namespace::autoclean;
 
-with 'MooseX::Observer::Role::Observer';
-
-use App::Sqitch::GUI::View::Dialog::Rules;
+#with 'MooseX::Observer::Role::Observer';
+with 'App::Sqitch::GUI::Roles::Observer';
 
 has 'dialog' => (
     is   => 'ro',
-    isa  => 'App::Sqitch::GUI::View::Dialog::Projects',
+    isa  => SqitchGUIDialogProjects,
 );
 
 has 'rules' => (
     is      => 'ro',
-    isa     => 'App::Sqitch::GUI::View::Dialog::Rules',
+    isa     => SqitchGUIDialogRules,
     lazy    => 1,
     builder => '_build_rules',
 );
@@ -32,7 +36,5 @@ sub update {
     $self->dialog->set_status($state, $self->rules->get_rules($state) );
     return;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 1;

@@ -653,7 +653,7 @@ sub on_admin {
 
     if ( $dialog->ShowModal == wxID_OK ) {
         $self->view->get_project_list_ctrl->RefreshList;
-        $self->dlg_status->remove_all_observers;
+        $self->dlg_status->remove_observers;
         return;
     }
     else {

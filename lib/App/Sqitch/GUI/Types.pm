@@ -13,12 +13,14 @@ use Type::Library 0.040 -base, -declare => qw(
     SqitchPlan
     SqitchGUIConfig
     SqitchGUIController
-    SqitchGUIDialogProject
+    SqitchGUIDialogProjects
+    SqitchGUIDialogRules
     SqitchGUIDialogStatus
     SqitchGUIWxListctrl
     SqitchGUIModel
     SqitchGUIModelListDataTable
     SqitchGUIModelProjectItem
+    SqitchGUIRules
     SqitchGUIStatus
     SqitchGUITarget
     SqitchGUIView
@@ -31,7 +33,7 @@ use Type::Library 0.040 -base, -declare => qw(
     SqitchGUIViewPanelTop
     SqitchGUIWxApp
     SqitchGUIWxEditor
-	SqitchGUIWxLogView
+    SqitchGUIWxLogView
     SqitchGUIWxNotebook
     SqitchGUIWxStatusbar
     SqitchGUIWxToolbar
@@ -69,6 +71,7 @@ class_type Sqitch,            { class => 'App::Sqitch' };
 class_type SqitchPlan,        { class => 'App::Sqitch::Plan' };
 class_type SqitchGUIWxApp,    { class => 'App::Sqitch::GUI::WxApp' };
 class_type SqitchGUIView,     { class => 'App::Sqitch::GUI::View' };
+class_type SqitchGUIRules,    { class => 'App::Sqitch::GUI::Rules' };
 class_type SqitchGUIModel,    { class => 'App::Sqitch::GUI::Model' };
 class_type SqitchGUIModelListDataTable,
     { class => 'App::Sqitch::GUI::Model::ListDataTable' };
@@ -80,10 +83,11 @@ class_type SqitchGUIConfig,   { class => 'App::Sqitch::GUI::Config' };
 class_type SqitchGUIController,
     { class => 'App::Sqitch::GUI::Controller' };
 class_type SqitchGUIStatus,   { class => 'App::Sqitch::GUI::Status' };
+class_type SqitchGUIDialogRules,   { class => 'App::Sqitch::GUI::View::Dialog::Rules' };
 class_type SqitchGUIDialogStatus,
     { class => 'App::Sqitch::GUI::View::Dialog::Status' };
-class_type SqitchGUIDialogProject,
-    { class => 'App::Sqitch::GUI::View::Dialog::Project' };
+class_type SqitchGUIDialogProjects,
+    { class => 'App::Sqitch::GUI::View::Dialog::Projects' };
 class_type SqitchGUIViewPanelLeft,
     { class => 'App::Sqitch::GUI::View::Panel::Left' };
 class_type SqitchGUIViewPanelRight,

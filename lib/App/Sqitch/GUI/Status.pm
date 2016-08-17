@@ -2,9 +2,9 @@ package App::Sqitch::GUI::Status;
 
 # ABSTRACT: GUI Status
 
-use Moose;
+use Moo;
+use Type::Utils qw(enum);
 use namespace::autoclean;
-use Moose::Util::TypeConstraints;
 
 has gui_state => (
     is       => 'rw',
@@ -13,13 +13,14 @@ has gui_state => (
     default  => 'load',
 );
 
-with 'MooseX::Observer::Role::Observable' => {
-    notify_after => [
-        qw{
-             set_state
-        }
-    ]
-};
+# with 'MooseX::Observer::Role::Observable' => {
+#     notify_after => [
+#         qw{
+#              set_state
+#         }
+#     ]
+# };
+with 'App::Sqitch::GUI::Roles::Observable';
 
 sub set_state {
     my ($self, $state) = @_;
@@ -38,7 +39,9 @@ sub is_state {
     return;
 }
 
-no Moose::Util::TypeConstraints;
-__PACKAGE__->meta->make_immutable;
+after set_state => sub {
+    my ($self) = @_;
+    $self->notify();
+};
 
 1;

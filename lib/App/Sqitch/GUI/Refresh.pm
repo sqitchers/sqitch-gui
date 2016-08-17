@@ -3,21 +3,25 @@ package App::Sqitch::GUI::Refresh;
 # ABSTRACT: An Observer for the GUI
 
 use 5.010;
-use Moose;
+use Moo;
+use App::Sqitch::GUI::Types qw(
+	SqitchGUIRules
+    SqitchGUIView
+);
+use App::Sqitch::GUI::Rules;
 use namespace::autoclean;
 
-with 'MooseX::Observer::Role::Observer';
-
-use App::Sqitch::GUI::Rules;
+#with 'MooseX::Observer::Role::Observer';
+with 'App::Sqitch::GUI::Roles::Observer';
 
 has 'view' => (
     is   => 'ro',
-    isa  => 'App::Sqitch::GUI::View',
+    isa  => SqitchGUIView,
 );
 
 has 'rules' => (
     is      => 'ro',
-    isa     => 'App::Sqitch::GUI::Rules',
+    isa     => SqitchGUIRules,
     lazy    => 1,
     builder => '_build_rules',
 );
@@ -32,7 +36,5 @@ sub update {
     $self->view->set_status( $state, $self->rules->get_rules($state) );
     return;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 1;
