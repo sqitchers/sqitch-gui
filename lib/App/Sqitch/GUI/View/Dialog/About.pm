@@ -26,15 +26,15 @@ sub BUILD {
     my $PROGRAM_NAME = q{ Sqitch GUI };
     my $WX_VERSION   = wxVERSION_STRING;
     my $PROGRAM_DESC
-        = qq{\nA GUI for Sqitch.\n} . qq{\nwxPerl $Wx::VERSION, $WX_VERSION\n};
+        = qq{\nA GUI for Sqitch.\n} . qq{\nwxPerl $Wx::VERSION, $WX_VERSION\n}
+        . qq{Sqitch $App::Sqitch::VERSION};
     my $PROGRAM_VER = $App::Sqitch::GUI::VERSION // q{(devel)};
     $self->info->SetName($PROGRAM_NAME);
     $self->info->SetVersion($PROGRAM_VER);
     $self->info->SetDescription($PROGRAM_DESC);
-    $self->info->SetCopyright('Copyright 2015 Ștefan Suciu');
+    $self->info->SetCopyright('Copyright 2016 Ștefan Suciu');
     $self->info->SetLicense(
-        'This is free software; you can redistribute it and/or modify it under
-            the same terms as the Perl 5 programming language system itself.'
+        'TODO!'
     );
     $self->info->AddDeveloper('Ștefan Suciu <stefan@s2i2.ro>');
 
