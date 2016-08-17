@@ -610,6 +610,8 @@ sub clear_plan_form {
 sub execute_command {
     my ($self, $cmd, @cmd_args) = @_;
 
+    push @cmd_args, '--no-color' if $cmd eq 'log';
+
     # Instantiate the command object.
     my $command = App::Sqitch::Command->load({
         sqitch  => $self->sqitch,
