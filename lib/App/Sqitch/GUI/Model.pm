@@ -145,9 +145,11 @@ sub get_project_engine_from_path {
     my $cfg_file = file $path, $self->config->confname;
     if ( -f $cfg_file ) {
         my $cfg_href = Config::GitLike->load_file($cfg_file);
-        my $engine_code = $cfg_href->{'core.engine'};
-        my $engine_name = $self->config->get_engine_name($engine_code);
-        return $engine_name;
+        if ( exists $cfg_href->{'core.engine'} ) {
+            my $engine_code = $cfg_href->{'core.engine'};
+            my $engine_name = $self->config->get_engine_name($engine_code);
+            return $engine_name;
+        }
     }
     return;
 }

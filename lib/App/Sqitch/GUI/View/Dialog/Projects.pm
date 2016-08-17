@@ -567,7 +567,7 @@ sub dialog_info {
 sub _on_dpc_change {
     my ($self, $frame, $event) = @_;
 
-    my$path;
+    my $path;
     if ( my $dir = $event->GetEventObject->GetPath ) {
         $path = dir $dir;
     }
