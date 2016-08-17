@@ -6,21 +6,14 @@ use Moo;
 use Type::Utils qw(enum);
 use namespace::autoclean;
 
+with 'App::Sqitch::GUI::Roles::Observable';
+
 has dlg_state => (
     is       => 'rw',
     isa      => enum([ qw(init idle sele edit add) ]),
     required => 1,
     default  => 'init',
 );
-
-# with 'MooseX::Observer::Role::Observable' => {
-#     notify_after => [
-#         qw{
-#              set_state
-#         }
-#     ]
-# };
-with 'App::Sqitch::GUI::Roles::Observable';
 
 sub set_state {
     my ($self, $state) = @_;

@@ -5,13 +5,12 @@ package App::Sqitch::GUI::Refresh;
 use 5.010;
 use Moo;
 use App::Sqitch::GUI::Types qw(
-	SqitchGUIRules
+    SqitchGUIRules
     SqitchGUIView
 );
 use App::Sqitch::GUI::Rules;
 use namespace::autoclean;
 
-#with 'MooseX::Observer::Role::Observer';
 with 'App::Sqitch::GUI::Roles::Observer';
 
 has 'view' => (

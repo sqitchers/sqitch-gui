@@ -11,7 +11,6 @@ use App::Sqitch::GUI::Types qw(
 use App::Sqitch::GUI::View::Dialog::Rules;
 use namespace::autoclean;
 
-#with 'MooseX::Observer::Role::Observer';
 with 'App::Sqitch::GUI::Roles::Observer';
 
 has 'dialog' => (

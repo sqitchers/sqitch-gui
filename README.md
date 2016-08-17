@@ -1,7 +1,7 @@
-App::Sqitch::GUI version 0.010
+App::Sqitch::GUI version 0.020
 ==============================
-Ștefan Suciu <stefan@s2i2.ro>
-2016-08-16
+Ștefan Suciu
+2016-08-17
 
 GUI for Sqitch - Simple SQL change management.
 
@@ -14,9 +14,9 @@ Requirements
 
 - Perl v5.10.01 or newer;
 - Sqitch v0.9996 or newer;
-- wxPerl, Moo, Moose and other modules;
+- wxPerl, Moo and other modules;
 
-Note: Moose is still required because of MooseX::Observer.
+Note: Moose is not a requirement starting with v0.020.
 
 
 Status
@@ -84,9 +84,9 @@ This can be implemented by using custom dialogs for each command.
 License And Copyright
 ---------------------
 
-Copyright (C) 2012-2015 iovation Inc.
+Copyright (C) 2012-2016 iovation Inc.
 
-Copyright (C) 2015 Ștefan Suciu.
+Copyright (C) 2016 Ștefan Suciu.
 
 The license is the same as for Sqitch:
 
