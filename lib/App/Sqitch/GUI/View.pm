@@ -508,7 +508,7 @@ sub log_message {
     my ($self, $msg) = @_;
     my $control = $self->bottom->log_ctrl;
     $self->bottom->control_write_stc($control, $msg, 'append');
-    $control->LineScrollDown;
+    $control->ScrollToLine( $control->GetLineCount );
     return;
 }
 
