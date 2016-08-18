@@ -23,6 +23,7 @@ has 'rules' => (
     isa     => SqitchGUIRules,
     lazy    => 1,
     builder => '_build_rules',
+    handles => [ 'get_rules' ],
 );
 
 sub _build_rules {
@@ -30,9 +31,9 @@ sub _build_rules {
 }
 
 sub update {
-    my ( $self, $subject, $args, $eventname ) = @_;
+    my ( $self, $subject ) = @_;
     my $state = $subject->get_state;
-    $self->view->set_status( $state, $self->rules->get_rules($state) );
+    $self->view->set_status( $state, $self->get_rules($state) );
     return;
 }
 
