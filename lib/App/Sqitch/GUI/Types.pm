@@ -61,8 +61,6 @@ use Type::Utils -all;
 use Types::Standard -types;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
-#use App::Sqitch::Config;
-#use Wx;
 
 # Inherit standard types.
 BEGIN { extends "Types::Standard" };

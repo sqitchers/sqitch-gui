@@ -1,5 +1,7 @@
 package App::Sqitch::GUI::Roles::Observable;
 
+# ABSTRACT: Observable role
+
 use Moo::Role;
 use MooX::HandlesVia;
 use namespace::autoclean;

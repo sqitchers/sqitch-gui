@@ -3,8 +3,6 @@ package App::Sqitch::GUI::View::Panel::Plan;
 # ABSTRACT: The Plan Panel
 
 use 5.010;
-use strict;
-use warnings;
 use utf8;
 use Moo;
 use App::Sqitch::GUI::Types qw(

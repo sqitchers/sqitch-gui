@@ -3,8 +3,6 @@ package App::Sqitch::GUI::View::Dialog::Help;
 # ABSTRACT: The Help Dialog
 
 use 5.010;
-use strict;
-use warnings;
 use Moo;
 
 with 'App::Sqitch::GUI::Roles::Element';

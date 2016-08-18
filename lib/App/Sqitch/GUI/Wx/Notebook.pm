@@ -3,8 +3,6 @@ package App::Sqitch::GUI::Wx::Notebook;
 # ABSTRACT: Wx Notebook Control
 
 use 5.010;
-use strict;
-use warnings;
 use utf8;
 use Moo;
 use App::Sqitch::GUI::Types qw(

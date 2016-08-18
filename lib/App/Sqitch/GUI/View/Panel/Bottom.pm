@@ -3,15 +3,13 @@ package App::Sqitch::GUI::View::Panel::Bottom;
 # ABSTRACT: The Bottom Panel
 
 use 5.010;
-use strict;
-use warnings;
 use utf8;
 use Moo;
 use App::Sqitch::GUI::Types qw(
     ArrayRef
     Maybe
     Object
-	SqitchGUIWxLogView
+    SqitchGUIWxLogView
     WxPanel
     WxSizer
     WxTextCtrl
@@ -47,13 +45,13 @@ has 'log_ctrl' => (
 
 sub _build_log_ctrl {
     my $self = shift;
-	my $log_ctrl = App::Sqitch::GUI::Wx::LogView->new(
+    my $log_ctrl = App::Sqitch::GUI::Wx::LogView->new(
         app      => $self->app,
         parent   => $self->panel,
         ancestor => $self,
     );
-	$log_ctrl->SetReadOnly(1);					 # log is readonly
-	return $log_ctrl;
+    $log_ctrl->SetReadOnly(1);                   # log is readonly
+    return $log_ctrl;
 }
 
 sub BUILD {

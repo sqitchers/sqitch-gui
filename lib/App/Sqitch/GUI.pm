@@ -3,8 +3,6 @@ package App::Sqitch::GUI;
 # ABSTRACT: GUI for Sqitch
 
 use 5.010;
-use strict;
-use warnings;
 use Moo;
 use App::Sqitch::GUI::Types qw(
     SqitchGUIController
