@@ -625,9 +625,8 @@ sub execute_command {
         $command->execute(@cmd_args);
     }
     catch {
-        local $@ = $_;
-        $self->log_message($@); # HOWTO get rid of the stack trace?
-                                # or better to redirect it to another Logger?
+        ( my $msg = $_ ) =~ s{\s+(Trace|Can't).+}{}sm ;
+        $self->log_message($msg);  # Better way to get rid of the stack trace?!
     };
 
     return;
