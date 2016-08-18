@@ -71,7 +71,7 @@ sub list_meta_data {
 sub OnInit {
     my $self = shift;
 
-    my $frame = $self->{frame} = Wx::Frame->new( undef, -1, 'Test!', );
+    my $frame = Wx::Frame->new( undef, -1, 'Test!', );
 
     my $list_data = App::Sqitch::GUI::Model::ListDataTable->new;
 
@@ -109,6 +109,7 @@ sub OnInit {
 
 # Create the application object, and pass control to it.
 package main;
+
 my $app = TestApp->new;
 $app->MainLoop;
 
