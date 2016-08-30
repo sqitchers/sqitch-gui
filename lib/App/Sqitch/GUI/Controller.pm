@@ -6,20 +6,16 @@ use 5.010;
 use utf8;
 use Moo;
 use App::Sqitch::GUI::Types qw(
-    HashRef
     Maybe
-    Object
     Sqitch
     SqitchGUIConfig
     SqitchGUIDialogStatus
     SqitchGUIModel
-    SqitchGUIModelListDataTable
     SqitchGUIStatus
     SqitchGUITarget
     SqitchGUIView
     SqitchGUIWxApp
     SqitchPlan
-    WxWindow
 );
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw<:everything>;
