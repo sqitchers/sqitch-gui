@@ -459,7 +459,7 @@ sub BUILD {
     return $self;
 }
 
-sub set_status {
+sub set_button_status {
     my ($self, $state, $dlg_rules) = @_;
     foreach my $button (keys %{$dlg_rules} ) {
         my $enable = $dlg_rules->{$button};

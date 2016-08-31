@@ -32,7 +32,7 @@ sub _build_rules {
 sub update {
     my ( $self, $subject ) = @_;
     my $state = $subject->get_state;
-    $self->dialog->set_status($state, $self->rules->get_rules($state) );
+    $self->dialog->set_button_status($state, $self->rules->get_rules($state) );
     return;
 }
 

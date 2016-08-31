@@ -33,7 +33,7 @@ sub _build_rules {
 sub update {
     my ( $self, $subject ) = @_;
     my $state = $subject->get_state;
-    $self->view->set_status( $state, $self->get_rules($state) );
+    $self->view->set_status_bar( $state, $self->get_rules($state) );
     return;
 }
 

@@ -434,7 +434,7 @@ sub show_panel {
     return;
 }
 
-sub set_status {
+sub set_status_bar {
     my ($self, $state, $gui_rules) = @_;
 
     $self->status_bar->change_caption( $state, 1 );
