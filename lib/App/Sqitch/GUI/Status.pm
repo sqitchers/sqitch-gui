@@ -18,7 +18,7 @@ has gui_state => (
 sub set_state {
     my ($self, $state) = @_;
     $self->gui_state($state);
-    return;
+    return $self;
 }
 
 sub get_state {
@@ -29,7 +29,7 @@ sub get_state {
 sub is_state {
     my ($self, $state) = @_;
     return 1 if $self->gui_state eq $state;
-    return;
+    return $self;
 }
 
 after set_state => sub {
