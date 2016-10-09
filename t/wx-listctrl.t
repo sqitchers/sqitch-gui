@@ -24,7 +24,7 @@ package MyTimer;
 use Wx qw(:everything);
 use Wx::Event;
 
-use vars qw(@ISA); @ISA = qw(Wx::Timer);
+use base qw(Wx::Timer);
 
 sub Notify {
     my $self  = shift;
