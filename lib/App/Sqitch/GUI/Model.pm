@@ -134,6 +134,13 @@ sub is_project_path {
     return 1;
 }
 
+sub is_empty_path {
+    my ($self, $path) = @_;
+    my $dir = dir $path;
+    my $is_empty = $dir->stat && !$dir->children; # thanks tobyink from PM ;)
+    return $is_empty;
+}
+
 sub get_project_engine_from_name {
     my ($self, $name) = @_;
     my $path = $self->config->get_project($name);
