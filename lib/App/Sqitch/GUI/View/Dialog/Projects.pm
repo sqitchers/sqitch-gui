@@ -596,8 +596,9 @@ sub _on_dpc_change {
 }
 
 sub _validate_path {
-    my ($self, $path) = @_;
+    my ($self, $dir) = @_;
 
+    my $path = dir $dir;
     say "State is ", $self->get_state;
     if ( $self->get_state eq 'new' ) {
         unless ( $self->model->is_empty_path($path) ) {
