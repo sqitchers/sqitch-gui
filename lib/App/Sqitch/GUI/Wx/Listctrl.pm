@@ -97,7 +97,7 @@ sub set_selection {
         :                    $item;
     $self->Select( $index, 1 );               # 1|0 <=> select|deselect
     $self->EnsureVisible($index);
-    return;
+    return $index;
 }
 
 sub get_selection {

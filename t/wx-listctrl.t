@@ -83,6 +83,7 @@ sub OnInit {
     );
 
     main::ok( $list_ctrl, 'Listctrl instance created' );
+    main::is( $list_ctrl->set_selection('last'), -1, 'select last item (-1)' );
 
     # Fill the table
     foreach my $iter ( 1..5 ) {
@@ -98,6 +99,9 @@ sub OnInit {
     $list_ctrl->RefreshList;
     # print "Data:\n", $list_data->get_data, "\n";
     main::is $list_data->get_item_count, 3, 'item count: 3 values';
+
+    main::is( $list_ctrl->set_selection('first'), 0, 'select first item (0)' );
+    main::is( $list_ctrl->set_selection('last'), 2, 'select last item (2)' );
 
     # Uncomment this to observe the test
     #$frame->Show(1) if $ENV{DISPLAY};
