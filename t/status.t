@@ -78,7 +78,7 @@ subtest 'GUI Dialog Status' => sub {
     }
 
     throws_ok { $status->set_state('unknown') }
-        qr/\QValue "unknown" did not pass type constraint "Enum[add,edit,idle,init,sele]"/,
+        qr/\QValue "unknown" did not pass type constraint "Enum[add,edit,idle,init,new,sele]"/,
         qq{'unknown' should not be a valid mode};
 
 };
