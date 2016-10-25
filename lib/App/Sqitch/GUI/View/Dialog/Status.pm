@@ -10,7 +10,7 @@ with 'App::Sqitch::GUI::Roles::Observable';
 
 has dlg_state => (
     is       => 'rw',
-    isa      => enum([ qw(init idle sele edit add) ]),
+    isa      => enum([ qw(init idle sele edit add new) ]),
     required => 1,
     default  => 'init',
 );

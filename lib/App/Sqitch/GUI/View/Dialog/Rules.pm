@@ -14,6 +14,7 @@ has 'rules' => (
     default     => sub {
         {   init => {
                 btn_new    => 0,
+                btn_add    => 0,
                 btn_remove => 0,
                 btn_save   => 0,
                 btn_close  => 1,
@@ -24,6 +25,7 @@ has 'rules' => (
             },
             sele => {
                 btn_new    => 1,
+                btn_add    => 1,
                 btn_remove => 1,
                 btn_save   => 0,
                 btn_close  => 1,
@@ -32,8 +34,20 @@ has 'rules' => (
                 cbx_engine => 0,
                 txt_db     => 0,
             },
-            add => {
+            new => {
                 btn_new    => 1,
+                btn_add    => 0,
+                btn_remove => 0,
+                btn_save   => 1,
+                btn_close  => 0,
+                txt_name   => 1,
+                dpc_path   => 1,
+                cbx_engine => 0,
+                txt_db     => 1,
+            },
+            add => {
+                btn_new    => 0,
+                btn_add    => 1,
                 btn_remove => 0,
                 btn_save   => 1,
                 btn_close  => 0,

@@ -303,6 +303,26 @@ sub _build_btn_new {
     my $button = Wx::Button->new(
         $self,
         -1,
+        __ '&New',
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxBU_EXACTFIT,
+    );
+    return $button;
+}
+
+has 'btn_add' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_add',
+);
+
+sub _build_btn_add {
+    my $self = shift;
+    my $button = Wx::Button->new(
+        $self,
+        -1,
         __ '&Add',
         [ -1, -1 ],
         [ -1, -1 ],
@@ -446,6 +466,7 @@ sub BUILD {
     $self->btn_sizer->Add( $self->btn_sizer_r, 0, wxALL | wxALIGN_BOTTOM, 10 );
 
     $self->btn_sizer_l->Add( $self->btn_new,     1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_add,     1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer_l->Add( $self->btn_remove,  1, wxEXPAND | wxALL, 5 );
     $self->btn_sizer_l->Add( $self->btn_save,    1, wxEXPAND | wxALL, 5 );
 
@@ -483,6 +504,10 @@ sub _set_events {
     };
 
     EVT_BUTTON $self, $self->btn_new->GetId, sub {
+        $self->config_new_project;
+    };
+
+    EVT_BUTTON $self, $self->btn_add->GetId, sub {
         $self->config_add_project;
     };
 
@@ -564,18 +589,31 @@ sub dialog_info {
 
 sub _on_dpc_change {
     my ($self, $frame, $event) = @_;
-
-    my $path;
     if ( my $dir = $event->GetEventObject->GetPath ) {
-        $path = dir $dir;
+        $self->_validate_path($dir);
     }
-    else {
-       return;
-    }
+    return;
+}
 
-    unless ( $self->model->is_project_path($path) ) {
-        $self->dialog_info("The selected path doesn't look like a Sqitch project.", "Path: $path");
-        return;
+sub _validate_path {
+    my ($self, $path) = @_;
+
+    say "State is ", $self->get_state;
+    if ( $self->get_state eq 'new' ) {
+        unless ( $self->model->is_empty_path($path) ) {
+            $self->dialog_info(
+                "The selected path is not empty.",
+                "$path\n\n Please, select or create another path." );
+            return;
+        }
+    }
+    if ( $self->get_state eq 'add' ) {
+        unless ( $self->model->is_project_path($path) ) {
+            $self->dialog_info(
+                "The selected path doesn't look like a Sqitch project.",
+                "Path: $path" );
+            return;
+        }
     }
     if ( $self->get_state ne 'sele' ) {
         if ( $self->is_duplicate_path($path) ) {
@@ -619,22 +657,47 @@ sub set_message {
     return;
 }
 
-sub config_add_project {
+sub config_new_project {
     my $self = shift;
     my $state = $self->get_state;
     if ( $state eq 'sele' ) {
         $self->clear_form;
         $self->btn_new->SetLabel( __ 'C&ancel' );
+        $self->ancestor->dlg_status->set_state('new');
+        $self->list_ctrl->Enable(1);
+        $self->add_empty_list_item;
+        $self->list_ctrl->set_selection('last');
+        $self->list_ctrl->Enable(0);
+        $self->btn_save->Enable(0);
+
+        $self->dir_dialog;
+        $self->cbx_engine->Enable(1);
+    }
+    elsif ( $state eq 'new' ) {
+        $self->btn_new->SetLabel( __ '&New' );
+        $self->ancestor->dlg_status->set_state('sele');
+        $self->list_ctrl->delete_current_item;
+        $self->list_ctrl->Enable(1);
+        $self->clear_form;
+    }
+    return;
+}
+
+sub config_add_project {
+    my $self = shift;
+    my $state = $self->get_state;
+    if ( $state eq 'sele' ) {
+        $self->clear_form;
+        $self->btn_add->SetLabel( __ 'C&ancel' );
         $self->ancestor->dlg_status->set_state('add');
         $self->list_ctrl->Enable(1);
         $self->add_empty_list_item;
-        my $last_item = $self->list_ctrl->get_item_count - 1;
-        $self->list_ctrl->set_selection($last_item);
+        $self->list_ctrl->set_selection('last');
         $self->list_ctrl->Enable(0);
         $self->btn_save->Enable(0);
     }
     elsif ( $state eq 'add' ) {
-        $self->btn_new->SetLabel( __ '&Add' );
+        $self->btn_add->SetLabel( __ '&Add' );
         $self->ancestor->dlg_status->set_state('sele');
         $self->list_ctrl->delete_current_item;
         $self->list_ctrl->Enable(1);
@@ -709,6 +772,21 @@ sub OnClose {
     $self->EndModal(wxID_OK);
     $self->Destroy;
     return;
+}
+
+sub dir_dialog {
+    my $self = shift;
+    my $dialog = Wx::DirDialog->new($self);
+    if ( $dialog->ShowModal == wxID_CANCEL ) {
+        Wx::LogMessage("User cancelled the dialog");
+    }
+    else {
+        if ( my $dir = $dialog->GetPath ) {
+            $self->control_write_p( $self->dpc_path, $dir );
+            $self->_validate_path($dir);
+        }
+    }
+    $dialog->Destroy;
 }
 
 1;
