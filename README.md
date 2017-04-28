@@ -54,9 +54,15 @@ awesome...
 Screenshots
 -----------
 
+The Project Panel
+
 ![The Project Panel](https://raw.githubusercontent.com/stefansbv/sqitch-gui/master/images/sqitch-gui-1.png)
 
+The Plan Panel
+
 ![The Plan Panel](https://raw.githubusercontent.com/stefansbv/sqitch-gui/master/images/sqitch-gui-2.png)
+
+The Change Panel
 
 ![The Change Panel](https://raw.githubusercontent.com/stefansbv/sqitch-gui/master/images/sqitch-gui-3.png)
 
