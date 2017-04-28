@@ -51,6 +51,14 @@ Select a project and Press the `Load` button.
 Still much work to do but some feedback, in this stage, would be
 awesome...
 
+Screenshots
+-----------
+
+![The Project Panel](https://raw.githubusercontent.com/stefansbv/planned-copy/master/images/sqitch-gui-1.png)
+
+![The Plan Panel](https://raw.githubusercontent.com/stefansbv/planned-copy/master/images/sqitch-gui-2.png)
+
+![The Change Panel](https://raw.githubusercontent.com/stefansbv/planned-copy/master/images/sqitch-gui-3.png)
 
 Implementation notes
 --------------------
