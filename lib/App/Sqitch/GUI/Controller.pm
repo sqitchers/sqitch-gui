@@ -333,6 +333,16 @@ sub load_project_item {
     return;
 }
 
+sub load_plan_item {
+    my $self = shift;
+    my $item = $self->view->get_plan_list_ctrl->get_selection;
+    # $self->model->current_project->item($item);
+    # $self->model->current_project->name($name);
+	$self->mark_item('plan', $item, 5);
+    # $self->load_project_from_path($path);
+    return;
+}
+
 sub load_project_from_path {
     my ($self, $path) = @_;
 
@@ -389,6 +399,11 @@ sub _setup_events {
     EVT_BUTTON $self->view->frame,
         $self->view->project->btn_load->GetId, sub {
             $self->load_project_item;
+        };
+
+	EVT_BUTTON $self->view->frame,
+        $self->view->plan->btn_load->GetId, sub {
+            $self->load_plan_item;
         };
 
     #-- Quit
@@ -792,7 +807,7 @@ sub mark_item {
     $item //= $list->get_selection;
     $self->_clear_mark_label($list_name, $col);
     $self->_set_mark_label($list_name, $item, $col);
-    $self->view->get_project_list_ctrl->RefreshList;
+    $list->RefreshList;
     return;
 }
 
