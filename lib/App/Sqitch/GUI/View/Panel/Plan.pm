@@ -6,6 +6,7 @@ use 5.010;
 use utf8;
 use Moo;
 use App::Sqitch::GUI::Types qw(
+    WxButton
     WxPanel
     WxSizer
     SqitchGUIWxListctrl
@@ -68,6 +69,13 @@ has 'list_ctrl' => (
     builder => '_build_list_ctrl',
 );
 
+has 'btn_load' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_load',
+);
+
 sub _build_list_ctrl {
     my $self = shift;
     my $list_ctrl = App::Sqitch::GUI::Wx::Listctrl->new(
@@ -95,6 +103,11 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->list_ctrl, 1, wxEXPAND, 3 );
 
     $self->panel->SetSizer($self->sizer);
+
+	#-- Button
+
+	$self->btn_sizer->Add( $self->btn_load, 1, wxLEFT | wxRIGHT | wxEXPAND, 25 );
+	$self->main_fg_sz->Add( $self->btn_sizer, 1, wxALIGN_CENTRE);
 
     return $self;
 }
@@ -138,6 +151,27 @@ sub _build_sb_sizer {
 
     return Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $self->panel, -1, __ 'Plan ', ), wxVERTICAL );
+}
+
+sub _build_btn_sizer {
+    return Wx::BoxSizer->new(wxHORIZONTAL);
+}
+
+#-- Buttons
+
+sub _build_btn_load {
+    my $self = shift;
+
+    my $button = Wx::Button->new(
+        $self->panel,
+        -1,
+        __ 'Load',
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
+    $button->Enable(1);
+
+    return $button;
 }
 
 sub _set_events { }
