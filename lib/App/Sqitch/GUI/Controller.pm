@@ -11,12 +11,14 @@ use App::Sqitch::GUI::Types qw(
     SqitchGUIConfig
     SqitchGUIDialogStatus
     SqitchGUIModel
+    SqitchGUIOptions
     SqitchGUIStatus
     SqitchGUITarget
     SqitchGUIView
     SqitchGUIWxApp
     SqitchPlan
 );
+use App::Sqitch::GUI::Options;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use Wx qw<:everything>;
 use Wx::Event qw(
@@ -40,6 +42,17 @@ use App::Sqitch::GUI::Target;
 use App::Sqitch::GUI::View::Dialog::Projects;
 use App::Sqitch::GUI::View::Dialog::Status;
 use App::Sqitch::GUI::View::Dialog::Refresh;
+
+has options => (
+    is      => 'ro',
+    isa     => SqitchGUIOptions,
+    lazy    => 1,
+    builder => '_build_options',
+);
+
+sub _build_options {
+    return App::Sqitch::GUI::Options->new_with_options;
+}
 
 has config => (
     is      => 'ro',
@@ -558,6 +571,7 @@ sub load_sql_for {
     my ($self, $command, $name) = @_;
     my $repo_path = $self->config->current_project_path;
     my $sql_file  = file $repo_path, $command, "$name.sql";
+    say "sql_file: $sql_file" if $self->options->verbose;
     if (-f $sql_file) {
         my $text = read_file($sql_file);
         $self->view->load_sql_form_for( 'change', $command, $text );
@@ -771,7 +785,7 @@ __END__
 
 =head1 DESCRIPTION
 
-The Model.
+The Controller.
 
 =head1 SYNOPSIS
 
