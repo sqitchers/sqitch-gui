@@ -286,7 +286,7 @@ sub load_sqitch_project {
             path => $path );
         $self->load_project_from_path($path);
         my $index = $self->default_project_item;
-        $self->mark_as_current($index);
+		$self->mark_item('project', $index, 5);
         $self->model->current_project->item($index);
         $self->view->get_project_list_ctrl->set_selection($index);
     }
@@ -328,7 +328,7 @@ sub load_project_item {
     $self->model->current_project->item($item);
     $self->model->current_project->name($name);
     $self->model->current_project->path(dir $path);
-    $self->mark_as_current($item);
+	$self->mark_item('project', $item, 5);
     $self->load_project_from_path($path);
     return;
 }
@@ -405,6 +405,12 @@ sub _setup_events {
     $self->view->event_handler_for_list(
         $self->view->get_project_list_ctrl,
         sub { $self->_on_project_listitem_selected(@_) },
+    );
+
+	#-- Plan list
+    $self->view->event_handler_for_list(
+        $self->view->get_plan_list_ctrl,
+        sub { $self->_on_plan_listitem_selected(@_) },
     );
 
     return;
@@ -588,6 +594,8 @@ sub populate_plan_form {
 
     # Search the changes. (from ...Sqitch::Command::plan)
     my $iter = $plan->search_changes();
+	my $is_current = 0;
+	my $current_label = $is_current ? __('Yes') : q();
     my @plans;
     while ( my $change = $iter->() ) {
         push @plans, {
@@ -595,6 +603,7 @@ sub populate_plan_form {
             description => $change->note,
             create_time => $change->timestamp,
             creator     => $change->planner_name,
+			current     => $current_label,
         };
     }
 
@@ -607,7 +616,8 @@ sub populate_plan_form {
     }
 
     $self->view->get_plan_list_ctrl->RefreshList;
-    $self->view->get_plan_list_ctrl->set_selection('last');
+    my $index = $self->view->get_plan_list_ctrl->set_selection('last');
+	$self->mark_item('plan', $index, 5);
     return;
 }
 
@@ -722,7 +732,7 @@ sub set_project_default {
     }
     $self->config_set_default($name); # write to the config file
     $self->model->default_project->item($item);
-    $self->mark_as_default($item);
+    $self->mark_item('project', $item, 4);
     $self->view->project->btn_default->Enable(0);
 
     $self->config->default_project_name($name);
@@ -730,36 +740,58 @@ sub set_project_default {
     return;
 }
 
+sub get_list_by_name {
+    my ( $self, $name ) = @_;
+    my $list
+        = $name eq 'project' ? $self->view->get_project_list_ctrl
+        : $name eq 'plan'    ? $self->view->get_plan_list_ctrl
+        :                      $self->dispatch_error($name);
+    return $list;
+}
+
+sub get_list_data_by_name {
+    my ( $self, $name ) = @_;
+    my $list
+        = $name eq 'project' ? $self->model->project_list_data
+        : $name eq 'plan'    ? $self->model->plan_list_data
+        :                      $self->dispatch_error($name);
+    return $list;
+}
+
+sub dispatch_error {
+	my ($self, $name) = @_;
+    die "No such list name: $name";
+}
+
 sub _clear_mark_label {
-    my ($self, $col) = @_;
-    $self->model->project_list_data->set_col( $col, '' );
+    my ( $self, $list_name, $col ) = @_;
+	hurl 'Wrong arguments passed to mark_item()'
+        unless $list_name and defined($col) and $col >= 0;
+	my $data = $self->get_list_data_by_name($list_name);
+    $data->set_col( $col, '' );
     return;
 }
 
 sub _set_mark_label {
-    my ($self, $item, $col) = @_;
-    $self->model->project_list_data->set_value( $item, $col, __('Yes') );
+    my ($self, $list_name, $item, $col) = @_;
+	hurl 'Wrong arguments passed to mark_item()'
+        unless $list_name and defined($col) and $col >= 0;
+	my $data = $self->get_list_data_by_name($list_name);
+    $data->set_value( $item, $col, __('Yes') );
     return;
 }
 
-sub mark_as_default {
-    my ($self, $item) = @_;
-    $item //= $self->view->get_project_list_ctrl->get_selection;
-    hurl 'Wrong arguments passed to mark_as_default()'
-        unless defined $item;
-    $self->_clear_mark_label(4);
-    $self->_set_mark_label($item, 4);
-    $self->view->get_project_list_ctrl->RefreshList;
-    return;
-}
-
-sub mark_as_current {
-    my ($self, $item) = @_;
-    $item //= $self->view->get_project_list_ctrl->get_selection;
-    hurl 'Wrong arguments passed to mark_as_current()'
-        unless defined $item;
-    $self->_clear_mark_label(5);
-    $self->_set_mark_label($item, 5);
+# project default col: 4
+# project current col: 5
+# plan    current col: 5
+sub mark_item {
+    my ($self, $list_name, $item, $col) = @_;
+	hurl 'Wrong arguments passed to mark_item()'
+        unless $list_name and defined($item) and defined($col) and $col >= 0;
+    my $list = $self->get_list_by_name($list_name);
+    $item //= $list->get_selection;
+    $self->_clear_mark_label($list_name, $col);
+    $self->_set_mark_label($list_name, $item, $col);
     $self->view->get_project_list_ctrl->RefreshList;
     return;
 }
@@ -773,6 +805,15 @@ sub _on_project_listitem_selected {
     my $load_enabled = $item == $current_item ? 0 : 1;
     $self->view->project->btn_default->Enable($defa_enabled);
     $self->view->project->btn_load->Enable($load_enabled);
+    return;
+}
+
+sub _on_plan_listitem_selected {
+    my ($self, $var, $event) =  @_;
+    my $item = $event->GetIndex;
+
+    # my $current_item = $self->model->current_project->item // 999;
+	say "_on_plan_listitem_selected: $item";
     return;
 }
 
