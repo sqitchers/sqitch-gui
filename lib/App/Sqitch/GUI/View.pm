@@ -280,7 +280,7 @@ sub _build_status_bar {
 }
 
 sub _build_size {
-    return Wx::Size->new(900, 700); # default window size
+    return Wx::Size->new(1024, 768); # default window size
 }
 
 sub _build_style {
