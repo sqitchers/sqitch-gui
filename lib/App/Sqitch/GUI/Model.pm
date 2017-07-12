@@ -277,6 +277,12 @@ sub plan_list_meta_data {
             width => 245,
             type  => 'str',
         },
+        {   field => 'current',
+            label => __ 'Current',
+            align => 'center',
+            width => 70,
+            type  => 'str',
+        },
     ];
 }
 
