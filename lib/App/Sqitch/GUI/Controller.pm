@@ -209,7 +209,7 @@ sub BUILD {
     $self->_setup_events;
     $self->status->add_observer(
         App::Sqitch::GUI::Refresh->new( view => $self->view ) );
-    $self->log_message('II Welcome to Sqitch!');
+    $self->log_message('II Welcome to Sqitch (GUI)!');
     $self->prepare_projects;
     return;
 }
@@ -266,7 +266,7 @@ sub load_sqitch_project {
     if ($proj_cnt) {
         $self->log_message(
             __nx 'II OK, found a project', 'II Found {count} projects',
-            $proj_cnt, count => $proj_cnt );
+            $proj_cnt, count => $proj_cnt ) if $self->options->verbose;
     }
     else {
         return;
@@ -335,11 +335,19 @@ sub load_project_item {
 
 sub load_plan_item {
     my $self = shift;
+	say "was item: ", $self->model->current_plan_item->item;
+	say "was name: ", $self->model->current_plan_item->name;
+
     my $item = $self->view->get_plan_list_ctrl->get_selection;
-    # $self->model->current_project->item($item);
-    # $self->model->current_project->name($name);
+	my $name = $self->model->plan_list_data->get_value($item, 1);
+	say "name $name";
+	$self->model->current_plan_item->item($item);
+	$self->model->current_plan_item->name($name);
 	$self->mark_item('plan', $item, 5);
     # $self->load_project_from_path($path);
+	say "is item: ", $self->model->current_plan_item->item;
+	say "is name: ", $self->model->current_plan_item->name;
+
     return;
 }
 
@@ -526,7 +534,12 @@ sub populate_change_form {
         $self->log_message( __x 'II No changes defined yet' );
         return;
     }
+	use Data::Printer; p $change;
+	$self->log_message( __x 'II Loading changes...???' )
+		if $self->options->verbose;
+
     my $name  = $change->name;
+	say "change name: ", $name;
     my $state = try {
         $engine->current_state( $plan->project );
     }
