@@ -8,6 +8,7 @@ use MooX::HandlesVia;
 use App::Sqitch::GUI::Types qw(
     SqitchGUIConfig
     SqitchGUIModelListDataTable
+    SqitchGUIModelPlanItem
     SqitchGUIModelProjectItem
 );
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
@@ -19,6 +20,7 @@ use App::Sqitch::GUI::Sqitch;
 use App::Sqitch::GUI::Target;
 use App::Sqitch::GUI::Model::ListDataTable;
 use App::Sqitch::GUI::Model::ProjectItem;
+use App::Sqitch::GUI::Model::PlanItem;
 
 has 'config' => (
     is   => 'ro',
@@ -44,6 +46,19 @@ sub _build_current_project {
             $item->path($path);
         }
     }
+    return $item;
+}
+
+has 'current_plan_item' => (
+    is      => 'rw',
+    isa     => SqitchGUIModelPlanItem,
+    lazy    => 1,
+    builder => '_build_current_plan_item',
+);
+
+sub _build_current_plan_item {
+    my $self = shift;
+    my $item = App::Sqitch::GUI::Model::PlanItem->new;
     return $item;
 }
 
@@ -256,7 +271,7 @@ sub plan_list_meta_data {
         {   field => 'name',
             label => __ 'Name',
             align => 'left',
-            width => 160,
+            width => 130,
             type  => 'str',
         },
         {   field => 'create_time',
@@ -274,13 +289,19 @@ sub plan_list_meta_data {
         {   field => 'description',
             label => __ 'Description',
             align => 'left',
-            width => 285,
+            width => 260,
             type  => 'str',
         },
         {   field => 'current',
             label => __ 'Current',
             align => 'center',
-            width => 70,
+            width => 60,
+            type  => 'str',
+        },
+        {   field => 'status',
+            label => __ 'Status',
+            align => 'center',
+            width => 60,
             type  => 'str',
         },
     ];
