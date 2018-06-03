@@ -340,11 +340,11 @@ sub load_plan_item {
 
     my $item = $self->view->get_plan_list_ctrl->get_selection;
     my $name = $self->model->plan_list_data->get_value($item, 1);
-    say "name $name";
+
     $self->model->current_plan_item->item($item);
     $self->model->current_plan_item->name($name);
     $self->mark_item('plan', $item, 5);
-    # $self->load_project_from_path($path);
+
     say "is item: ", $self->model->current_plan_item->item;
     say "is name: ", $self->model->current_plan_item->name;
 
@@ -355,10 +355,10 @@ sub load_project_from_path {
     my ($self, $path) = @_;
 
     $self->config->reload($path);
-    $self->clear_sqitch;
-    $self->clear_plan;
     $self->clear_target;
+    $self->clear_sqitch;
     $self->clear_project_form;
+    $self->clear_plan;
     $self->clear_plan_form;
     $self->clear_change_form;
 
@@ -397,16 +397,19 @@ sub _setup_events {
             };
     }
 
+    # The "Default" button from the Project panel
     EVT_BUTTON $self->view->frame,
         $self->view->project->btn_default->GetId, sub {
             $self->set_project_default;
         };
 
+    # The "Load" button from the Project panel
     EVT_BUTTON $self->view->frame,
         $self->view->project->btn_load->GetId, sub {
             $self->load_project_item;
         };
 
+    # The "Load" button from the Plan panel
     EVT_BUTTON $self->view->frame,
         $self->view->plan->btn_load->GetId, sub {
             $self->load_plan_item;
@@ -464,12 +467,6 @@ sub populate_project_form {
     my $self = shift;
     my $config = $self->config;
 
-    my $engine = try { $self->target->engine }
-    catch {
-        $self->catch_init_errors($_);
-        return undef;
-    };
-    return unless $engine;
     my $plan = try { $self->plan }
     catch {
         $self->catch_init_errors($_);
@@ -482,6 +479,12 @@ sub populate_project_form {
         return undef;
     };
     return unless $project;
+    my $engine = try { $self->target->engine }
+    catch {
+        $self->catch_init_errors($_);
+        return undef;
+    };
+    return unless $engine;
 
     my $fields = {
         project  => $project                      // 'unknown',
@@ -502,9 +505,10 @@ sub populate_project_form {
 
 sub catch_init_errors {
     my ($self, $error) = @_;
-    say "Stack trace: \n$_"; # if $self->debug; # TODO: add debug option
+    #say "Stack trace: \n$_"; # if $self->debug; # TODO: add debug option
     ( my $msg = $error ) =~ s/\nTrace begun.*$//ms;
     $self->log_message( qq{EE $msg} );
+    $self->log_message( qq{WW Inconsistent state, please load another project!} );
     return;
 }
 
@@ -654,6 +658,7 @@ sub populate_plan_form {
 sub clear_plan_form {
     my $self = shift;
     $self->view->get_plan_list_ctrl->delete_all_items;
+    $self->view->get_plan_list_ctrl->RefreshList;
     return;
 }
 

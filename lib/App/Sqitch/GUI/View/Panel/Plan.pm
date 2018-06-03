@@ -104,10 +104,10 @@ sub BUILD {
 
     $self->panel->SetSizer($self->sizer);
 
-	#-- Button
+    #-- Button
 
-	$self->btn_sizer->Add( $self->btn_load, 1, wxLEFT | wxRIGHT | wxEXPAND, 25 );
-	$self->main_fg_sz->Add( $self->btn_sizer, 1, wxALIGN_CENTRE);
+    $self->btn_sizer->Add( $self->btn_load, 1, wxLEFT | wxRIGHT | wxEXPAND, 25 );
+    $self->main_fg_sz->Add( $self->btn_sizer, 1, wxALIGN_CENTRE);
 
     return $self;
 }
