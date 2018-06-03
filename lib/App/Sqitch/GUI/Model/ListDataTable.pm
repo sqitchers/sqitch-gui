@@ -40,10 +40,12 @@ sub get_value {
     my ($row, $col) = @_;
     hurl 'Wrong arguments passed to get_value()'
         unless defined $row and defined $col;
-    my $value = try {$self->list_data->get_cell($row, $col)->name }
-    catch {
-        print "$_\n";
-    };
+    return $self->list_data->get_cell($row, $col)->name;
+    # for DEBUG?
+    # my $value = try { $self->list_data->get_cell($row, $col)->name }
+    # catch {
+    #     warn "'$_'\n";
+    # };
 }
 
 sub get_data_as_string {
