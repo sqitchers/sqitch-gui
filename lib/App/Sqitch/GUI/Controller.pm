@@ -283,10 +283,10 @@ sub load_sqitch_project {
     if ( $name and $path ) {
         chdir $path
             or $self->log_message( __x 'II Can not cd to {path}"',
-            path => $path );
+                                   path => $path );
         $self->load_project_from_path($path);
         my $index = $self->default_project_item;
-		$self->mark_item('project', $index, 5);
+        $self->mark_item('project', $index, 5);
         $self->model->current_project->item($index);
         $self->view->get_project_list_ctrl->set_selection($index);
     }
@@ -328,25 +328,25 @@ sub load_project_item {
     $self->model->current_project->item($item);
     $self->model->current_project->name($name);
     $self->model->current_project->path(dir $path);
-	$self->mark_item('project', $item, 5);
+    $self->mark_item('project', $item, 5);
     $self->load_project_from_path($path);
     return;
 }
 
 sub load_plan_item {
     my $self = shift;
-	say "was item: ", $self->model->current_plan_item->item;
-	say "was name: ", $self->model->current_plan_item->name;
+    say "was item: ", $self->model->current_plan_item->item;
+    say "was name: ", $self->model->current_plan_item->name;
 
     my $item = $self->view->get_plan_list_ctrl->get_selection;
-	my $name = $self->model->plan_list_data->get_value($item, 1);
-	say "name $name";
-	$self->model->current_plan_item->item($item);
-	$self->model->current_plan_item->name($name);
-	$self->mark_item('plan', $item, 5);
+    my $name = $self->model->plan_list_data->get_value($item, 1);
+    say "name $name";
+    $self->model->current_plan_item->item($item);
+    $self->model->current_plan_item->name($name);
+    $self->mark_item('plan', $item, 5);
     # $self->load_project_from_path($path);
-	say "is item: ", $self->model->current_plan_item->item;
-	say "is name: ", $self->model->current_plan_item->name;
+    say "is item: ", $self->model->current_plan_item->item;
+    say "is name: ", $self->model->current_plan_item->name;
 
     return;
 }
@@ -355,11 +355,9 @@ sub load_project_from_path {
     my ($self, $path) = @_;
 
     $self->config->reload($path);
-
     $self->clear_sqitch;
     $self->clear_plan;
     $self->clear_target;
-
     $self->clear_project_form;
     $self->clear_plan_form;
     $self->clear_change_form;
@@ -370,9 +368,9 @@ sub load_project_from_path {
             __x 'II Loading the "{name}" project', name => $name );
         $self->populate_plan_form;
         $self->populate_change_form;
+        $self->view->project->btn_load->Enable(0);
     }
 
-    $self->view->project->btn_load->Enable(0);
     return;
 }
 
@@ -409,7 +407,7 @@ sub _setup_events {
             $self->load_project_item;
         };
 
-	EVT_BUTTON $self->view->frame,
+    EVT_BUTTON $self->view->frame,
         $self->view->plan->btn_load->GetId, sub {
             $self->load_plan_item;
         };
@@ -430,7 +428,7 @@ sub _setup_events {
         sub { $self->_on_project_listitem_selected(@_) },
     );
 
-	#-- Plan list
+    #-- Plan list
     $self->view->event_handler_for_list(
         $self->view->get_plan_list_ctrl,
         sub { $self->_on_plan_listitem_selected(@_) },
@@ -466,24 +464,21 @@ sub populate_project_form {
     my $self = shift;
     my $config = $self->config;
 
-    my $engine = try { $self->target->engine; }
+    my $engine = try { $self->target->engine }
     catch {
-        ( my $err = $_ ) =~ s/\n*$//;
-        $self->log_message( qq{EE "$err"} );
+        $self->catch_init_errors($_);
         return undef;
     };
     return unless $engine;
-    my $plan = try { $self->plan; }
-        catch {
-        ( my $err = $_ ) =~ s/\n*$//;
-        $self->log_message( qq{EE "$err"} );
+    my $plan = try { $self->plan }
+    catch {
+        $self->catch_init_errors($_);
         return undef;
     };
     return unless $plan;
-    my $project = try { $plan->project; }
+    my $project = try { $plan->project }
     catch {
-        ( my $err = $_ ) =~ s/\n*$//;
-        $self->log_message( qq{EE "$err"} );
+        $self->catch_init_errors($_);
         return undef;
     };
     return unless $project;
@@ -503,6 +498,14 @@ sub populate_project_form {
         $self->view->load_txt_form_for( 'project', $field, $value );
     }
     return $project;
+}
+
+sub catch_init_errors {
+    my ($self, $error) = @_;
+    say "Stack trace: \n$_"; # if $self->debug; # TODO: add debug option
+    ( my $msg = $error ) =~ s/\nTrace begun.*$//ms;
+    $self->log_message( qq{EE $msg} );
+    return;
 }
 
 sub clear_project_form {
@@ -534,12 +537,11 @@ sub populate_change_form {
         $self->log_message( __x 'II No changes defined yet' );
         return;
     }
-	use Data::Printer; p $change;
-	$self->log_message( __x 'II Loading changes...???' )
-		if $self->options->verbose;
+    $self->log_message( __x 'II Loading changes...???' )
+        if $self->options->verbose;
 
     my $name  = $change->name;
-	say "change name: ", $name;
+    say "change name: ", $name;
     my $state = try {
         $engine->current_state( $plan->project );
     }
@@ -622,8 +624,8 @@ sub populate_plan_form {
 
     # Search the changes. (from ...Sqitch::Command::plan)
     my $iter = $plan->search_changes();
-	my $is_current = 0;
-	my $current_label = $is_current ? __('Yes') : q();
+    my $is_current = 0;
+    my $current_label = $is_current ? __('Yes') : q();
     my @plans;
     while ( my $change = $iter->() ) {
         push @plans, {
@@ -631,7 +633,7 @@ sub populate_plan_form {
             description => $change->note,
             create_time => $change->timestamp,
             creator     => $change->planner_name,
-			current     => $current_label,
+            current     => $current_label,
         };
     }
 
@@ -645,7 +647,7 @@ sub populate_plan_form {
 
     $self->view->get_plan_list_ctrl->RefreshList;
     my $index = $self->view->get_plan_list_ctrl->set_selection('last');
-	$self->mark_item('plan', $index, 5);
+    $self->mark_item('plan', $index, 5);
     return;
 }
 
@@ -787,24 +789,24 @@ sub get_list_data_by_name {
 }
 
 sub dispatch_error {
-	my ($self, $name) = @_;
+    my ($self, $name) = @_;
     die "No such list name: $name";
 }
 
 sub _clear_mark_label {
     my ( $self, $list_name, $col ) = @_;
-	hurl 'Wrong arguments passed to mark_item()'
+    hurl 'Wrong arguments passed to mark_item()'
         unless $list_name and defined($col) and $col >= 0;
-	my $data = $self->get_list_data_by_name($list_name);
+    my $data = $self->get_list_data_by_name($list_name);
     $data->set_col( $col, '' );
     return;
 }
 
 sub _set_mark_label {
     my ($self, $list_name, $item, $col) = @_;
-	hurl 'Wrong arguments passed to mark_item()'
+    hurl 'Wrong arguments passed to mark_item()'
         unless $list_name and defined($col) and $col >= 0;
-	my $data = $self->get_list_data_by_name($list_name);
+    my $data = $self->get_list_data_by_name($list_name);
     $data->set_value( $item, $col, __('Yes') );
     return;
 }
@@ -814,7 +816,7 @@ sub _set_mark_label {
 # plan    current col: 5
 sub mark_item {
     my ($self, $list_name, $item, $col) = @_;
-	hurl 'Wrong arguments passed to mark_item()'
+    hurl 'Wrong arguments passed to mark_item()'
         unless $list_name and defined($item) and defined($col) and $col >= 0;
     my $list = $self->get_list_by_name($list_name);
     $item //= $list->get_selection;
@@ -841,7 +843,7 @@ sub _on_plan_listitem_selected {
     my $item = $event->GetIndex;
 
     # my $current_item = $self->model->current_project->item // 999;
-	say "_on_plan_listitem_selected: $item";
+    say "_on_plan_listitem_selected: $item";
     return;
 }
 
