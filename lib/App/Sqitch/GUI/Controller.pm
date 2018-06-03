@@ -335,6 +335,9 @@ sub load_project_item {
 
 sub load_plan_item {
     my $self = shift;
+
+    $self->log_message( __ 'II Load plan item feature not implmented yet!' );
+
     say "was item: ", $self->model->current_plan_item->item;
     say "was name: ", $self->model->current_plan_item->name;
 
