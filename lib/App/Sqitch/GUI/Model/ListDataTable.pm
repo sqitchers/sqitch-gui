@@ -5,6 +5,7 @@ package App::Sqitch::GUI::Model::ListDataTable;
 use 5.010;
 use utf8;
 use Moo;
+use Try::Tiny;
 use App::Sqitch::GUI::Types qw(
     Int
 );
@@ -39,8 +40,10 @@ sub get_value {
     my ($row, $col) = @_;
     hurl 'Wrong arguments passed to get_value()'
         unless defined $row and defined $col;
-    #say "get: $row, $col";
-    return $self->list_data->get_cell($row, $col)->name;
+    my $value = try {$self->list_data->get_cell($row, $col)->name }
+    catch {
+        print "$_\n";
+    };
 }
 
 sub get_data_as_string {
