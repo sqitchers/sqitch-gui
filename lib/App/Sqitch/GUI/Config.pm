@@ -16,6 +16,7 @@ use Path::Class qw(dir file);
 use File::ShareDir qw(dist_dir);
 use Try::Tiny;
 use List::Util qw(first);
+use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
 
 extends 'App::Sqitch::Config';
@@ -131,10 +132,21 @@ has 'engine_list' => (
 
 sub reload {
     my ( $self, $path ) = @_;
-    hurl 'Wrong arguments passed to reload()' unless $path;
-    $self->current_project_path(dir $path);
+    hurl 'Wrong arguments passed to reload()' unless $path and -d $path;
     my $file = file $path, $self->confname;
-    try { $self->load($file) } catch { print "Reload config error: $_\n" };
+    hurl reload =>
+      __x( 'The configuration file "{file}" does not exist!', file => $file )
+      unless $file and -f $file;
+    try { $self->load_file($file) }
+    catch {
+        hurl reload => __x(
+            'The configuration file "{file}" could not be (re)loaded: {err}',
+            file => $file,
+            err  => $_,
+        );
+    };
+    $self->current_project_path( dir $path);
+    return;
 }
 
 sub project_list_cnt {
@@ -142,20 +154,29 @@ sub project_list_cnt {
     return scalar keys %{ $self->project_list };
 }
 
+has 'sharedir' => (
+    is      => 'ro',
+    isa     => Dir,
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        my $path;
+        try {
+            $path = dist_dir('App-Sqitch-GUI');
+        }
+        catch {
+            $path = 'share';
+        };
+        return dir $path;
+    },
+);
+
 has 'icon_path' => (
     is      => 'ro',
     isa     => Dir,
     default => sub {
         my $self = shift;
-        my @path = ( 'etc', 'icons' );
-        my $path = try {
-            dir dist_dir('App-Sqitch-GUI'), @path;
-        }
-        catch {
-            warn "Error from icon_path: $_";
-            dir 'share', @path;
-        };
-        return $path;
+        return dir( $self->sharedir, 'etc', 'icons' );
     },
 );
 
