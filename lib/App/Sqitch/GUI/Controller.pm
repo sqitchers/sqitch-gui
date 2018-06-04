@@ -361,9 +361,9 @@ sub load_project_from_path {
         return;
     }
 
-    # TODO: This should be not necessary
-    # chdir $path
-    #   or $self->log_message( __x 'II Can not cd to {path}"', path => $path );
+    # TODO: This should be not necessary, but it is
+    chdir $path
+      or $self->log_message( __x 'II Can not cd to {path}"', path => $path );
 
     my $status_ok = try {
         $self->config->reload($path);
