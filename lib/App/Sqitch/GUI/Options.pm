@@ -12,6 +12,12 @@ option 'verbose' => (
     short => 'v',
 );
 
+option 'debug' => (
+    is    => 'ro',
+    doc   => 'set debug on',
+    short => 'd',
+);
+
 1;
 
 __END__
