@@ -373,7 +373,7 @@ sub load_project_from_path {
         $self->catch_init_errors($_);
         return undef;
     };
-    $self->config_dump;
+    $self->config_dump if $self->options->debug;
 
     return unless $status_ok;
     
@@ -527,7 +527,7 @@ sub populate_project_form {
 
 sub catch_init_errors {
     my ($self, $error) = @_;
-    #say "Stack trace: \n$_"; # if $self->debug; # TODO: add debug option
+    say "Stack trace: \n$_" if $self->options->debug;
     ( my $msg = $error ) =~ s/\nTrace begun.*$//ms;
     $self->log_message( qq{EE $msg} );
     $self->log_message( qq{WW Inconsistent state, please load another project!} );
