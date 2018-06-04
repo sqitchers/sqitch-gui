@@ -67,9 +67,8 @@ sub _build_config {
         App::Sqitch::GUI::Config->new;
     }
     catch {
-        hurl
-            controller => __x 'EE Configuration error: "{error}"',
-            error      => $_;
+        hurl controller => __x 'EE Configuration error: "{error}"',
+            error => $_;
     };
     return $config;
 }
@@ -274,16 +273,13 @@ sub load_sqitch_project {
 
     # Configuration issues?
     foreach my $item ( $self->model->config_all_issues ) {
-        $self->log_message("EE $item");
+        $self->log_message($item);
     }
 
     # Load the default == current project
     my $name = $self->model->current_project->name;
     my $path = $self->model->current_project->path;
     if ( $name and $path ) {
-        chdir $path
-            or $self->log_message( __x 'II Can not cd to {path}"',
-                                   path => $path );
         $self->load_project_from_path($path);
         my $index = $self->default_project_item;
         $self->mark_item('project', $index, 5);
@@ -357,7 +353,30 @@ sub load_plan_item {
 sub load_project_from_path {
     my ($self, $path) = @_;
 
-    $self->config->reload($path);
+    unless ( $self->model->is_project_path($path) ) {
+        $self->log_message(
+            __x 'EE The "{path}" path does not look like a Sqitch project!',
+            path => $path,
+        );
+        return;
+    }
+
+    # TODO: This should be not necessary
+    # chdir $path
+    #   or $self->log_message( __x 'II Can not cd to {path}"', path => $path );
+
+    my $status_ok = try {
+        $self->config->reload($path);
+        1;
+    }
+    catch {
+        $self->catch_init_errors($_);
+        return undef;
+    };
+    $self->config_dump;
+
+    return unless $status_ok;
+    
     $self->clear_target;
     $self->clear_sqitch;
     $self->clear_project_form;
@@ -855,6 +874,16 @@ sub _on_plan_listitem_selected {
     return;
 }
 
+
+# TODO: Should this dump be cleaned of sensitive info?
+sub config_dump {
+    my $self = shift;
+    my $config = $self->sqitch->config;
+    $self->sqitch->emit("\n");
+    $self->sqitch->comment("Config dump:");
+    $self->sqitch->comment( scalar $config->dump ) if $config;
+    return $self;
+}
 
 1;
 
