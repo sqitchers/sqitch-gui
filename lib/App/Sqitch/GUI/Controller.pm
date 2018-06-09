@@ -280,11 +280,12 @@ sub load_sqitch_project {
     my $name = $self->model->current_project->name;
     my $path = $self->model->current_project->path;
     if ( $name and $path ) {
-        $self->load_project_from_path($path);
-        my $index = $self->default_project_item;
-        $self->mark_item('project', $index, 5);
-        $self->model->current_project->item($index);
-        $self->view->get_project_list_ctrl->set_selection($index);
+        if ( $self->load_project_from_path($path) ) {
+            my $index = $self->default_project_item;
+            $self->mark_item('project', $index, 5);
+            $self->model->current_project->item($index);
+            $self->view->get_project_list_ctrl->set_selection($index);
+        }
     }
     else {
         $self->log_message(
@@ -321,11 +322,12 @@ sub load_project_item {
             __ 'EE Something went wrong, no project "name" and path"' );
         return;
     }
-    $self->model->current_project->item($item);
-    $self->model->current_project->name($name);
-    $self->model->current_project->path(dir $path);
-    $self->mark_item('project', $item, 5);
-    $self->load_project_from_path($path);
+    if ( $self->load_project_from_path($path) ) {
+        $self->model->current_project->item($item);
+        $self->model->current_project->name($name);
+        $self->model->current_project->path(dir $path);
+        $self->mark_item('project', $item, 5);
+    }
     return;
 }
 
@@ -376,7 +378,7 @@ sub load_project_from_path {
     $self->config_dump if $self->options->debug;
 
     return unless $status_ok;
-    
+
     $self->clear_target;
     $self->clear_sqitch;
     $self->clear_project_form;
@@ -393,7 +395,7 @@ sub load_project_from_path {
         $self->view->project->btn_load->Enable(0);
     }
 
-    return;
+    return 1;
 }
 
 sub _setup_events {
