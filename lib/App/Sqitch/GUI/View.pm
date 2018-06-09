@@ -505,9 +505,9 @@ sub get_project_list_ctrl {
 }
 
 sub log_message {
-    my ($self, $msg) = @_;
+    my ($self, $msg, $newline) = @_;
     my $control = $self->bottom->log_ctrl;
-    $self->bottom->control_write_stc($control, $msg, 'append');
+    $self->bottom->control_write_stc($control, $msg, 'append', $newline);
     $control->ScrollToLine( $control->GetLineCount );
     return;
 }

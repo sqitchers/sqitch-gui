@@ -199,7 +199,8 @@ has 'plan' => (
 
 sub log_message {
     my ($self, $msg) = @_;
-    $self->view->log_message($msg);
+    my $newline = ( $msg =~ /\.\./msg ) ? 0 : 1;
+    $self->view->log_message($msg, $newline);
     return;
 }
 
@@ -336,9 +337,6 @@ sub load_plan_item {
 
     $self->log_message( __ 'II Load plan item feature not implmented yet!' );
 
-    say "was item: ", $self->model->current_plan_item->item;
-    say "was name: ", $self->model->current_plan_item->name;
-
     my $item = $self->view->get_plan_list_ctrl->get_selection;
     my $name = $self->model->plan_list_data->get_value($item, 1);
 
@@ -346,8 +344,13 @@ sub load_plan_item {
     $self->model->current_plan_item->name($name);
     $self->mark_item('plan', $item, 5);
 
-    say "is item: ", $self->model->current_plan_item->item;
-    say "is name: ", $self->model->current_plan_item->name;
+    # TODO: remove this!
+    if ( $self->options->debug ) {
+        say "was item: ", $self->model->current_plan_item->item;
+        say "was name: ", $self->model->current_plan_item->name;
+        say "is item: ", $self->model->current_plan_item->item;
+        say "is name: ", $self->model->current_plan_item->name;
+    }
 
     return;
 }
@@ -569,7 +572,7 @@ sub populate_change_form {
         if $self->options->verbose;
 
     my $name  = $change->name;
-    say "change name: ", $name;
+    # say "change name: ", $name;
     my $state = try {
         $engine->current_state( $plan->project );
     }
@@ -635,13 +638,13 @@ sub load_sql_for {
     my ($self, $command, $name) = @_;
     my $repo_path = $self->config->current_project_path;
     my $sql_file  = file $repo_path, $command, "$name.sql";
-    say "sql_file: $sql_file" if $self->options->verbose;
+    say "loading SQL file: $sql_file" if $self->options->verbose;
     if (-f $sql_file) {
         my $text = read_file($sql_file);
         $self->view->load_sql_form_for( 'change', $command, $text );
     }
     else {
-        say "no file: $sql_file";
+        say "NO SQL file: $sql_file";
     }
     return;
 }

@@ -8,7 +8,7 @@ use App::Sqitch::X qw(hurl);
 use namespace::autoclean;
 
 sub control_write_stc {
-    my ( $self, $control, $value, $is_append ) = @_;
+    my ( $self, $control, $value, $is_append, $newline ) = @_;
     hurl 'Wrong arguments passed to control_write_stc()'
         unless $control and $control->isa('Wx::Scintilla::TextCtrl');
     $value ||= q{};                 # empty
@@ -17,7 +17,7 @@ sub control_write_stc {
     $control->ClearAll unless $is_append;
     if ($value) {
         $control->AppendText($value);
-        $control->AppendText("\n");
+        $control->AppendText("\n") if $newline;
     }
     $control->Colourise( 0, $control->GetTextLength );
     $control->SetReadOnly($readonly);
