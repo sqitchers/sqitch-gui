@@ -246,8 +246,8 @@ sub prepare_projects {
         $self->load_sqitch_project;
     }
     else {
-        $self->log_message('WW Add a project...');
-        $self->log_message('WW Opening the dialog...');
+        $self->log_message('WW Add a project');
+        $self->log_message('WW Opening the dialog');
         my $timer = Wx::Timer->new( $self->view->frame, 1 );
         $timer->Start( 2000, 1 );    # one shot
         EVT_TIMER $self->view->frame, 1, sub {
@@ -361,7 +361,7 @@ sub load_project_from_path {
 
     unless ( $self->model->is_project_path($path) ) {
         $self->log_message(
-            __x 'EE The "{path}" path does not look like a Sqitch project!',
+            __x 'WW The "{path}" path does not look like a Sqitch project',
             path => $path,
         );
         return;
@@ -577,7 +577,7 @@ sub load_change {
         $self->log_message( __x 'II No changes defined yet' );
         return;
     }
-    $self->log_message( __x 'II Loading changes...' )
+    $self->log_message( __x 'II Loading change' )
         if $self->options->verbose;
     my $name  = $change->name;
     # say "change name: ", $name;
@@ -661,8 +661,6 @@ sub load_sql_for {
 sub populate_plan_form {
     my $self = shift;
     my $plan = $self->plan;
-
-    # Search the changes. (from ...Sqitch::Command::plan)
     my $iter = $plan->search_changes();
     my $is_current = 0;
     my $current_label = $is_current ? __('Yes') : q();

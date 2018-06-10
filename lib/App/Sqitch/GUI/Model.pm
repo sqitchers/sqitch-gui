@@ -127,11 +127,11 @@ sub _build_project_list {
             if defined $seen_path{$path} and $seen_path{$path} > 1;
         unless ( $self->is_project_path($path) ) {
             $self->config_add_issue(
-                __x 'EE The "{path}" path does not look like a Sqitch project!',
+                __x 'WW The "{path}" path does not look like a Sqitch project!',
                 path => $path
               );
         }
-        
+
         my $engine  = $self->get_project_engine_from_name($name);
         my $default = $self->default_project->name // q{};
         my $current = $self->current_project->name // q{};
