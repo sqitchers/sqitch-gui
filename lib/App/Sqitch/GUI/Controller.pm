@@ -885,7 +885,8 @@ sub _on_plan_listitem_selected {
     return;
 }
 
-# TODO: Should this dump be cleaned of sensitive info?
+# TODO: Should this dump be cleaned of sensitive info like passwords
+# (from targets)?
 sub config_dump {
     my $self = shift;
     my $config = $self->sqitch->config;
@@ -909,10 +910,123 @@ The Controller.
 
 =head1 ATTRIBUTES
 
-=head2 C<config>
+=head3 options
 
-=head2 C<sqitch>
+=head3 config
+
+=head3 model
+
+=head3 app
+
+=head3 view
+
+=head3 status
+
+=head3 dlg_status
+
+=head3 sqitch
+
+=head3 target
+
+=head3 plan
 
 =head1 METHODS
+
+=head3 _build_options
+
+=head3 _build_config
+
+=head3 _build_model
+
+=head3 _build_app
+
+=head3 _build_sqitch
+
+=head3 _build_target
+
+=head3 log_message
+
+=head3 BUILD
+
+=head3 populate_list
+
+=head3 prepare_projects
+
+=head3 load_sqitch_project
+
+=head3 default_project_item
+
+=head3 load_project_item
+
+=head3 load_plan_list_item
+
+=head3 load_change_item
+
+=head3 load_project_from_path
+
+=head3 _setup_events
+
+=head3 populate_project_list
+
+=head3 populate_project_form
+
+=head3 catch_init_errors
+
+=head3 clear_project_form
+
+=head3 populate_change_form
+
+=head3 load_change
+
+=head3 clear_change_form
+
+=head3 load_sql_for
+
+=head3 populate_plan_form
+
+=head3 clear_plan_form
+
+=head3 execute_command
+
+=head3 on_quit
+
+=head3 on_admin
+
+=head3 config_set_default
+
+=head3 config_edit_project
+
+=head3 config_remove_default
+
+=head3 config_remove_project
+
+=head3 config_save_local
+
+=head3 set_project_default
+
+=head3 get_list_by_name
+
+=head3 get_list_data_by_name
+
+=head3 dispatch_error
+
+=head3 _clear_mark_label
+
+=head3 _set_mark_label
+
+=head3 mark_item
+
+=head3 _on_project_listitem_selected
+
+Enable or disable the C<Default> and C<Load> buttons for the selected
+project item.
+
+=head3 _on_plan_listitem_selected
+
+Not used, yet.
+
+=head3 config_dump
+
+Dumps the configurations to the log control.
 
 =cut
