@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Ștefan Suciu
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the App-Sqitch-GUI package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: App-Sqitch-GUI 0.010\n"
-"Report-Msgid-Bugs-To: stefan@s2i2.ro\n"
-"POT-Creation-Date: 2015-07-12 14:19+0300\n"
+"Project-Id-Version: App-Sqitch-GUI 0.020\n"
+"Report-Msgid-Bugs-To: stefbv70@gmail.com\n"
+"POT-Creation-Date: 2018-06-10 09:32+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: lib/App/Sqitch/GUI/Config.pm:138
+#, perl-brace-format
+msgid "The configuration file \"{file}\" does not exist!"
+msgstr ""
+
+#: lib/App/Sqitch/GUI/Config.pm:143
+#, perl-brace-format
+msgid "The configuration file \"{file}\" could not be (re)loaded: {err}"
+msgstr ""
 
 #: lib/App/Sqitch/GUI/Config/Toolbar.pm:24
 #: lib/App/Sqitch/GUI/Config/Toolbar.pm:27
@@ -31,182 +41,210 @@ msgstr ""
 msgid "Quit the application"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:62
+#: lib/App/Sqitch/GUI/Controller.pm:70
 #, perl-brace-format
 msgid "EE Configuration error: \"{error}\""
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:83
+#: lib/App/Sqitch/GUI/Controller.pm:91
 #, perl-brace-format
 msgid "EE Model error: \"{error}\""
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:272
+#: lib/App/Sqitch/GUI/Controller.pm:268
 #, perl-brace-format
 msgid "II OK, found a project"
 msgid_plural "II Found {count} projects"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:296
+#: lib/App/Sqitch/GUI/Controller.pm:293
 msgid "II No valid default project, select the project and load it"
 msgid_plural "II No valid default project, select a project and load it"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:308 lib/App/Sqitch/GUI/Controller.pm:418
-#: lib/App/Sqitch/GUI/Controller.pm:739
+#: lib/App/Sqitch/GUI/Controller.pm:306 lib/App/Sqitch/GUI/Controller.pm:475
+#: lib/App/Sqitch/GUI/Controller.pm:659 lib/App/Sqitch/GUI/Controller.pm:842
 msgid "Yes"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:325
+#: lib/App/Sqitch/GUI/Controller.pm:323
 msgid "EE Something went wrong, no project \"name\" and path\""
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:352
+#: lib/App/Sqitch/GUI/Controller.pm:338
+msgid "II Load plan item feature not implmented yet!"
+msgstr ""
+
+#: lib/App/Sqitch/GUI/Controller.pm:363 lib/App/Sqitch/GUI/Model.pm:130
+#, perl-brace-format
+msgid "EE The \"{path}\" path does not look like a Sqitch project!"
+msgstr ""
+
+#: lib/App/Sqitch/GUI/Controller.pm:371
+#, perl-brace-format
+msgid "II Can not cd to {path}\""
+msgstr ""
+
+#: lib/App/Sqitch/GUI/Controller.pm:395
 #, perl-brace-format
 msgid "II Loading the \"{name}\" project"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:505
+#: lib/App/Sqitch/GUI/Controller.pm:568
 msgid "II No changes defined yet"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:670
-msgid "This should NOT happen!"
+#: lib/App/Sqitch/GUI/Controller.pm:571
+msgid "II Loading changes..."
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Controller.pm:718
+#: lib/App/Sqitch/GUI/Controller.pm:792
 msgid "WW Select a project item, please"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:79
+#: lib/App/Sqitch/GUI/Model.pm:94
 #, perl-brace-format
 msgid "EE The \"{name}\" project has no associated path and is set as default"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:106
+#: lib/App/Sqitch/GUI/Model.pm:121
 #, perl-brace-format
 msgid "EE Duplicate name found: \"{name}\""
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:110
+#: lib/App/Sqitch/GUI/Model.pm:125
 #, perl-brace-format
 msgid "EE Duplicate path found: \"{path}\""
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:184 lib/App/Sqitch/GUI/Model.pm:207
-#: lib/App/Sqitch/GUI/Model.pm:248
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:140
+#: lib/App/Sqitch/GUI/Model.pm:214 lib/App/Sqitch/GUI/Model.pm:237
+#: lib/App/Sqitch/GUI/Model.pm:278
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:138
 msgid "Name"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:190 lib/App/Sqitch/GUI/Model.pm:213
+#: lib/App/Sqitch/GUI/Model.pm:220 lib/App/Sqitch/GUI/Model.pm:243
 msgid "Path"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:219
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:195
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:394
+#: lib/App/Sqitch/GUI/Model.pm:249
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:193
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:401
 msgid "Engine"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:225
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:498
+#: lib/App/Sqitch/GUI/Model.pm:255 lib/App/Sqitch/GUI/View/Panel/Project.pm:515
 msgid "Default"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:231
+#: lib/App/Sqitch/GUI/Model.pm:261 lib/App/Sqitch/GUI/Model.pm:302
 msgid "Current"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:254
+#: lib/App/Sqitch/GUI/Model.pm:284
 msgid "Create time"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:260
+#: lib/App/Sqitch/GUI/Model.pm:290
 msgid "Creator"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/Model.pm:266
+#: lib/App/Sqitch/GUI/Model.pm:296
 msgid "Description"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:164
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:359
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:462
+#: lib/App/Sqitch/GUI/Model.pm:308
+msgid "Status"
+msgstr ""
+
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:162
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:366
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:469
 msgid "Project"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:179
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:177
 msgid "Choose a directory"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:229
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:364
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:227
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:371
 msgid "Database"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:308
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:639
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:679
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:306
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:678
+msgid "&New"
+msgstr ""
+
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:326
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:701
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:741
 msgid "&Add"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:328
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:346
 msgid "&Remove"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:348
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:366
 msgid "&Close"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:367
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:385
 msgid "&Save"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:411
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:429
 msgid "Manage Projects List"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:629
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:666
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:692
 msgid "C&ancel"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:654
+#: lib/App/Sqitch/GUI/View/Dialog/Projects.pm:716
 msgid "Select an item, please."
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Plan.pm:142
+#: lib/App/Sqitch/GUI/View/Panel/Plan.pm:153
 msgid "Plan "
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:369
+#: lib/App/Sqitch/GUI/View/Panel/Plan.pm:168
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:489
+msgid "Load"
+msgstr ""
+
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:376
 msgid "User"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:374
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:381
 msgid "URI"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:379
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:386
 msgid "Created at"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:384
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:391
 msgid "Creator name"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:389
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:396
 msgid "Creator email"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:399
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:406
 msgid "Repository"
 msgstr ""
 
-#: lib/App/Sqitch/GUI/View/Panel/Project.pm:483
-msgid "Load"
+#: lib/App/Sqitch/GUI/View/Panel/Project.pm:502
+msgid "Initialize"
 msgstr ""
 
 #: lib/App/Sqitch/GUI/Wx/Menubar.pm:45
