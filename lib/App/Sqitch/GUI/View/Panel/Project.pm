@@ -107,6 +107,13 @@ has 'btn_load' => (
     builder => '_build_btn_load',
 );
 
+has 'btn_init' => (
+    is      => 'ro',
+    isa     => WxButton,
+    lazy    => 1,
+    builder => '_build_btn_init',
+);
+
 has 'btn_default' => (
     is      => 'ro',
     isa     => WxButton,
@@ -288,6 +295,8 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->h_line1, 1, wxEXPAND | wxTOP | wxBOTTOM,
         10 );
     $self->btn_sizer->Add( $self->btn_load, 1, wxLEFT | wxRIGHT | wxEXPAND,
+        25 );
+    $self->btn_sizer->Add( $self->btn_init, 1, wxLEFT | wxRIGHT | wxEXPAND,
         25 );
     $self->btn_sizer->Add( $self->btn_default, 1,
         wxLEFT | wxRIGHT | wxEXPAND, 25 );
@@ -474,7 +483,6 @@ sub _build_h_line1 {
 
 sub _build_btn_load {
     my $self = shift;
-
     my $button = Wx::Button->new(
         $self->panel,
         -1,
@@ -483,13 +491,24 @@ sub _build_btn_load {
         [ -1, -1 ],
     );
     $button->Enable(0);
+    return $button;
+}
 
+sub _build_btn_init {
+    my $self = shift;
+    my $button = Wx::Button->new(
+        $self->panel,
+        -1,
+        __ 'Initialize',
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
+    $button->Enable(0);
     return $button;
 }
 
 sub _build_btn_default {
     my $self = shift;
-
     my $button = Wx::Button->new(
         $self->panel,
         -1,
@@ -498,7 +517,6 @@ sub _build_btn_default {
         [ -1, -1 ],
     );
     $button->Enable(0);
-
     return $button;
 }
 
