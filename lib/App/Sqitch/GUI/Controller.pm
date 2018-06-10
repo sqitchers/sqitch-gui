@@ -332,27 +332,28 @@ sub load_project_item {
     return;
 }
 
-sub load_plan_item {
+sub load_plan_list_item {
     my $self = shift;
-
-    $self->log_message( __ 'II Load plan item feature not implmented yet!' );
-
     my $item = $self->view->get_plan_list_ctrl->get_selection;
     my $name = $self->model->plan_list_data->get_value($item, 1);
-
+    $self->load_change_item($item);
     $self->model->current_plan_item->item($item);
     $self->model->current_plan_item->name($name);
     $self->mark_item('plan', $item, 5);
-
-    # TODO: remove this!
-    if ( $self->options->debug ) {
-        say "was item: ", $self->model->current_plan_item->item;
-        say "was name: ", $self->model->current_plan_item->name;
-        say "is item: ", $self->model->current_plan_item->item;
-        say "is name: ", $self->model->current_plan_item->name;
-    }
-
     return;
+}
+
+sub load_change_item {
+    my ($self, $item) = @_;
+    my $engine = $self->target->engine;
+    my $plan   = $self->plan;
+    $plan->position($item);
+    $self->log_message( __x 'II Current plan item is {poz}',
+        poz => $plan->position )
+        if $self->options->verbose;
+    $self->clear_change_form;
+    my $change = $plan->current;
+    $self->load_change($change);
 }
 
 sub load_project_from_path {
@@ -439,7 +440,7 @@ sub _setup_events {
     # The "Load" button from the Plan panel
     EVT_BUTTON $self->view->frame,
         $self->view->plan->btn_load->GetId, sub {
-            $self->load_plan_item;
+            $self->load_plan_list_item;
         };
 
     #-- Quit
@@ -560,19 +561,29 @@ sub clear_project_form {
 
 sub populate_change_form {
     my $self = shift;
-
-    my $engine = $self->target->engine;
     my $plan   = $self->plan;
     my $change = $plan->last;
     unless ($change) {
         $self->log_message( __x 'II No changes defined yet' );
         return;
     }
+    $self->load_change($change);
+    return;
+}
+
+sub load_change {
+    my ($self, $change) = @_;
+    unless ($change) {
+        $self->log_message( __x 'II No changes defined yet' );
+        return;
+    }
     $self->log_message( __x 'II Loading changes...' )
         if $self->options->verbose;
-
     my $name  = $change->name;
     # say "change name: ", $name;
+
+    my $engine = $self->target->engine;
+    my $plan   = $self->plan;
     my $state = try {
         $engine->current_state( $plan->project );
     }
@@ -871,12 +882,8 @@ sub _on_project_listitem_selected {
 sub _on_plan_listitem_selected {
     my ($self, $var, $event) =  @_;
     my $item = $event->GetIndex;
-
-    # my $current_item = $self->model->current_project->item // 999;
-    say "_on_plan_listitem_selected: $item";
     return;
 }
-
 
 # TODO: Should this dump be cleaned of sensitive info?
 sub config_dump {
