@@ -568,7 +568,7 @@ sub populate_change_form {
         $self->log_message( __x 'II No changes defined yet' );
         return;
     }
-    $self->log_message( __x 'II Loading changes...???' )
+    $self->log_message( __x 'II Loading changes...' )
         if $self->options->verbose;
 
     my $name  = $change->name;
@@ -580,16 +580,16 @@ sub populate_change_form {
         $self->log_message( "EE $_" );
         return undef;
     };
-    return unless $state;
 
     my $planned_at
         = defined $state
         ? $state->{planned_at}->as_string
-        : undef;
+        : $change->timestamp;
     my $committed_at
         = defined $state
         ? $state->{committed_at}->as_string
         : undef;
+
     my %fields = (
         change_id       => $change->id,
         name            => $change->name,
@@ -597,11 +597,9 @@ sub populate_change_form {
         planner_name    => $change->{planner_name},
         planner_email   => $change->{planner_email},
         planned_at      => $planned_at,
-        planner_name    => $state->{planner_name},
-        planner_email   => $state->{planner_email},
-        committed_at    => $committed_at,
         committer_name  => $state->{committer_name},
         committer_email => $state->{committer_email},
+        committed_at    => $committed_at,
     );
     while ( my ( $field, $value ) = each(%fields) ) {
         $self->view->load_txt_form_for( 'change', $field, $value );
