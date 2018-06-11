@@ -218,7 +218,7 @@ sub BUILD {
     }
     $tb->set_initial_mode( \@toolbars );
     $self->frame->SetToolBar($tb);
-    $tb = $self->GetToolBar;                 # is this really needed?
+    $tb = $self->frame->GetToolBar;          # is this really needed?
     $tb->Realize;
 
     $self->main_sizer->Add( $self->left->panel,  1, wxEXPAND | wxALL, 0 );
