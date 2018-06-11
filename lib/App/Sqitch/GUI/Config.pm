@@ -107,13 +107,13 @@ has 'engine_list' => (
     },
 );
 
-#-- Not used, yet:
+sub get_engine_from_name {
+    my ($self, $engine) = @_;
+    my %engines = reverse %{ $self->engine_list };
+    return $engines{$engine};
+}
 
-# sub get_engine_from_name {
-#     my ($self, $engine) = @_;
-#     my %engines = reverse %{ $self->engine_list };
-#     return $engines{$engine};
-# }
+#-- Not used, yet:
 
 # sub has_repo_name {
 #     my ($self, $name) = @_;
