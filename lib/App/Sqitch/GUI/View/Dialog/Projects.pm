@@ -436,8 +436,6 @@ sub FOREIGNBUILDARGS {
 sub BUILD {
     my $self = shift;
 
-    $self->SetMinSize([500, 500]);
-
     #-- List and buttons
 
     $self->sizer->Add( $self->vbox_sizer, 1, wxEXPAND | wxALL, 5 );
@@ -448,31 +446,33 @@ sub BUILD {
     $self->list_fg_sz->Add( $self->form_fg_sz, 1, wxEXPAND | wxALL, 5 );
     $self->list_fg_sz->Add( $self->h_line2,    1, wxEXPAND | wxALL, 5 );
 
-    $self->list_fg_sz->Add( $self->btn_sizer, 1, wxEXPAND | wxALL,  0 );
+    $self->list_fg_sz->Add( $self->btn_sizer, 1, wxEXPAND | wxALL, 0 );
 
     $self->vbox_sizer->Add( $self->list_fg_sz, 1, wxEXPAND | wxALL, 10 );
 
-    $self->form_fg_sz->Add( $self->lbl_path,   0, wxLEFT,            5 );
-    $self->form_fg_sz->Add( $self->dpc_path,   1, wxEXPAND | wxRIGHT,5 );
-    $self->form_fg_sz->Add( $self->lbl_name,   0, wxLEFT,            5 );
-    $self->form_fg_sz->Add( $self->txt_name,   0, wxLEFT,            0 );
-    $self->form_fg_sz->Add( $self->lbl_engine, 0, wxLEFT,            5 );
-    $self->form_fg_sz->Add( $self->cbx_engine, 1, wxLEFT,            0 );
-    $self->form_fg_sz->Add( $self->lbl_db,     0, wxLEFT,            5 );
-    $self->form_fg_sz->Add( $self->txt_db,     1, wxEXPAND | wxRIGHT,5 );
+    $self->form_fg_sz->Add( $self->lbl_path,   0, wxLEFT,             5 );
+    $self->form_fg_sz->Add( $self->dpc_path,   1, wxEXPAND | wxRIGHT, 5 );
+    $self->form_fg_sz->Add( $self->lbl_name,   0, wxLEFT,             5 );
+    $self->form_fg_sz->Add( $self->txt_name,   0, wxLEFT,             0 );
+    $self->form_fg_sz->Add( $self->lbl_engine, 0, wxLEFT,             5 );
+    $self->form_fg_sz->Add( $self->cbx_engine, 1, wxLEFT,             0 );
+    $self->form_fg_sz->Add( $self->lbl_db,     0, wxLEFT,             5 );
+    $self->form_fg_sz->Add( $self->txt_db,     1, wxEXPAND | wxRIGHT, 5 );
 
     $self->btn_sizer->Add( $self->btn_sizer_l, 1,
         wxEXPAND | wxLEFT | wxRIGHT, 35 );
     $self->btn_sizer->Add( $self->btn_sizer_r, 0, wxALL | wxALIGN_BOTTOM, 10 );
 
-    $self->btn_sizer_l->Add( $self->btn_new,     1, wxEXPAND | wxALL, 5 );
-    $self->btn_sizer_l->Add( $self->btn_add,     1, wxEXPAND | wxALL, 5 );
-    $self->btn_sizer_l->Add( $self->btn_remove,  1, wxEXPAND | wxALL, 5 );
-    $self->btn_sizer_l->Add( $self->btn_save,    1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_new,    1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_add,    1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_remove, 1, wxEXPAND | wxALL, 5 );
+    $self->btn_sizer_l->Add( $self->btn_save,   1, wxEXPAND | wxALL, 5 );
 
     $self->btn_sizer_r->Add( $self->btn_close, 1, wxEXPAND | wxALL, 0 );
 
     $self->SetSizer( $self->sizer );
+    $self->sizer->Fit($self);
+    $self->sizer->SetSizeHints($self);
 
     $self->list_ctrl->SetFocus;
     $self->_init_dialog;
