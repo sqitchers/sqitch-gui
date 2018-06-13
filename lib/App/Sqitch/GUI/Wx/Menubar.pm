@@ -54,7 +54,7 @@ sub item_quit {
     return Wx::MenuItem->new(
         undef,
         wxID_EXIT,
-        '&Quit',
+        "&Quit\tCtrl+Q",
         'Quit',
         wxITEM_NORMAL,
         undef   # if defined, this is a sub-menu
@@ -66,7 +66,7 @@ sub item_admin {
     return Wx::MenuItem->new(
         undef,
         2001,
-        'Projects',
+        "Projects\tCtrl+P",
         'Projects',
         wxITEM_NORMAL,
         undef   # if defined, this is a sub-menu
