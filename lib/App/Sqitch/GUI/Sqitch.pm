@@ -16,44 +16,40 @@ has 'controller' => (
     lazy => 1,
 );
 
-around 'trace' => sub {
-    my ($orig, $self) = (shift, shift);
-    $self->$orig(@_);
-};
-
-around 'trace_literal' => sub {
-    my ($orig, $self) = (shift, shift);
-    $self->$orig(@_);
-};
-
 around 'emit' => sub {
     my ($orig, $self) = (shift, shift);
-    $self->controller->log_message(@_);
+    my $msg = join '', @_;
+    $self->controller->log_message($msg);
 };
 
 around 'emit_literal' => sub {
     my ($orig, $self) = (shift, shift);
-    $self->controller->log_message(@_);
+    my $msg = join '', @_;
+    $self->controller->log_message($msg);
 };
 
 around 'vent' => sub {
     my ($orig, $self) = (shift, shift);
-    $self->controller->log_message(@_);
+    my $msg = join '', @_;
+    $self->controller->log_message($msg);
 };
 
 around 'vent_literal' => sub {
     my ($orig, $self) = (shift, shift);
-    $self->controller->log_message(@_);
+    my $msg = join '', @_;
+    $self->controller->log_message($msg);
 };
 
 around 'page' => sub {
     my ($orig, $self) = (shift, shift);
-    $self->controller->log_message(@_);
+    my $msg = join '', @_;
+    $self->controller->log_message($msg);
 };
 
 around 'page_literal' => sub {
     my ($orig, $self) = (shift, shift);
-    $self->controller->log_message(@_);
+    my $msg = join '', @_;
+    $self->controller->log_message($msg);
 };
 
 1;
