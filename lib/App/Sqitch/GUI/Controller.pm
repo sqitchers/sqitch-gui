@@ -20,7 +20,7 @@ use App::Sqitch::GUI::Types qw(
 );
 use App::Sqitch::GUI::Options;
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
-use Wx qw<:everything>;
+use Wx qw(wxID_EXIT wxID_OK);
 use Wx::Event qw(
     EVT_BUTTON
     EVT_CLOSE
@@ -210,7 +210,11 @@ sub BUILD {
     $self->status->add_observer(
         App::Sqitch::GUI::Refresh->new( view => $self->view ) );
     $self->log_message('II Welcome to Sqitch (GUI)!');
-    $self->prepare_projects;
+    my $timer = Wx::Timer->new( $self->view->frame, 1 );
+    $timer->Start( 100, 1 );    # one shot
+    EVT_TIMER $self->view->frame, 1, sub {
+        $self->prepare_projects;
+    };
     return;
 }
 
@@ -367,7 +371,7 @@ sub load_project_from_path {
         return;
     }
 
-    # TODO: This should be not necessary, but it is
+    # TODO: This should be not necessary, but it is (is it? XXX)
     chdir $path
       or $self->log_message( __x 'II Can not cd to {path}"', path => $path );
 

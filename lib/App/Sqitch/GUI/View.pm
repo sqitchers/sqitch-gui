@@ -34,6 +34,7 @@ use Wx::Event qw(
     EVT_MENU
     EVT_RADIOBUTTON
     EVT_TOOL
+    EVT_TIMER
 );
 use Locale::TextDomain 1.20 qw(App-Sqitch-GUI);
 use App::Sqitch::X qw(hurl);
@@ -238,8 +239,13 @@ sub BUILD {
 
     $self->frame->SetSizer( $self->main_sizer );
 
-    $self->change->panel->Show; # Gtk-WARNINGs if default is not Change
-                                # later set to Project...  ;)
+    if ($^O ne 'MSWin32') {
+        $self->change->panel->Show; # Gtk-WARNINGs if default is not Change
+                                    # later set to Project...  ;)
+    }
+    else {
+        $self->project->panel->Show;
+    }
 
     $self->frame->Show;
 
@@ -436,15 +442,18 @@ sub show_panel {
 }
 
 sub set_status_bar {
-    my ($self, $state, $gui_rules) = @_;
+    my ( $self, $state, $gui_rules ) = @_;
 
     $self->status_bar->change_caption( $state, 1 );
     foreach my $btn ( keys %{$gui_rules} ) {
         my $enable = $gui_rules->{$btn};
         $self->right->$btn->Enable($enable);
     }
-    $self->show_panel('project');
-
+    my $timer = Wx::Timer->new( $self->frame, 1 );
+    $timer->Start( 200, 1 );    # one shot
+    EVT_TIMER $self->frame, 1, sub {
+        $self->show_panel('project');
+    };
     return;
 }
 
